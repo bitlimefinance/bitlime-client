@@ -4,7 +4,8 @@
 
     export let id: string = 'swap-input';
     export let value: number;
-    
+    export let disabled: boolean = false;
+
     let input: HTMLInputElement;
     let inputIsFocused:boolean = false;
 
@@ -15,8 +16,8 @@
 </script>
 
 
-<div on:click={focus} on:keyup={focus} id="{id}-container" class='bg-base-200 rounded-lg p-3 border  {inputIsFocused?'border-emerald-500':'border-gray-200 dark:border-slate-700'}'>
-    <div class="flex space-x-1 items-center cursor-pointer bg-slate-400 bg-opacity-10 w-fit rounded-lg p-2">
+<div on:click={focus} on:keyup={focus} id="{id}-container" class='bg-white dark:bg-zinc-800 rounded-xl p-3'>
+    <div class="flex space-x-1 items-center cursor-pointer bg-zinc-400 bg-opacity-10 w-fit rounded-lg p-2">
         <Button
             label="Select a token"
             classList="bg-transparent font-semibold"
@@ -31,6 +32,8 @@
         bind:isFocused={inputIsFocused}
         bind:value
         bind:input={input}
+        placeholder="0.00"
+        disabled={disabled}
         id={id}
         type="number"
         additionalClasses="text-4xl w-full bg-transparent border-0"

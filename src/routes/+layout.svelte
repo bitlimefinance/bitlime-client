@@ -58,7 +58,7 @@
 	});
 </script>
 
-<div id="global-container" class="min-h-screen bg-gray-50 dark:bg-slate-800">
+<div id="global-container" class="min-h-screen bg-emerald-100 bg-opacity-70 dark:bg-opacity-100 dark:bg-zinc-900">
 	{#if $showLoading}
 		<FullScreenContainer zIndex='1000' noBg>
 			<div class="flex flex-col space-y-4 p-0">

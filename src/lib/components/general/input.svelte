@@ -8,9 +8,10 @@
 	export let showRequiredStar: boolean = false;
 	export let style: string = '';
 	export let type: string = 'text';
-
+	export let disabled: boolean = false;
 	export let isFocused: boolean = false;
 	export let input: HTMLElement;
+	export let placeholder: string = '';
 </script>
 
 <div>
@@ -28,6 +29,8 @@
 			on:focusout={()=>{isFocused = false}}
 			bind:value
 			bind:this={input}
+			disabled={disabled}
+			placeholder={placeholder}
 			id={id}
 			type='text'
 			class={'rounded-lg block w-full outline-0 ring-0 hover:outline-0 hover:ring-0 hover:border-0 focus:outline-0 focus:border-0 focus:ring-0 ' + additionalClasses}
@@ -40,6 +43,8 @@
 			on:focusout={()=>{isFocused = false}}
 			bind:value
 			bind:this={input}
+			disabled={disabled}
+			placeholder={placeholder}
 			id={id}
 			type='number'
 			class={'rounded-lg block w-full outline-0 ring-0 hover:outline-0 hover:ring-0 hover:border-0 focus:outline-0 focus:border-0 focus:ring-0 ' + additionalClasses}
@@ -52,6 +57,8 @@
 			on:focusout={()=>{isFocused = false}}
 			bind:value
 			bind:this={input}
+			disabled={disabled}
+			placeholder={placeholder}
 			id={id}
 			class={'rounded-lg block w-full outline-0 ring-0 hover:outline-0 hover:ring-0 hover:border-0 focus:outline-0 focus:border-0 focus:ring-0 ' + additionalClasses}
 			style={style}

@@ -24,9 +24,9 @@
 	<div class="w-full flex justify-end">
 		<Tooltip invertX invertY content="Latest block number">
 			<div class="flex items-center text-sm cursor-default" bind:this={latestBlockElement}>
-				<div class="text-green-500">
+				<span class="text-green-500">
 					{parseInt($latestBlock, 16)||'-'}
-				</div>
+				</span>
 				<div class="animate-pulse rounded-full h-2 w-2 ml-2 bg-green-500"></div>
 			</div>
 		</Tooltip>

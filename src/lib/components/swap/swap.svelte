@@ -42,24 +42,28 @@
             console.error(error);
         }
     }
+
+    let switchHeight: number = 0;
+    let switchWidthHalf: number = 0;
+    $: switchWidthHalf = parseFloat((switchHeight/2).toFixed(4))-2;
 </script>
 
 
 
-<div class="rounded-xl p-4 w-11/12 max-w-lg bg-white dark:bg-slate-900">
-    <div class="flex justify-between pb-3">
+<div class="rounded-xl p-4 w-11/12 max-w-lg">
+    <!-- <div class="flex justify-between pb-3">
         <div>
             <p class="font-medium text-xl">Swap</p>
         </div>
-    </div>
+    </div> -->
     <div class="flex flex-col">
         <SwapInput
             id="swap-input-a"
             bind:value={inputAValue}
             />
-        <div class="z-10">
-            <div class="bg-emerald-500 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800 cursor-pointer p-1 mx-auto w-fit -my-3 border-4 dark:border-slate-900 rounded-lg">
-                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <div class="z-10" bind:clientHeight={switchHeight} style="margin-top: -{switchWidthHalf}px; margin-bottom: -{switchWidthHalf}px;">
+            <div class="bg-white dark:bg-zinc-800 cursor-pointer p-1.5 mx-auto w-fit border-4 border-emerald-100 dark:border-zinc-900 rounded-full">
+                <svg class="w-5 h-5 dark:text-zinc-500 dark:hover:text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.4" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
                 </svg>
             </div>              
@@ -67,11 +71,12 @@
 
         <SwapInput
             id="swap-input-b"
+            disabled
             bind:value={inputBValue}
             />
     </div>
     <Button
-        label="{$connected==_WALLETS.DISCONNECTED?'Connect':'Swap'}"
-        additionalClassList="min-w-full justify-center rounded-lg px-4 py-2 mt-4"
+        label="{$connected==_WALLETS.DISCONNECTED || !$connected?'CONNECT A WALLET':'PLACE ORDER'}"
+        additionalClassList="min-w-full justify-center font-normal text-base rounded-xl px-4 py-5 mt-4"
         on:click={onSwap}/>
 </div>

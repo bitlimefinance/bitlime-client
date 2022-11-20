@@ -25,7 +25,7 @@
                     <div
                         on:click={wallet.function}
                         on:keyup
-                        class="flex items-center cursor-pointer p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-white"
+                        class="flex items-center cursor-pointer p-3 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-zinc-700 dark:hover:bg-zinc-600 dark:text-white"
                         >
                         <img src={wallet.logo} alt="" class="h-6 w-6"/>
                         <span class="flex-1 ml-3 whitespace-nowrap">{wallet.name}</span>

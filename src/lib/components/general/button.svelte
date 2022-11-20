@@ -1,12 +1,17 @@
 <script lang="ts">
 	import { camelCase } from '$lib/core/utils/utilities';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	export let type: string = "button";
 	export let disabled: boolean = false;
 	export let label: string = '';
 	export let asyncLabel: string = '';
+	export let theme: string = 'primary';
 	export let classList: string =
-		'text-white bg-emerald-500 hover:bg-emerald-600 font-medium rounded-lg text-sm px-4 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
+		'text-zinc-900 dark:text-zinc-900 bg-emerald-400 hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-600 font-medium rounded-lg text-sm px-4 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
+	export let classListSecondary: string =
+		'text-emerald-900 dark:text-emerald-900 bg-emerald-300 hover:bg-emerald-400 font-medium rounded-full px-4 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
+	export let classListTertiary: string =
+		'text-zinc-900 dark:text-white bg-white hover:shadow-md dark:bg-opacity-10 hover:dark:bg-opacity-20 font-medium rounded-lg text-sm px-4 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
 	export let additionalClassList: string = '';
 	export let asyncAction: (() => Promise<void>) | null = null;
 	// TODO: implement
@@ -56,12 +61,32 @@
 		link: boolean;
 	}
 
+	let classes: string='';
+	const setClasses = () =>{
+		switch (theme) {
+			case 'primary':
+				classes = classList;
+				break;
+			case 'secondary':
+				classes = classListSecondary;
+				break;
+			case 'tertiary':
+				classes = classListTertiary;
+				break;
+		
+			default:
+				break;
+		}
+	}
+
+	$: theme, setClasses();
+
 </script>
 
 <button
 	disabled={showLoading || disabled}
 	type={type}
-	class={`${classList} flex flex-row gap-2 items-center ${showLoading ? '' : 'w-full sm:w-auto'} ${additionalClassList}`}
+	class={`${classes} flex flex-row gap-2 items-center ${showLoading ? '' : 'w-full sm:w-auto'} ${additionalClassList}`}
 	on:click={onClick}
 	data-testid={camelCase(label)}
 >

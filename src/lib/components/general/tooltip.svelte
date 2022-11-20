@@ -1,7 +1,7 @@
 <script lang="ts">
 	export let content:String = '';
 	export let title:String = '';
-	export let classList:String = 'tooltip p-3 lg:max-w-lg md:max-w-md bg-white text-black dark:bg-slate-800 border rounded-xl shadow dark:border-gray-700 dark:text-white';
+	export let classList:String = 'tooltip p-3 lg:max-w-lg md:max-w-md bg-white text-black dark:bg-zinc-800 border rounded-xl shadow dark:border-gray-700 dark:text-white';
 	export let additionalClassList:String = '';
 	export let invertY:boolean = false;
 	export let invertX:boolean = false;

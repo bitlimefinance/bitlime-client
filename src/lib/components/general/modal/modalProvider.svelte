@@ -7,7 +7,7 @@
 	export let modalId: string = 'qa-modal';
 	export let btnText: string = 'Show modal';
 	export let btnClassList: string =
-		'text-white bg-slate-900 hover:bg-cyan-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-cyan-600 disabled:opacity-80 disabled:hover:bg-slate-900 disabled:dark:bg-cyan-600';
+		'text-white bg-zinc-900 hover:bg-cyan-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-cyan-600 disabled:opacity-80 disabled:hover:bg-zinc-900 disabled:dark:bg-cyan-600';
 	export let btnIcon: string ='';
 	export let onlyIcon: boolean =false;
 	export let iconColor: string ='gray-400';
