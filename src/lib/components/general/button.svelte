@@ -6,7 +6,7 @@
 	export let label: string = '';
 	export let asyncLabel: string = '';
 	export let classList: string =
-		'text-white bg-primary font-medium rounded-lg text-sm px-4 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
+		'text-white bg-emerald-500 hover:bg-emerald-600 font-medium rounded-lg text-sm px-4 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
 	export let additionalClassList: string = '';
 	export let asyncAction: (() => Promise<void>) | null = null;
 	// TODO: implement

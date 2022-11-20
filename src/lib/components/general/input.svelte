@@ -30,7 +30,7 @@
 			bind:this={input}
 			id={id}
 			type='text'
-			class={'rounded-lg block w-full ' + additionalClasses}
+			class={'rounded-lg block w-full outline-0 ring-0 hover:outline-0 hover:ring-0 hover:border-0 focus:outline-0 focus:border-0 focus:ring-0 ' + additionalClasses}
 			style={style}
 			/>
 	{:else if type == 'number'}
@@ -42,7 +42,7 @@
 			bind:this={input}
 			id={id}
 			type='number'
-			class={'rounded-lg block w-full ' + additionalClasses}
+			class={'rounded-lg block w-full outline-0 ring-0 hover:outline-0 hover:ring-0 hover:border-0 focus:outline-0 focus:border-0 focus:ring-0 ' + additionalClasses}
 			style={style}
 			/>
 	{:else if type == 'textarea'}
@@ -53,7 +53,7 @@
 			bind:value
 			bind:this={input}
 			id={id}
-			class={'rounded-lg block w-full ' + additionalClasses}
+			class={'rounded-lg block w-full outline-0 ring-0 hover:outline-0 hover:ring-0 hover:border-0 focus:outline-0 focus:border-0 focus:ring-0 ' + additionalClasses}
 			style={style}
 			/>
 	{/if}

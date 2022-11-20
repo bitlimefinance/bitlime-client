@@ -20,6 +20,8 @@
 	export let disableCloseModalByClickingOutside: boolean = false;
 	export let additionalModalClassList: string = '';
 	export let fullScreen: boolean;
+	export let widthUsePixels: boolean = false;
+	export let noStyle: boolean = false;
 
 	let isDrawer: boolean = drawerL || drawerR;
 
@@ -94,14 +96,16 @@
 
 		currentDisplayState = modal.style.display;
 	});
+
+	let style: string = `padding: 0.75rem; width: ${fullScreen?'100':(isDrawer?drawerWidth:width)}${widthUsePixels?'px':'%'};`;
 </script>
 
 <div id={mId} class="modal">
 	<!-- Modal content -->
-	<div class={`modal-content${drawerL&&!fullScreen?' left-drawer':''}${drawerR&&!fullScreen?' right-drawer':''}${fullScreen?' full-screen':''} p-3 rounded-lg ${additionalModalClassList}`} style={`width: ${fullScreen?'100':(isDrawer?drawerWidth:width)}%;`}>
+	<div class={`modal-content${drawerL&&!fullScreen?' left-drawer':''}${drawerR&&!fullScreen?' right-drawer':''}${fullScreen?' full-screen':''} bg-white rounded-lg ${additionalModalClassList}`} style={noStyle?'':style}>
 		{#if !hideCloseIcon}
 			<div class="w-full flex justify-end -mb-5 z-50">
-				<div on:click={()=>{hideModal()}} on:keyup={()=>{hideModal()}} class="z-50 cursor-pointer rounded-lg hover:bg-gray-100">
+				<div on:click={()=>{hideModal()}} on:keyup={()=>{hideModal()}} class="z-50 cursor-pointer">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
 					</svg>
@@ -148,10 +152,8 @@
 
 	/* Modal Content/Box */
 	.modal-content {
-		background-color: #fefefe;
 		margin: 5% auto; /* 15% from the top and centered */
-		padding: 20px;
-		border: 1px solid #888;
+		border: 1px none;
 	}
 	
 	.left-drawer {

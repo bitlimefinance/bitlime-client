@@ -15,7 +15,7 @@
 </script>
 
 
-<div on:click={focus} on:keyup={focus} id="{id}-container" class='bg-base-200 rounded-lg p-3 border {inputIsFocused?'border-primary':'border-transparent'}'>
+<div on:click={focus} on:keyup={focus} id="{id}-container" class='bg-base-200 rounded-lg p-3 border  {inputIsFocused?'border-emerald-500':'border-gray-200 dark:border-slate-700'}'>
     <div class="flex space-x-1 items-center cursor-pointer bg-slate-400 bg-opacity-10 w-fit rounded-lg p-2">
         <Button
             label="Select a token"
@@ -33,7 +33,6 @@
         bind:input={input}
         id={id}
         type="number"
-        additionalClasses="text-4xl w-full"
-        style="background-color: transparent; border: none; outline: none;"
+        additionalClasses="text-4xl w-full bg-transparent border-0"
         />
 </div>

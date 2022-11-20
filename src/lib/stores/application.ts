@@ -4,7 +4,7 @@ import { get, writable } from "svelte/store";
 import { _WALLETS } from "$lib/globals";
 import { isConnected } from "$lib/core/web3Manager";
 
-export const connected = writable(_WALLETS.DISCONNECTED);
+export const connected = writable();
 export const setConnected = (wallet: _WALLETS) => {
     connected.set(wallet);
 }
@@ -33,3 +33,5 @@ export const setAccounts = async () => {
 };
 
 export const latestBlock = writable('');
+
+export const showConnenct = writable(false);

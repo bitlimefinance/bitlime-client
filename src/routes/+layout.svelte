@@ -10,14 +10,21 @@
 	import { writeLocalStorage } from '$lib/core/utils/localStorage';
 	import FullScreenContainer from '$lib/components/general/fullScreenContainer.svelte';
 	import { _themes, _WALLETS } from '$lib/globals';
-	
-	let body: any;
-	
+	import ConnectModal from '$lib/components/connect/connectModal.svelte';
+		
 	const setBodyTheme = () => {
-		if ($theme && $theme == _themes.dark) {
-			body?.classList.add('dark');
-		} else {
-			body?.classList.remove('dark');
+		try{
+			if (document) {
+				let body:HTMLBodyElement = document.getElementsByTagName('body')[0];
+				if (!body) return;
+				if ($theme && $theme == _themes.dark) {
+					body?.classList.add('dark');
+				} else {
+					body?.classList.remove('dark');
+				}
+			}
+		}catch(e){
+			console.error(e);
 		}
 	};
 
@@ -33,7 +40,6 @@
 	onMount(async () => {
 		try{
 			await loadWeb3();
-			if(document) body = document.querySelector('body');
 			setBodyTheme();
 			await connectMetamask();
 			await tick();
@@ -52,9 +58,9 @@
 	});
 </script>
 
-<div id="global-container" class="min-h-screen bg-base-200 dark:bg-base-100" data-theme={$theme}>
+<div id="global-container" class="min-h-screen bg-gray-50 dark:bg-slate-800">
 	{#if $showLoading}
-		<FullScreenContainer>
+		<FullScreenContainer zIndex='1000' noBg>
 			<div class="flex flex-col space-y-4 p-0">
 				<div class="flex w-full justify-center">
 					<Spinner size={'70'} additionalClassList='text-gray-600 dark:text-gray-800'/>
@@ -63,6 +69,7 @@
 			</div>
 		</FullScreenContainer>
 	{/if}
+	<ConnectModal/>
 	<Nav/>
 	<slot />
 </div>

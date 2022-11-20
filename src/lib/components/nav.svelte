@@ -1,34 +1,31 @@
 <script lang="ts">
 	import { getAddressPreview } from "$lib/core/web3Manager";
-	import { _WALLETS } from "$lib/globals";
-  import { connectMetamask } from "$lib/metamask/core";
-	import { accounts, connected } from "$lib/stores/application";
+	import { _WALLETS, _WALLETS_INFO } from "$lib/globals";
+	import { accounts, connected, showConnenct } from "$lib/stores/application";
 	import Button from "./general/button.svelte";
 	import ThemeToggle from "./themeToggle.svelte";
 </script>
 
-<nav class="navbar bg-transparent pr-5">
-    <div class="flex-1">
-        <a href="/" class="btn btn-ghost text-green-500 normal-case text-lg">
+<nav class="flex justify-between items-center bg-transparent px-5 py-4">
+    <div>
+        <a href="/" class="flex justify-start items-center btn btn-ghost text-green-500 normal-case text-lg">
             <img src="/favicon.png" alt="logo" class="h-6 mr-2" />
             BitLime
         </a>
     </div>
-    <div class="flex-none gap-2">
-      <div>
-        <ThemeToggle/>
-      </div>
-      {#if $connected!=_WALLETS.DISCONNECTED}
+    <div class="flex justify-end items-center gap-2">
+      <ThemeToggle/>
+      {#if $connected&&$connected!=_WALLETS.DISCONNECTED}
         <Button
           label={getAddressPreview($accounts[0])}
-          classList="bg-primary text-slate-800 font-medium text-sm rounded-full px-4 py-2"
-          on:click={connectMetamask}
+          additionalClassList="rounded-full px-4 py-2"
+          on:click={()=>{}}
           />
       {:else}
         <Button
           label="Connect"
-          classList="bg-primary text-slate-800 font-medium text-sm rounded-full px-4 py-2"
-          on:click={connectMetamask}
+          additionalClassList="rounded-full px-4 py-2"
+          on:click={()=>{showConnenct.set(true)}}
           />
       {/if}
     </div>

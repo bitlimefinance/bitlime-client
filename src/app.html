@@ -4,9 +4,16 @@
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
 		<meta name="viewport" content="width=device-width" />
+		<style>
+			/* global styles */
+			.dark *{
+				color: #fff;
+			}
+		</style>
 		%sveltekit.head%
 	</head>
 	<body class="dark">
 		<div style="display: contents">%sveltekit.body%</div>
+		<script src="https://unpkg.com/flowbite@1.5.4/dist/flowbite.js"></script>
 	</body>
 </html>

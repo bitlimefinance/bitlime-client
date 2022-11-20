@@ -1,3 +1,4 @@
+import type { _WALLETS } from "./globals";
 
 export interface GetTransactionObject {
     abi: Array<any>,
@@ -15,4 +16,13 @@ export interface TransactionParameters {
     data: any, // Optional, but used for defining smart contract creation and interaction.
     chainId: any, // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
     nonce: any, // ignored by MetaMask
+}
+
+export interface WalletInfo {
+    wallet: _WALLETS;
+    name: string;
+    logo: string;
+    popularBadge: boolean;
+    supported: boolean;
+    function: any;
 }
