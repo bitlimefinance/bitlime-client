@@ -3,6 +3,7 @@ import { isIterable } from "$lib/core/utils/utilities";
 import { get, writable } from "svelte/store";
 import { _WALLETS } from "$lib/globals";
 import { isConnected } from "$lib/core/web3Manager";
+import { getTokensList } from "$lib/core/contents/token-list";
 
 export const connected = writable();
 export const setConnected = (wallet: _WALLETS) => {
@@ -35,3 +36,5 @@ export const setAccounts = async () => {
 export const latestBlock = writable('');
 
 export const showConnenct = writable(false);
+
+export const tokensList = writable([]);

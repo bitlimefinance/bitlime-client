@@ -14,6 +14,7 @@
 		'text-zinc-900 dark:text-white bg-white hover:shadow-md dark:bg-opacity-10 hover:dark:bg-opacity-20 font-medium rounded-lg text-sm px-4 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
 	export let additionalClassList: string = '';
 	export let asyncAction: (() => Promise<void>) | null = null;
+	export let image: string = '';
 	// TODO: implement
 	// export let link: string = '';
 
@@ -90,6 +91,9 @@
 	on:click={onClick}
 	data-testid={camelCase(label)}
 >
+	{#if image && !showLoading}
+		<img src={image} alt="" class="h-6 w-6"/>
+	{/if}
 	{#if showLoading}
 		<svg
 			role="status"

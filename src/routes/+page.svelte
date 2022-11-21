@@ -1,12 +1,9 @@
 <script lang="ts">
-	import { blinkElement, randomString, sleep } from "$lib/core/utils/utilities";
 	import { _themes } from "$lib/globals";
 	import { latestBlock } from "$lib/stores/application";
 	import Tooltip from "$lib/components/general/tooltip.svelte";
 	import Swap from "$lib/components/swap/swap.svelte";
-	import Button from "$lib/components/general/button.svelte";
-
-	let latestBlockElement: HTMLElement;
+	import { getTokensList } from "$lib/core/contents/token-list";
 
 </script>
 
@@ -19,11 +16,11 @@
 	<div class="flex justify-center my-auto w-full">
 
 		<Swap/>
-
+		
 	</div>
 	<div class="w-full flex justify-end">
 		<Tooltip invertX invertY content="Latest block number">
-			<div class="flex items-center text-sm cursor-default" bind:this={latestBlockElement}>
+			<div class="flex items-center text-sm cursor-default">
 				<span class="text-green-500">
 					{parseInt($latestBlock, 16)||'-'}
 				</span>

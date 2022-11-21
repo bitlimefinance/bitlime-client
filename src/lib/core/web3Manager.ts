@@ -13,6 +13,8 @@ export const loadContract = async (abi: any, address: string) => {
 }
 
 export const getTransactionObject = async (args: GetTransactionObject) => {
+    console.log(args);
+    
     let txObj;
     try {
         if (!window.web3) await loadWeb3();

@@ -26,3 +26,17 @@ export interface WalletInfo {
     supported: boolean;
     function: any;
 }
+
+    
+export interface Token {
+    "Modified Date": string;
+    "Created Date": string;
+    "Created By": string;
+    "address": string;
+    "chain": string;
+    "image": string;
+    "name": string;
+    "symbol": string;
+    "chain_id": string;
+    "_id": string;
+}

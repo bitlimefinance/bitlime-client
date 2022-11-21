@@ -36,6 +36,7 @@
 	"type": "module",
 	"dependencies": {
 		"flowbite": "^1.5.4",
+		"fuse.js": "^6.6.2",
 		"yarn": "^1.22.19"
 	}
 }
