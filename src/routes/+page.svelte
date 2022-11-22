@@ -3,7 +3,7 @@
 	import { latestBlock } from "$lib/stores/application";
 	import Tooltip from "$lib/components/general/tooltip.svelte";
 	import Swap from "$lib/components/swap/swap.svelte";
-	import { getTokensList } from "$lib/core/contents/token-list";
+	import { getTokensList } from "$lib/core/contents/apis";
 
 </script>
 

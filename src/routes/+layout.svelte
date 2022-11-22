@@ -4,14 +4,15 @@
 	import { showLoading, theme } from '$lib/stores/ui-theming';
 	import { onMount, tick } from 'svelte';
 	import '../app.css';
-	import { connected, setAccounts } from '$lib/stores/application';
+	import { connected, selectedNetwork, setAccounts } from '$lib/stores/application';
 	import Spinner from '$lib/components/general/spinner.svelte';
 	import { loadWeb3 } from '$lib/core/web3Manager';
 	import { writeLocalStorage } from '$lib/core/utils/localStorage';
 	import FullScreenContainer from '$lib/components/general/fullScreenContainer.svelte';
 	import { _themes, _WALLETS } from '$lib/globals';
-	import ConnectModal from '$lib/components/connect/connectModal.svelte';
-		
+	
+	let mounted = false;
+
 	const setBodyTheme = () => {
 		try{
 			if (document) {
@@ -37,9 +38,18 @@
 		setAccounts();
 	});
 
+	selectedNetwork.subscribe(async (value: any) => {
+		if (mounted) {
+			window.bl_rpc = value?.rpc;
+			await loadWeb3(value?.rpc);
+		};
+	});
+
 	onMount(async () => {
 		try{
-			await loadWeb3();
+			mounted = true;
+			if(window) window.bl_rpc = $selectedNetwork?.rpc;
+			await loadWeb3($selectedNetwork?.rpc);
 			setBodyTheme();
 			await connectMetamask();
 			await tick();
@@ -69,7 +79,6 @@
 			</div>
 		</FullScreenContainer>
 	{/if}
-	<ConnectModal/>
 	<Nav/>
 	<slot />
 </div>

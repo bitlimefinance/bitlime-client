@@ -2,10 +2,9 @@
 	import Button from "../general/button.svelte";
     import Fuse from 'fuse.js'
 	import FullScreenContainer from "../general/fullScreenContainer.svelte";
-	import { tokensList } from "$lib/stores/application";
+	import { selectedNetwork, tokensList } from "$lib/stores/application";
 	import { readLocalStorage, writeLocalStorage } from "$lib/core/utils/localStorage";
 	import { onMount } from "svelte";
-	import Alert from "../general/alert.svelte";
 
     export let value: any;
     export let defaultToken: string = '';
@@ -62,6 +61,11 @@
         }
     })
 
+    selectedNetwork.subscribe(() => {
+        recentTokens = readLocalStorage('recent-tokens') || '[]';
+        parsedRecentTokens = JSON.parse(recentTokens);
+    })
+
     onMount(() => {
         recentTokens = readLocalStorage('recent-tokens') || '[]';
         parsedRecentTokens = JSON.parse(recentTokens);
@@ -99,7 +103,7 @@
                 <p class="text-sm font-normal text-gray-500 dark:text-gray-400">Recent tokens</p>
                 <div class="grid grid-cols-3 gap-1 mt-2 {parsedRecentTokens&&parsedRecentTokens.length>0?'':'hidden'}">
                     {#each parsedRecentTokens as token}
-                        {#if token?.symbol}
+                        {#if token?.symbol && token?.chain_id==$selectedNetwork?.id}
                             <div
                                 on:click={()=>{
                                     value = token;
@@ -130,34 +134,36 @@
             </div>
             <ul class="space-y-2 w-full h-80 min-h-80 max-h-80 overflow-auto border-t dark:border-zinc-800">
             {#each tokensToShow as token}
-                <li class="w-full">
-                    <div
-                        on:click={() => {
-                            try{
-                                value = token;
-                                showModal = false;
-                                recentTokens = readLocalStorage('recent-tokens') || '[]';
-                                parsedRecentTokens = JSON.parse(recentTokens) || [];
-                                let recentTokensAddresses = parsedRecentTokens?.map((t) => t?.address);
-                                if (!recentTokensAddresses?.includes(token.address)) {
-                                    if (parsedRecentTokens.length >= 6) parsedRecentTokens.shift();
-                                    parsedRecentTokens = [...parsedRecentTokens,token];
-                                    writeLocalStorage('recent-tokens', JSON.stringify(parsedRecentTokens));
+                {#if token?.address && token?.chain_id==$selectedNetwork?.id}
+                    <li class="w-full">
+                        <div
+                            on:click={() => {
+                                try{
+                                    value = token;
+                                    showModal = false;
+                                    recentTokens = readLocalStorage('recent-tokens') || '[]';
+                                    parsedRecentTokens = JSON.parse(recentTokens) || [];
+                                    let recentTokensAddresses = parsedRecentTokens?.map((t) => t?.address);
+                                    if (!recentTokensAddresses?.includes(token.address)) {
+                                        if (parsedRecentTokens.length >= 6) parsedRecentTokens.shift();
+                                        parsedRecentTokens = [...parsedRecentTokens,token];
+                                        writeLocalStorage('recent-tokens', JSON.stringify(parsedRecentTokens));
+                                    }
+                                }catch(e){
+                                    console.error(e);
                                 }
-                            }catch(e){
-                                console.error(e);
-                            }
-                        }}
-                        on:keyup
-                        class="flex items-center cursor-pointer px-4 py-2.5 text-base font-bold text-gray-900 bg-transparent hover:bg-gray-50 group dark:hover:bg-zinc-800 dark:text-white"
-                        >
-                        <img src={token.image} alt="" class="h-6 w-6"/>
-                        <div class="ml-2 flex flex-col">
-                            <span class="flex-1 whitespace-nowrap">{token.name || '-'}</span>
-                            <span class="flex-1 whitespace-nowrap text-sm text-zinc-300 dark:text-zinc-500 font-normal">{token.symbol?.toUpperCase() || ''}</span>
+                            }}
+                            on:keyup
+                            class="flex items-center cursor-pointer px-4 py-2.5 text-base font-bold text-gray-900 bg-transparent hover:bg-gray-50 group dark:hover:bg-zinc-800 dark:text-white"
+                            >
+                            <img src={token.image} alt="" class="h-6 w-6"/>
+                            <div class="ml-2 flex flex-col">
+                                <span class="flex-1 whitespace-nowrap">{token.name || '-'}</span>
+                                <span class="flex-1 whitespace-nowrap text-sm text-zinc-300 dark:text-zinc-500 font-normal">{token.symbol?.toUpperCase() || ''}</span>
+                            </div>
                         </div>
-                    </div>
-                </li>
+                    </li>
+                {/if}
             {/each}
             {#if tokensToShow?.length == 0}
                 <li class="flex justify-center items-center h-40">

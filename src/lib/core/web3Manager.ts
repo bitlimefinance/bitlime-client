@@ -1,10 +1,12 @@
 import type { GetTransactionObject } from "$lib/interfaces";
 import Web3 from "web3";
 
-export const loadWeb3 = async () => {
-    if (window.ethereum) {
-        window.web3 = new Web3(window.ethereum);
-        window.ethereum.enable();
+export const loadWeb3 = async (rpc: string) => {
+    try {
+        let web3Instance = new Web3(rpc || window?.bl_rpc || 'https://rpc.ankr.com/eth');
+        window.web3 = web3Instance;
+    } catch (error) {
+        console.error(error);
     }
 }
 
@@ -17,13 +19,31 @@ export const getTransactionObject = async (args: GetTransactionObject) => {
     
     let txObj;
     try {
-        if (!window.web3) await loadWeb3();
+        if (!window.web3) await loadWeb3(window.bl_rpc);
         let contract = await loadContract(args.abi, args.address);
         txObj = contract.methods[args.methodName](...args.methodParams);
     } catch (error) {
         console.error(error);
     } finally {
         return txObj;
+    }
+}
+
+export const readSmartContract = async (args: {
+    abi: Array<any>,
+    address: string,
+    methodName: string,
+    methodParams: Array<any>,
+}) => {
+    let result;
+    try {
+        if (!window.web3) await loadWeb3(window.bl_rpc);
+        let contract = await loadContract(args.abi, args.address);
+        result = await contract.methods[args.methodName](...args.methodParams).call();
+    } catch (error) {
+        console.error(error);
+    } finally {
+        return result;
     }
 }
 
