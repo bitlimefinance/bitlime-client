@@ -1,9 +1,9 @@
 <script lang="ts">
+	import '../app.css';
 	import Nav from '$lib/components/nav.svelte';
 	import { connectMetamask } from '$lib/metamask/core';
 	import { showLoading, theme } from '$lib/stores/ui-theming';
 	import { onMount, tick } from 'svelte';
-	import '../app.css';
 	import { connected, init, selectedNetwork, setAccounts } from '$lib/stores/application';
 	import Spinner from '$lib/components/general/spinner.svelte';
 	import { loadWeb3 } from '$lib/core/web3Manager';
