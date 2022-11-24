@@ -20,8 +20,8 @@
     let inputA: HTMLInputElement;
     let inputB: HTMLInputElement;
 
-    let selectedTokenA: any = {};
-    let selectedTokenB: any = {};
+    export let selectedTokenA: any = {};
+    export let selectedTokenB: any = {};
 
     let selectedTokenADecimals: any;
     let selectedTokenBDecimals: any;
@@ -30,6 +30,7 @@
     let selectedTokenBBalance: any;
 
     let tokenNeedsAllowance: boolean = false;
+    let noBalance: boolean = false;
 
     let gettingData: boolean = false;
 
@@ -60,6 +61,32 @@
             // console.error(err);
             gettingData = false;
         }) 
+        refreshTimer = 10
+    }
+
+    const checkBalance = () =>{
+        if(!selectedTokenA?.address || selectedTokenA?.address == '') return;
+        gettingData = true;
+        balanceOf({
+            address: $accounts[0],
+            tokenAddress: selectedTokenA.address,
+        })
+        .then((res) => {
+            let balance = parseFloat(res);
+            selectedTokenABalance = balance;
+            if(res == 0 || res < inputAValue) {
+                noBalance = true;
+                gettingData = false;
+                return; 
+            }
+            noBalance = false;
+            gettingData = false;
+        })
+        .catch((err) => {
+            // console.error(err);
+            gettingData = false;
+        })
+        refreshTimer = 10
     }
 
     const checkAllowance = () => {
@@ -72,9 +99,12 @@
         .then((res) => {
             let balance = parseFloat(res);
             selectedTokenABalance = balance;
-            if(res == 0) {
-                return;
+            if(res == 0 || res < inputAValue) {
+                noBalance = true;
+                gettingData = false;
+                return; 
             }
+            noBalance = false;
             allowance({
                 address: $accounts[0],
                 tokenAddress: selectedTokenA.address,
@@ -96,8 +126,10 @@
             // console.error(err);
             gettingData = false;
         }) 
+        refreshTimer = 10
     }
 
+    $: inputAValue, checkBalance();
     $: selectedTokenA, checkAllowance();
     $: selectedTokenB, getTokenBalance(selectedTokenB?.address, (data) => {
         selectedTokenBBalance = parseInt(data);
@@ -123,8 +155,27 @@
         }
     })
 
+    let canUpdateTrashold: boolean = true;
+    const updateData = () =>{
+        if(!canUpdateTrashold) return;
+        canUpdateTrashold = false;
+        try { 
+            checkBalance();
+            getTokenBalance(selectedTokenB.address, (data) => {
+                selectedTokenBBalance = parseInt(data);
+                gettingData = false;
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setTimeout(() => {
+                canUpdateTrashold = true;
+            }, 2000);
+        }
+    }
+
     const onSwap = async () => {
-        if(!(selectedTokenA?.address && selectedTokenB.address)) return;
+        if(!(selectedTokenA?.address && selectedTokenB?.address && !noBalance && selectedTokenA?.address!=selectedTokenB?.address)) return;
         try {
             getTokenDecimals(selectedTokenA.address, (data) => {
                 selectedTokenADecimals = parseInt(data);
@@ -140,47 +191,73 @@
                 gettingData = false;
             });
             await sleep(1000);
-            if(gettingData || !selectedTokenADecimals || !selectedTokenBDecimals || tokenNeedsAllowance) return;
-            
+            if(gettingData || !selectedTokenADecimals || !selectedTokenBDecimals) return;
             if ($connected && $connected != _WALLETS.DISCONNECTED) {
-                gettingData = true;
-                if(!selectedTokenA?.address || !selectedTokenB?.address || !inputAValue || inputAValue==0) {
-                    if(!inputAValue || inputAValue==0) {
-                        inputA?.focus();
+                if(tokenNeedsAllowance){
+                    await getTransactionObject({
+                        abi: _contracts.erc20.abi,
+                        address: selectedTokenA.address,
+                        methodName: 'approve',
+                        methodParams: [
+                            _contracts.router.address,
+                            selectedTokenABalance+'000000000',
+                        ],
+                    })
+                    .then(async (data)=>{
+                        await sendTransactionMetamask({
+                            to: selectedTokenA.address,
+                            from: $accounts[0],
+                            value: null,
+                            data: data?.encodeABI(),
+                            chainId: null,
+                            gasPrice: null,
+                            gas: null,
+                            nonce: null
+                        });
+                    })
+                    .catch((err)=>{
+                        console.log(err);
+                    });
+                }else {
+                    gettingData = true;
+                    if(!selectedTokenA?.address || !selectedTokenB?.address || !inputAValue || inputAValue==0) {
+                        if(!inputAValue || inputAValue==0) {
+                            inputA?.focus();
+                            return;
+                        }
+                        window.alert('Please select tokens and enter amount');
                         return;
                     }
-                    window.alert('Please select tokens and enter amount');
-                    return;
-                }
 
-                await getTransactionObject({
-                    abi: _contracts.router.abi,
-                    address: _contracts.router.address,
-                    methodName: '0x05a1450d',
-                    methodParams: [
-                        (inputAValue*Math.pow(10,selectedTokenADecimals)), // amountIn
-                        0, // amountOutMin
-                        [selectedTokenA.address,selectedTokenB.address], // path
-                        $accounts[0], // to
-                        $latestBlock + 10, // deadline
-                        _contracts.address0 // feeTo
-                    ],
-                })
-                .then(async (data)=>{
-                    await sendTransactionMetamask({
-                        to: _contracts.router.address,
-                        from: $accounts[0],
-                        value: null,
-                        data: data?.encodeABI(),
-                        chainId: null,
-                        gasPrice: null,
-                        gas: null,
-                        nonce: null
+                    await getTransactionObject({
+                        abi: _contracts.router.abi,
+                        address: _contracts.router.address,
+                        methodName: '0x05a1450d',
+                        methodParams: [
+                            (inputAValue*Math.pow(10,selectedTokenADecimals)).toString(), // amountIn
+                            0, // amountOutMin
+                            [selectedTokenA.address,selectedTokenB.address], // path
+                            $accounts[0], // to
+                            $latestBlock + 10, // deadline
+                            _contracts.address0 // feeTo
+                        ],
+                    })
+                    .then(async (data)=>{
+                        await sendTransactionMetamask({
+                            to: _contracts.router.address,
+                            from: $accounts[0],
+                            value: null,
+                            data: data?.encodeABI(),
+                            chainId: null,
+                            gasPrice: null,
+                            gas: null,
+                            nonce: null
+                        });
+                    })
+                    .catch((err)=>{
+                        console.log(err);
                     });
-                })
-                .catch((err)=>{
-                    console.log(err);
-                });
+                }
             }else{
                 showConnenct.set(true);
             }
@@ -189,12 +266,15 @@
         } finally {
             gettingData = false;
         }
+        refreshTimer = 10
     }
 
     let switchHeight: number = 0;
     let switchWidthHalf: number = 0;
+    let switchTimeout: boolean = false;
     $: switchWidthHalf = parseFloat((switchHeight/2).toFixed(4))-2;
 
+    export let refreshTimer: number = 0;
     onMount(async () => {
         getTokensList().then((data) => {
             if (data?.results && data?.results.length > 0) tokensList.set(data?.results);
@@ -203,27 +283,60 @@
         getTokenDecimals(selectedTokenA?.address, (data)=>{selectedTokenADecimals = parseInt(data)});
         getTokenDecimals(selectedTokenB?.address, (data)=>{selectedTokenBDecimals = parseInt(data)});
         mounted = true;
+        setInterval(() => {
+            if(selectedTokenA?.address || selectedTokenB?.address){
+                if(refreshTimer>-1) refreshTimer--;
+                if(refreshTimer<=-1){
+                    if(gettingData) return;
+                    updateData();
+                }
+            }else{
+                refreshTimer = 0;
+            }
+        }, 1000);
     });
 </script>
 
-
-
 <div class="rounded-xl p-4 w-11/12 max-w-lg">
+    <div class="flex justify-between items-end mb-3">
+        <div class="text-zinc-900 dark:text-white font-medium text-2xl">
+            Swap
+        </div>
+        <div class="flex justify-end gap-3 h-fit w-fit">   
+            {#if selectedTokenA?.address || selectedTokenB?.address}
+                <svg on:click={()=>{updateData()}} on:keyup xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 cursor-pointer hover:opacity-70 text-zinc-900 dark:text-zinc-300 {gettingData?'animate-spin':''}">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+            {/if} 
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 cursor-pointer hover:opacity-70 text-zinc-900 dark:text-zinc-300">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>      
+        </div>
+    </div>
     <div class="flex flex-col">
         <SwapInput
             bind:input={inputA}
             bind:selectedToken={selectedTokenA}
             bind:balance={selectedTokenABalance}
             bind:decimals={selectedTokenADecimals}
+            selectedTokens={[selectedTokenA?.address || '', selectedTokenB?.address || '']}
             id="swap-input-a"
             bind:value={inputAValue}
             />
         <div class="z-10" bind:clientHeight={switchHeight} style="margin-top: -{switchWidthHalf}px; margin-bottom: -{switchWidthHalf}px;">
             <div
+                disabled={gettingData || switchTimeout}
                 on:click={()=>{
-                    let temp = selectedTokenA;
+                    if(gettingData || switchTimeout) return;
+                    switchTimeout = true;
+                    let tempToken = selectedTokenA;
+                    let tempInput = inputAValue;
                     selectedTokenA=selectedTokenB;
-                    selectedTokenB=temp;
+                    selectedTokenB=tempToken;
+                    inputAValue = inputBValue;
+                    inputBValue = tempInput;
+                    setTimeout(()=>{switchTimeout=false}, 800);
                 }}
                 on:keyup
                 class="bg-white dark:bg-zinc-800 cursor-pointer p-1.5 mx-auto w-fit border-4 border-emerald-100 dark:border-zinc-900 rounded-full"
@@ -239,14 +352,24 @@
             bind:selectedToken={selectedTokenB}
             bind:balance={selectedTokenBBalance}
             bind:decimals={selectedTokenBDecimals}
+            selectedTokens={[selectedTokenA?.address || '', selectedTokenB?.address || '']}
             id="swap-input-b"
             disabled
             bind:value={inputBValue}
             />
     </div>
-    <Button
-        showLoading={gettingData}
-        label="{$connected==_WALLETS.DISCONNECTED || !$connected?'CONNECT A WALLET':(tokenNeedsAllowance?'APPROVE '+(selectedTokenA.name?selectedTokenA.name:'TOKEN'):'PLACE ORDER')}"
-        additionalClassList="min-w-full justify-center font-normal text-base rounded-xl px-4 py-5 mt-4"
-        on:click={onSwap}/>
+    {#if noBalance || !selectedTokenA?.address || !selectedTokenB?.address}
+        <Button
+            showLoading={gettingData}
+            disabled
+            label="{noBalance?"You don't have enough balance":"Select tokens"}"
+            additionalClassList="min-w-full justify-center font-normal text-base rounded-xl px-4 py-5 mt-4 bg-gray-300 hover:bg-gray-300 dark:bg-zinc-800 hover:dark:bg-zinc-800"
+            />
+    {:else}
+        <Button
+            showLoading={gettingData}
+            label="{$connected==_WALLETS.DISCONNECTED || !$connected?'CONNECT A WALLET':(tokenNeedsAllowance?'APPROVE '+(selectedTokenA.name?selectedTokenA.name:'TOKEN'):'PLACE ORDER')}"
+            additionalClassList="min-w-full justify-center font-normal text-base rounded-xl px-4 py-5 mt-4"
+            on:click={onSwap}/>
+    {/if}
 </div>

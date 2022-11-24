@@ -4,7 +4,7 @@
 	import { showLoading, theme } from '$lib/stores/ui-theming';
 	import { onMount, tick } from 'svelte';
 	import '../app.css';
-	import { connected, selectedNetwork, setAccounts } from '$lib/stores/application';
+	import { connected, init, selectedNetwork, setAccounts } from '$lib/stores/application';
 	import Spinner from '$lib/components/general/spinner.svelte';
 	import { loadWeb3 } from '$lib/core/web3Manager';
 	import { writeLocalStorage } from '$lib/core/utils/localStorage';
@@ -45,6 +45,17 @@
 		};
 	});
 
+	let clickCount = 0;
+	const botGuard = () => {
+		clickCount++;
+		if (clickCount > 15) {
+			window.web3 = null;
+			mounted = false;
+			window.alert('Wait, you might be a bot. The page will reload after dismissing this alert.');
+			window.location.reload();
+		}
+	};
+
 	onMount(async () => {
 		try{
 			mounted = true;
@@ -54,19 +65,17 @@
 			await connectMetamask();
 			await tick();
 			setInterval(() => {
-				try {
-					setAccounts();
-				} catch (error) {
-					console.error(error)
-				};
-			}, 2000);
+				clickCount = 0;
+			}, 1000);
+			document.addEventListener('click', botGuard);
 		}catch(e){
 			console.error(e);
 		}finally{
-			showLoading.set(false);
+			init.set(true);
 		}
 	});
 </script>
+
 
 <div id="global-container" class="min-h-screen bg-emerald-100 bg-opacity-70 dark:bg-opacity-100 dark:bg-zinc-900">
 	{#if $showLoading}

@@ -8,6 +8,7 @@
 
     export let value: any;
     export let defaultToken: string = '';
+    export let selectedTokens: Array<any> = [];
 
     let searchInputFocused: boolean;
 
@@ -103,7 +104,7 @@
                 <p class="text-sm font-normal text-gray-500 dark:text-gray-400">Recent tokens</p>
                 <div class="grid grid-cols-3 gap-1 mt-2 {parsedRecentTokens&&parsedRecentTokens.length>0?'':'hidden'}">
                     {#each parsedRecentTokens as token}
-                        {#if token?.symbol && token?.chain_id==$selectedNetwork?.id}
+                        {#if !selectedTokens.includes(token?.address) && token?.symbol && token?.chain_id==$selectedNetwork?.id}
                             <div
                                 on:click={()=>{
                                     value = token;
@@ -134,7 +135,7 @@
             </div>
             <ul class="space-y-2 w-full h-80 min-h-80 max-h-80 overflow-auto border-t dark:border-zinc-800">
             {#each tokensToShow as token}
-                {#if token?.address && token?.chain_id==$selectedNetwork?.id}
+                {#if !selectedTokens.includes(token?.address) && token?.address && token?.chain_id==$selectedNetwork?.id}
                     <li class="w-full">
                         <div
                             on:click={() => {

@@ -12,6 +12,7 @@
     export let selectedToken: any = {};
     export let balance: any = 0;
     export let decimals: any = 18;
+    export let selectedTokens: Array<any> = [];
 
     export let input: HTMLInputElement;
     let inputIsFocused:boolean = false;
@@ -22,7 +23,7 @@
 
 <div id="{id}-container" class='bg-white dark:bg-zinc-800 rounded-xl p-3'>
     <div class="flex justify-between">
-        <TokenSelector bind:value={selectedToken} defaultToken={defaultToken}/>
+        <TokenSelector bind:value={selectedToken} selectedTokens={selectedTokens} defaultToken={defaultToken}/>
     </div>
     <Input
         bind:isFocused={inputIsFocused}
@@ -36,7 +37,7 @@
         />
         {#if $connected&&$connected!=_WALLETS.DISCONNECTED&&selectedToken?.address}
             <div class="opacity-50 text-sm font-light mb-3">
-                Balance: {(balance/(Math.pow(10, decimals)))||'0'} {selectedToken?.symbol?.toUpperCase()||''}
+                Balance: {(balance/(Math.pow(10, decimals)))||'0'}
             </div>
         {/if}
 </div>

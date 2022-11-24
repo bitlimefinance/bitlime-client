@@ -42,3 +42,5 @@ export const selectedNetwork = writable({});
 
 export const tokensList = writable([]);
 export const chainsList = writable([]);
+
+export const init = writable(false);
