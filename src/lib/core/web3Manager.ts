@@ -62,3 +62,10 @@ export const isConnected = async () => {
     }
     return connected;
 }
+
+export const getBalance = async (address: string) => {
+    let balance = 0;
+    if (!window.web3) await loadWeb3(window.bl_rpc);
+    balance = await window.web3.eth.getBalance(address);
+    return balance;
+}

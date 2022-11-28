@@ -9,6 +9,19 @@
     export let value: any;
     export let defaultToken: string = '';
     export let selectedTokens: Array<any> = [];
+    
+    let nativeCoin: any;
+
+    selectedNetwork.subscribe((value)=>{
+        nativeCoin= {
+                "is_native": true,
+                "image": value?.logo,
+                "name": value?.name,
+                "symbol": value?.currency_symbol,
+                "decimals": value?.decimals,
+                "chain_id": value?.id,
+            }
+    });
 
     let searchInputFocused: boolean;
 
@@ -70,9 +83,8 @@
     onMount(() => {
         recentTokens = readLocalStorage('recent-tokens') || '[]';
         parsedRecentTokens = JSON.parse(recentTokens);
-    })
+    });
 </script>
-
 
 <div class="flex space-x-1 items-center cursor-pointer bg-zinc-400 bg-opacity-10 w-fit rounded-lg p-2" on:click={() => showModal = true} on:keyup>
     <Button
@@ -134,6 +146,28 @@
                     />
             </div>
             <ul class="space-y-2 w-full h-80 min-h-80 max-h-80 overflow-auto border-t dark:border-zinc-800">
+                {#if !(selectedTokens?.includes('native'))}
+                    <li class="w-full">
+                        <div
+                            on:click={() => {
+                                try{
+                                    value = nativeCoin;
+                                    showModal = false;
+                                }catch(e){
+                                    console.error(e);
+                                }
+                            }}
+                            on:keyup
+                            class="flex items-center cursor-pointer px-4 py-2.5 text-base font-bold text-gray-900 bg-transparent hover:bg-gray-50 group dark:hover:bg-zinc-800 dark:text-white"
+                            >
+                            <img src={nativeCoin.image} alt="" class="h-6 w-6"/>
+                            <div class="ml-2 flex items-center justify-between w-full">
+                                <span class="flex-1 whitespace-nowrap">{nativeCoin.symbol || '-'}</span>
+                                <span class="w-fit text-xs bg-zinc-200 dark:bg-zinc-800 px-1 rounded-full text-zinc-500 dark:text-zinc-400 font-normal">Native coin</span>
+                            </div>
+                        </div>
+                    </li>
+                {/if}
             {#each tokensToShow as token}
                 {#if !selectedTokens.includes(token?.address) && token?.address && token?.chain_id==$selectedNetwork?.id}
                     <li class="w-full">

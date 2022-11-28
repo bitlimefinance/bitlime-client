@@ -4,7 +4,7 @@
 	import { tokens } from "$lib/core/contents/backups";
 	import { allowance, balanceOf, decimals } from "$lib/core/utils/erc20Utils";
 	import { sleep } from "$lib/core/utils/utilities";
-	import { getTransactionObject, readSmartContract } from "$lib/core/web3Manager";
+	import { getBalance, getTransactionObject, readSmartContract } from "$lib/core/web3Manager";
 	import { _WALLETS } from "$lib/globals";
 	import { sendTransactionMetamask } from "$lib/metamask/core";
 	import { accounts, connected, latestBlock, selectedNetwork, showConnenct, tokensList } from "$lib/stores/application";
@@ -37,31 +37,46 @@
     const getTokenDecimals = (address: string, callback: FunctionStringCallback) => {
         if(!address || address == '') return;
         gettingData = true;
-        decimals({tokenAddress: address})
-        .then((data) => {
-            callback(data);
-        })
-        .catch((err) => {
-            // console.error(err);
-            gettingData = false;
-        }) 
+        if(address == 'native') {
+            callback($selectedNetwork?.decimals);
+        }else{
+            decimals({tokenAddress: address})
+            .then((data) => {
+                callback(data);
+            })
+            .catch((err) => {
+                // console.error(err);
+                gettingData = false;
+            })
+        }
     }
 
     const getTokenBalance = (address: string, callback: FunctionStringCallback) => {
         if(!address || address == '') return;
         gettingData = true;
-        balanceOf({
-            address: $accounts[0],
-            tokenAddress: address,
-        })
-        .then((data) => {
-            callback(data);
-        })
-        .catch((err) => {
-            // console.error(err);
-            gettingData = false;
-        }) 
-        refreshTimer = 10
+        if(address == 'native') {
+            getBalance($accounts[0])
+            .then((data) => {
+                callback(data);
+            })
+            .catch((err) => {
+                // console.error(err);
+                gettingData = false;
+            })
+        }else{
+            balanceOf({
+                address: $accounts[0],
+                tokenAddress: address,
+            })
+            .then((data) => {
+                callback(data);
+            })
+            .catch((err) => {
+                // console.error(err);
+                gettingData = false;
+            }); 
+        }
+        refreshTimer = 10;
     }
 
     const checkBalance = () =>{
@@ -131,15 +146,15 @@
 
     $: inputAValue, checkBalance();
     $: selectedTokenA, checkAllowance();
-    $: selectedTokenB, getTokenBalance(selectedTokenB?.address, (data) => {
+    $: selectedTokenB, getTokenBalance(selectedTokenB?.address || 'native', (data) => {
         selectedTokenBBalance = parseInt(data);
         gettingData = false;
     });
-    $: selectedTokenA, getTokenDecimals(selectedTokenA?.address, (data) => {
+    $: selectedTokenA, getTokenDecimals(selectedTokenA?.address || 'native', (data) => {
         selectedTokenADecimals = parseInt(data);
         gettingData = false;
     });
-    $: selectedTokenB, getTokenDecimals(selectedTokenB?.address, (data) => {
+    $: selectedTokenB, getTokenDecimals(selectedTokenB?.address || 'native', (data) => {
         selectedTokenBDecimals = parseInt(data);
         gettingData = false;
     });
@@ -294,7 +309,7 @@
                 refreshTimer = 0;
             }
         }, 1000);
-    });
+    });    
 </script>
 
 <div class="rounded-xl p-4 w-11/12 max-w-lg">
@@ -303,7 +318,7 @@
             Swap
         </div>
         <div class="flex justify-end gap-3 h-fit w-fit">   
-            {#if selectedTokenA?.address || selectedTokenB?.address}
+            {#if selectedTokenA?.address || selectedTokenB?.address || selectedTokenA?.is_native || selectedTokenB?.is_native}
                 <svg on:click={()=>{updateData()}} on:keyup xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 cursor-pointer hover:opacity-70 text-zinc-900 dark:text-zinc-300 {gettingData?'animate-spin':''}">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                 </svg>
@@ -320,7 +335,7 @@
             bind:selectedToken={selectedTokenA}
             bind:balance={selectedTokenABalance}
             bind:decimals={selectedTokenADecimals}
-            selectedTokens={[selectedTokenA?.address || '', selectedTokenB?.address || '']}
+            selectedTokens={[selectedTokenA?.is_native?'native':selectedTokenA?.address || '', selectedTokenB?.is_native?'native':selectedTokenB?.address || '']}
             id="swap-input-a"
             bind:value={inputAValue}
             />
@@ -352,7 +367,7 @@
             bind:selectedToken={selectedTokenB}
             bind:balance={selectedTokenBBalance}
             bind:decimals={selectedTokenBDecimals}
-            selectedTokens={[selectedTokenA?.address || '', selectedTokenB?.address || '']}
+            selectedTokens={[selectedTokenA?.is_native?'native':selectedTokenA?.address || '', selectedTokenB?.is_native?'native':selectedTokenB?.address || '']}
             id="swap-input-b"
             disabled
             bind:value={inputBValue}
