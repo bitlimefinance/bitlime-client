@@ -2,6 +2,7 @@
 	import { _contracts } from "$lib/contractsReference";
 	import { getTokensList } from "$lib/core/contents/apis";
 	import { tokens } from "$lib/core/contents/backups";
+	import { swapExactTokensForTokens } from "$lib/core/utils/blUtils";
 	import { allowance, balanceOf, decimals } from "$lib/core/utils/erc20Utils";
 	import { sleep } from "$lib/core/utils/utilities";
 	import { getBalance, getTransactionObject, readSmartContract } from "$lib/core/web3Manager";
@@ -35,7 +36,7 @@
     let gettingData: boolean = false;
 
     const getTokenDecimals = (address: string, callback: FunctionStringCallback) => {
-        if(!address || address == '') return;
+        if(!address) return;
         gettingData = true;
         if(address == 'native') {
             callback($selectedNetwork?.decimals);
@@ -51,8 +52,8 @@
         }
     }
 
-    const getTokenBalance = (address: string, callback: FunctionStringCallback) => {
-        if(!address || address == '') return;
+    const getTokenBalance = (address: string, callback: FunctionStringCallback) => {        
+        if(!address) return;
         gettingData = true;
         if(address == 'native') {
             getBalance($accounts[0])
@@ -79,34 +80,34 @@
         refreshTimer = 10;
     }
 
-    const checkBalance = () =>{
-        if(!selectedTokenA?.address || selectedTokenA?.address == '') return;
+    const checkBalance = () =>{        
+        if(!(selectedTokenA?.address)) return;
         gettingData = true;
-        balanceOf({
-            address: $accounts[0],
-            tokenAddress: selectedTokenA.address,
-        })
-        .then((res) => {
-            let balance = parseFloat(res);
-            selectedTokenABalance = balance;
-            if(res == 0 || res < inputAValue) {
-                noBalance = true;
+        getTokenBalance(selectedTokenA?.address, (data) => {
+            try{
+                selectedTokenABalance = parseFloat(data);
+                if(selectedTokenABalance == 0 || selectedTokenABalance < (inputAValue*Math.pow(10, selectedTokenADecimals))) {
+                    noBalance = true;
+                    gettingData = false;
+                    return; 
+                }
+                noBalance = false;
                 gettingData = false;
-                return; 
+            }catch(err) {
+                console.error(err);
+                gettingData = false;
             }
-            noBalance = false;
-            gettingData = false;
-        })
-        .catch((err) => {
-            // console.error(err);
-            gettingData = false;
-        })
-        refreshTimer = 10
+        });
     }
 
     const checkAllowance = () => {
-        if(!selectedTokenA?.address || selectedTokenA?.address == '') return;
+        if(!(selectedTokenA?.address)) return;
         gettingData = true;
+        if(selectedTokenA?.address == 'native') {
+            tokenNeedsAllowance = false;
+            checkBalance();
+            return;
+        }
         balanceOf({
             address: $accounts[0],
             tokenAddress: selectedTokenA.address,
@@ -146,15 +147,15 @@
 
     $: inputAValue, checkBalance();
     $: selectedTokenA, checkAllowance();
-    $: selectedTokenB, getTokenBalance(selectedTokenB?.address || 'native', (data) => {
+    $: selectedTokenB, getTokenBalance(selectedTokenB?.address, (data) => {
         selectedTokenBBalance = parseInt(data);
         gettingData = false;
     });
-    $: selectedTokenA, getTokenDecimals(selectedTokenA?.address || 'native', (data) => {
+    $: selectedTokenA, getTokenDecimals(selectedTokenA?.address, (data) => {
         selectedTokenADecimals = parseInt(data);
         gettingData = false;
     });
-    $: selectedTokenB, getTokenDecimals(selectedTokenB?.address || 'native', (data) => {
+    $: selectedTokenB, getTokenDecimals(selectedTokenB?.address, (data) => {
         selectedTokenBDecimals = parseInt(data);
         gettingData = false;
     });
@@ -244,34 +245,26 @@
                         return;
                     }
 
-                    await getTransactionObject({
-                        abi: _contracts.router.abi,
-                        address: _contracts.router.address,
-                        methodName: '0x05a1450d',
-                        methodParams: [
-                            (inputAValue*Math.pow(10,selectedTokenADecimals)).toString(), // amountIn
-                            0, // amountOutMin
-                            [selectedTokenA.address,selectedTokenB.address], // path
-                            $accounts[0], // to
-                            $latestBlock + 10, // deadline
-                            _contracts.address0 // feeTo
-                        ],
+                    swapExactTokensForTokens({
+                        amount: inputAValue*Math.pow(10, selectedTokenADecimals),
+                        addressA: selectedTokenA?.address,
+                        addressB: selectedTokenB?.address,
+                        to: $accounts[0],
+                        deadline: null,
+                        slippage: null,
+                        callBack: async (data: any) => {
+                            await sendTransactionMetamask({
+                                to: _contracts.router.address,
+                                from: $accounts[0],
+                                value: null,
+                                data: data?.encodeABI(),
+                                chainId: null,
+                                gasPrice: null,
+                                gas: null,
+                                nonce: null
+                            });
+                        }
                     })
-                    .then(async (data)=>{
-                        await sendTransactionMetamask({
-                            to: _contracts.router.address,
-                            from: $accounts[0],
-                            value: null,
-                            data: data?.encodeABI(),
-                            chainId: null,
-                            gasPrice: null,
-                            gas: null,
-                            nonce: null
-                        });
-                    })
-                    .catch((err)=>{
-                        console.log(err);
-                    });
                 }
             }else{
                 showConnenct.set(true);
@@ -303,6 +296,7 @@
                 if(refreshTimer>-1) refreshTimer--;
                 if(refreshTimer<=-1){
                     if(gettingData) return;
+                    if(!selectedTokenA?.address && !selectedTokenB?.address) return;
                     updateData();
                 }
             }else{

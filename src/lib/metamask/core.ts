@@ -62,47 +62,6 @@ export const sendTransactionMetamask = async (params: TransactionParameters) => 
     }
 };
 
-
-export const swapExactTokensForTokens = async (args: {
-    amount: number,
-    decimals: number,
-    amountOutMin: number,
-    path: Array<string>,
-    to: string,
-    deadline: number,
-    affiliateAddress: string,
-}) => {
-    getTransactionObject({
-        abi: _contracts.router.abi,
-        address: _contracts.router.address,
-        methodName: '0x05a1450d',
-        methodParams: [
-            (args.amount*Math.pow(10,args.decimals)), // amountIn
-            args.amountOutMin, // amountOutMin
-            args.path, // path
-            args.to, // to
-            args.deadline, // deadline
-            args.affiliateAddress // affiliateAddress
-        ],
-    })
-    .then(async (data)=>{
-        await sendTransactionMetamask({
-            to: _contracts.router.address,
-            from: args.to,
-            value: null,
-            data: data?.encodeABI(),
-            chainId: null,
-            gasPrice: null,
-            gas: null,
-            nonce: null
-        });
-    })
-    .catch((err)=>{
-        console.log(err);
-    });
-}
-
-
 export const erc20Approve = async (args: {
     address: string,
     amount: number,

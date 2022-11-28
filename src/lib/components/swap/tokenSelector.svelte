@@ -20,6 +20,7 @@
                 "symbol": value?.currency_symbol,
                 "decimals": value?.decimals,
                 "chain_id": value?.id,
+                "address": "native",
             }
     });
 

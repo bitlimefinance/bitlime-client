@@ -15,8 +15,7 @@ export const loadContract = async (abi: any, address: string) => {
 }
 
 export const getTransactionObject = async (args: GetTransactionObject) => {
-    console.log(args);
-    
+    //console.log(args);
     let txObj;
     try {
         if (!window.web3) await loadWeb3(window.bl_rpc);
@@ -64,8 +63,12 @@ export const isConnected = async () => {
 }
 
 export const getBalance = async (address: string) => {
-    let balance = 0;
     if (!window.web3) await loadWeb3(window.bl_rpc);
-    balance = await window.web3.eth.getBalance(address);
-    return balance;
+    return await window.web3.eth.getBalance(address)
+    .then((data) => {
+        return data;
+    })
+    .catch((err) => {
+        console.error(err);
+    });
 }
