@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getChainsList } from "$lib/core/contents/apis";
-	import { chains } from "$lib/core/contents/backups";
+	import { chains } from "$lib/core/contents/fallbacks";
 	import { readLocalStorage } from "$lib/core/utils/localStorage";
 	import { getAddressPreview } from "$lib/core/web3Manager";
 	import { _themes, _WALLETS, _WALLETS_INFO } from "$lib/globals";

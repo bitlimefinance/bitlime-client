@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { _contracts } from "$lib/contractsReference";
 	import { getTokensList } from "$lib/core/contents/apis";
-	import { tokens } from "$lib/core/contents/backups";
+	import { tokens } from "$lib/core/contents/fallbacks";
 	import { swapExactTokensForTokens } from "$lib/core/utils/blUtils";
 	import { allowance, balanceOf, decimals } from "$lib/core/utils/erc20Utils";
 	import { sleep } from "$lib/core/utils/utilities";
