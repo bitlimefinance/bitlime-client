@@ -3,8 +3,8 @@ import Web3 from "web3";
 
 export const loadWeb3 = async (rpc: string) => {
     try {
-        let web3Instance = new Web3(rpc || window?.bl_rpc || 'https://rpc.ankr.com/eth');
-        window.web3 = web3Instance;
+        if(window.ethereum) window.web3 = new Web3(window.ethereum);
+        else window.web3 = new Web3(rpc || window?.bl_rpc || 'https://rpc.ankr.com/eth');
     } catch (error) {
         console.error(error);
     }
