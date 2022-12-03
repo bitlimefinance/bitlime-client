@@ -2,7 +2,7 @@
 	import { _contracts } from "$lib/contractsReference";
 	import { getTokensList } from "$lib/core/contents/apis";
 	import { tokens } from "$lib/core/contents/fallbacks";
-	import { swapExactTokensForTokens } from "$lib/core/utils/blUtils";
+	import { swapExactETHForTokens, swapExactTokensForTokens } from "$lib/core/utils/blUtils";
 	import { allowance, balanceOf, decimals } from "$lib/core/utils/erc20Utils";
 	import { sleep } from "$lib/core/utils/utilities";
 	import { getBalance, getTransactionObject, readSmartContract } from "$lib/core/web3Manager";
@@ -192,6 +192,26 @@
 
     const onSwap = async () => {
         if(!(selectedTokenA?.address && selectedTokenB?.address && !noBalance && selectedTokenA?.address!=selectedTokenB?.address)) return;
+        
+        if(selectedTokenA.address == 'native') swapExactETHForTokens({
+            to: $accounts[0],
+            amount: inputAValue,
+            address: selectedTokenB.address,
+            slippage: null,
+            deadline: null,
+            callBack: (data: any) => {
+                sendTransactionMetamask({
+                    to: _contracts.router.address,
+                    from: $accounts[0],
+                    value: null,
+                    data: data?.encodeABI(),
+                    chainId: null,
+                    gasPrice: null,
+                    gas: null,
+                    nonce: null
+                });
+            }
+        });
         try {
             getTokenDecimals(selectedTokenA.address, (data) => {
                 selectedTokenADecimals = parseInt(data);
