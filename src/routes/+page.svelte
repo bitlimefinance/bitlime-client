@@ -4,7 +4,7 @@
 	import Tooltip from "$lib/components/general/tooltip.svelte";
 	import Spinner from "$lib/components/general/spinner.svelte";
 	
-	let refreshTimer: number;
+	let refreshCounter: number;
 	let tokenA: any;
 	let tokenB: any;
 </script>
@@ -19,13 +19,13 @@
 		{#await import("$lib/components/swap/swap.svelte")}
 			<Spinner size='30'/>
 		{:then swapComponent}
-			<svelte:component this={swapComponent.default} bind:refreshTimer={refreshTimer} bind:selectedTokenA={tokenA} bind:selectedTokenB={tokenB}/>
+			<svelte:component this={swapComponent.default} bind:refreshCounter={refreshCounter} bind:selectedTokenA={tokenA} bind:selectedTokenB={tokenB}/>
 		{/await}
 	</div>
 	<div class="w-full flex justify-between">
 		<div class="text-xs text-emerald-200 font-medium dark:font-normal dark:text-zinc-700">
 			{#if tokenA?.address || tokenB?.address}
-				Updating in {refreshTimer}
+				Updating in {refreshCounter}
 			{/if}
 		</div>
 		

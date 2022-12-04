@@ -23,8 +23,8 @@ export const swapExactTokensForTokens = async (args: {
                 0, // amountOutMin
                 [args.addressA,args.addressB], // path
                 args.to || get(accounts)[0],// to
-                args.deadline || get(latestBlock) + 10, // deadline
-                _contracts.address0 // feeTo
+                (args.deadline || get(latestBlock) + 10).toString(), // deadline
+                _contracts.address0 // affiliateAddress
             ],
         })
         .then(async (data)=>{
@@ -41,9 +41,7 @@ export const swapExactTokensForTokens = async (args: {
 export const swapExactETHForTokens = async (args: {
     to: any,
     deadline: any,
-    amount: any,
     address: any,
-    slippage: any,
     callBack: Function
 }) => {
     try{
@@ -54,21 +52,16 @@ export const swapExactETHForTokens = async (args: {
             methodParams: [],
         })
         .then(async (wethAddress)=>{
-            console.log(wethAddress);
-            console.log(args.address);
-            console.log(args.amount);
-            
             await getTransactionObject({
                 abi: _contracts.router.abi,
                 address: _contracts.router.address,
                 methodName: 'swapExactETHForTokens', //0x344933be
                 methodParams: [
-                    args.amount.toString(), // amountIn
                     0, // amountOutMin
                     [wethAddress,args.address], // path
-                    args.to || get(accounts)[0],// to
-                    args.deadline || get(latestBlock) + 10, // deadline
-                    _contracts.address0 // feeTo
+                    args.to || get(accounts)[0], // to
+                    (args.deadline || get(latestBlock) + 10).toString(), // deadline
+                    _contracts.address0 // affiliateAddress
                 ],
             })
             .then(async (data)=>{

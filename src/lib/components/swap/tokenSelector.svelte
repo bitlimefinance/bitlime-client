@@ -4,12 +4,14 @@
 	import FullScreenContainer from "../general/fullScreenContainer.svelte";
 	import { selectedNetwork, tokensList } from "$lib/stores/application";
 	import { readLocalStorage, writeLocalStorage } from "$lib/core/utils/localStorage";
-	import { onMount } from "svelte";
+	import { createEventDispatcher, onMount } from "svelte";
 
     export let value: any;
     export let defaultToken: string = '';
     export let selectedTokens: Array<any> = [];
     
+    const dispatch = createEventDispatcher();
+
     let nativeCoin: any;
 
     selectedNetwork.subscribe((value)=>{
@@ -81,6 +83,20 @@
         parsedRecentTokens = JSON.parse(recentTokens);
     })
 
+    const onSelect = (token: any) => {
+        try{
+            if(selectedTokens.includes(token?.address)){
+                dispatch('switch');
+            } else {
+                value = token;
+            }
+        }catch(e){
+            console.error(e);
+        }finally{
+            showModal = false;
+        }
+    }
+
     onMount(() => {
         recentTokens = readLocalStorage('recent-tokens') || '[]';
         parsedRecentTokens = JSON.parse(recentTokens);
@@ -117,12 +133,9 @@
                 <p class="text-sm font-normal text-gray-500 dark:text-gray-400">Recent tokens</p>
                 <div class="grid grid-cols-3 gap-1 mt-2 {parsedRecentTokens&&parsedRecentTokens.length>0?'':'hidden'}">
                     {#each parsedRecentTokens as token}
-                        {#if !selectedTokens.includes(token?.address) && token?.symbol && token?.chain_id==$selectedNetwork?.id}
+                        {#if token?.symbol && token?.chain_id==$selectedNetwork?.id}
                             <div
-                                on:click={()=>{
-                                    value = token;
-                                    showModal = false;
-                                    }}
+                                on:click={()=>{onSelect(token)}}
                                 on:keyup
                                 class="flex justify-start items-center w-fit min-w-fit gap-2 cursor-pointer p-2 rounded-lg border dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                                 >
@@ -170,13 +183,12 @@
                     </li>
                 {/if}
             {#each tokensToShow as token}
-                {#if !selectedTokens.includes(token?.address) && token?.address && token?.chain_id==$selectedNetwork?.id}
+                {#if token?.address && token?.chain_id==$selectedNetwork?.id}
                     <li class="w-full">
                         <div
                             on:click={() => {
                                 try{
-                                    value = token;
-                                    showModal = false;
+                                    onSelect(token);
                                     recentTokens = readLocalStorage('recent-tokens') || '[]';
                                     parsedRecentTokens = JSON.parse(recentTokens) || [];
                                     let recentTokensAddresses = parsedRecentTokens?.map((t) => t?.address);

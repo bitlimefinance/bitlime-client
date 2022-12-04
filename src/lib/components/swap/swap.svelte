@@ -5,12 +5,13 @@
 	import { swapExactETHForTokens, swapExactTokensForTokens } from "$lib/core/utils/blUtils";
 	import { allowance, balanceOf, decimals } from "$lib/core/utils/erc20Utils";
 	import { sleep } from "$lib/core/utils/utilities";
-	import { getBalance, getTransactionObject, readSmartContract } from "$lib/core/web3Manager";
+	import { getBalance, getTransactionObject, noOfDecimalsToUnits, readSmartContract } from "$lib/core/web3Manager";
 	import { _WALLETS } from "$lib/globals";
 	import { sendTransactionMetamask } from "$lib/metamask/core";
 	import { accounts, connected, latestBlock, selectedNetwork, showConnenct, tokensList } from "$lib/stores/application";
 	import { onMount } from "svelte";
     import Button from "../general/button.svelte";
+	import Tooltip from "../general/tooltip.svelte";
 	import SwapInput from "./swapInput.svelte";
 
     let mounted: boolean = false;
@@ -34,10 +35,11 @@
     let noBalance: boolean = false;
 
     let gettingData: boolean = false;
+    let gettingQuote: boolean = false;
+    let switching: boolean = false;
 
-    const getTokenDecimals = (address: string, callback: FunctionStringCallback) => {
+    const getTokenDecimals = async (address: string, callback: FunctionStringCallback) => {
         if(!address) return;
-        gettingData = true;
         if(address == 'native') {
             callback($selectedNetwork?.decimals);
         }else{
@@ -46,23 +48,20 @@
                 callback(data);
             })
             .catch((err) => {
-                // console.error(err);
-                gettingData = false;
+                console.error(err);
             })
         }
     }
 
-    const getTokenBalance = (address: string, callback: FunctionStringCallback) => {        
+    const getTokenBalance = async (address: string, callback: FunctionStringCallback) => {        
         if(!address) return;
-        gettingData = true;
         if(address == 'native') {
             getBalance($accounts[0])
             .then((data) => {
                 callback(data);
             })
             .catch((err) => {
-                // console.error(err);
-                gettingData = false;
+                console.error(err);
             })
         }else{
             balanceOf({
@@ -73,34 +72,45 @@
                 callback(data);
             })
             .catch((err) => {
-                // console.error(err);
-                gettingData = false;
+                console.error(err);
             }); 
         }
-        refreshTimer = 10;
+        refreshCounter = refreshTimer;
     }
 
-    const checkBalance = () =>{        
-        if(!(selectedTokenA?.address)) return;
+    const checkBalance = async () =>{   
         gettingData = true;
-        getTokenBalance(selectedTokenA?.address, (data) => {
-            try{
-                selectedTokenABalance = parseFloat(data);
-                if(selectedTokenABalance == 0 || selectedTokenABalance < (inputAValue*Math.pow(10, selectedTokenADecimals))) {
-                    noBalance = true;
+        if(selectedTokenA?.address) {
+            getTokenBalance(selectedTokenA?.address, (data) => {
+                try{
+                    selectedTokenABalance = parseFloat(data);
+                    if(selectedTokenABalance == 0 || selectedTokenABalance < (inputAValue*Math.pow(10, selectedTokenADecimals))) {
+                        noBalance = true;
+                        return; 
+                    }
+                    noBalance = false;
+                }catch(err) {
+                    console.error(err);
+                }finally{
                     gettingData = false;
-                    return; 
                 }
-                noBalance = false;
-                gettingData = false;
-            }catch(err) {
-                console.error(err);
-                gettingData = false;
-            }
-        });
+            });
+        }
+        gettingData = true;
+        if(selectedTokenB?.address) {
+            getTokenBalance(selectedTokenB?.address, (data) => {
+                try{
+                    selectedTokenBBalance = parseFloat(data);
+                }catch(err) {
+                    console.error(err);
+                }finally{
+                    gettingData = false;
+                }
+            });
+        }
     }
 
-    const checkAllowance = () => {
+    const checkAllowance = async () => {
         if(!(selectedTokenA?.address)) return;
         gettingData = true;
         if(selectedTokenA?.address == 'native') {
@@ -117,7 +127,6 @@
             selectedTokenABalance = balance;
             if(res == 0 || res < inputAValue) {
                 noBalance = true;
-                gettingData = false;
                 return; 
             }
             noBalance = false;
@@ -133,32 +142,125 @@
                 else tokenNeedsAllowance = true;
             })
             .catch((err) => {
-                // console.error(err);
+                console.error(err);
+            })
+            .finally(() => {
                 gettingData = false;
             })
-
         })
         .catch((err) => {
-            // console.error(err);
+            console.error(err);
+        })
+        .finally(() => {
             gettingData = false;
-        }) 
-        refreshTimer = 10
+        })
+        refreshCounter = refreshTimer;
     }
 
-    $: inputAValue, checkBalance();
-    $: selectedTokenA, checkAllowance();
-    $: selectedTokenB, getTokenBalance(selectedTokenB?.address, (data) => {
-        selectedTokenBBalance = parseInt(data);
-        gettingData = false;
-    });
-    $: selectedTokenA, getTokenDecimals(selectedTokenA?.address, (data) => {
-        selectedTokenADecimals = parseInt(data);
-        gettingData = false;
-    });
-    $: selectedTokenB, getTokenDecimals(selectedTokenB?.address, (data) => {
-        selectedTokenBDecimals = parseInt(data);
-        gettingData = false;
-    });
+    const checkDecimals = async () => {
+        gettingData = true;
+        if(selectedTokenB?.address){
+            await getTokenDecimals(selectedTokenB?.address, (data) => {
+                selectedTokenBDecimals = parseInt(data);
+                gettingData = false;
+            });
+        }
+        gettingData = true;
+        if(selectedTokenA?.address){
+            await getTokenDecimals(selectedTokenA?.address, (data) => {
+                selectedTokenADecimals = parseInt(data);
+                gettingData = false;
+            });
+        }
+    }
+
+    const getQuote = async () => {
+        gettingData = true;
+        gettingQuote = true;
+        if(!(inputAValue && selectedTokenA?.address != 'native' && selectedTokenB?.address)) {
+            gettingData = false;
+            gettingQuote = false;
+            inputBValue = '';
+            return;
+        }
+        await readSmartContract({
+            address: _contracts.factory.address,
+            abi: _contracts.factory.abi,
+            methodName: 'getPair',
+            methodParams: [selectedTokenA.address, selectedTokenB.address],
+        })
+        .then((pairAddress) => {
+            if(pairAddress == '0x0000000000000000000000000000000000000000') {
+                inputBValue = 0;
+                return;
+            }
+            readSmartContract({
+                address: pairAddress,
+                abi: _contracts.pair.abi,
+                methodName: 'getReserves',
+                methodParams: [],
+            })
+            .then(async (reserves) => {
+                let amountToQuote = await window.web3.utils.toBN(await window?.web3.utils.toWei(inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals)));
+                if(!amountToQuote) throw new Error('Something went wrong converting amount');                
+                readSmartContract({
+                    address: _contracts.router.address,
+                    abi: _contracts.router.abi,
+                    methodName: 'quote',
+                    methodParams: [amountToQuote, reserves[0], reserves[1]]
+                })
+                .then((data) => {
+                    inputBValue = parseFloat(data.substring(0,selectedTokenBDecimals))/Math.pow(10, selectedTokenBDecimals);
+                })
+                .catch((err) => {
+                    console.error(err);
+                })
+                .finally(() => {
+                    gettingData = false;
+                    gettingQuote = false;
+                })
+            })
+            .catch((err) => {
+                console.error(err);
+            })
+            .finally(() => {
+                gettingData = false;
+                gettingQuote = false;
+            })
+        })
+        .catch((err) => {
+            console.error(err);
+        })
+        .finally(() => {
+            gettingData = false;
+            gettingQuote = false;
+        })
+    }
+
+    const onTokenChange = (doCheckAllowance: boolean = false) => {
+        if(switching) return;
+        gettingData = true;
+        try {
+            if(inputAValue && typeof inputAValue == 'number') inputAValue = parseFloat(inputAValue.toFixed(selectedTokenADecimals));
+            if(inputBValue && typeof inputBValue == 'number') inputBValue = parseFloat(inputBValue.toFixed(selectedTokenBDecimals));
+        } catch (error) {
+            console.warn(error);
+        }
+        try{
+            if(doCheckAllowance) checkAllowance();
+            else checkBalance();
+            checkDecimals();
+            getQuote();
+        }catch(err) {
+            console.error(err);
+        }finally{
+            gettingData = false;
+        }
+    }
+
+    $: inputAValue, onTokenChange();
+    $: selectedTokenA, onTokenChange(true);
+    $: selectedTokenB, onTokenChange();
 
     selectedNetwork.subscribe(() => {
         if(mounted) {
@@ -176,13 +278,9 @@
         if(!canUpdateTrashold) return;
         canUpdateTrashold = false;
         try { 
-            checkBalance();
-            getTokenBalance(selectedTokenB.address, (data) => {
-                selectedTokenBBalance = parseInt(data);
-                gettingData = false;
-            });
+            onTokenChange();
         } catch (error) {
-            console.error(error);
+            // console.error(error);
         } finally {
             setTimeout(() => {
                 canUpdateTrashold = true;
@@ -193,26 +291,28 @@
     const onSwap = async () => {
         if(!(selectedTokenA?.address && selectedTokenB?.address && !noBalance && selectedTokenA?.address!=selectedTokenB?.address)) return;
         
-        if(selectedTokenA.address == 'native') swapExactETHForTokens({
-            to: $accounts[0],
-            amount: inputAValue,
-            address: selectedTokenB.address,
-            slippage: null,
-            deadline: null,
-            callBack: (data: any) => {
-                sendTransactionMetamask({
-                    to: _contracts.router.address,
-                    from: $accounts[0],
-                    value: null,
-                    data: data?.encodeABI(),
-                    chainId: null,
-                    gasPrice: null,
-                    gas: null,
-                    nonce: null
-                });
-            }
-        });
         try {
+            if(selectedTokenA.address == 'native') {
+                let amountToWei = await window.web3.utils.toWei(inputAValue.toString(), 'ether');
+                swapExactETHForTokens({
+                    to: $accounts[0],
+                    address: selectedTokenB.address,
+                    deadline: null,
+                    callBack: async (data: any) => {
+                        sendTransactionMetamask({
+                            to: _contracts.router.address,
+                            from: $accounts[0],
+                            value: amountToWei,
+                            data: data?.encodeABI(),
+                            chainId: null,
+                            gasPrice: null,
+                            gas: null,
+                            nonce: null
+                        });
+                    }
+                });
+                return;
+            };
             getTokenDecimals(selectedTokenA.address, (data) => {
                 selectedTokenADecimals = parseInt(data);
                 gettingData = false;
@@ -294,7 +394,7 @@
         } finally {
             gettingData = false;
         }
-        refreshTimer = 10
+        refreshCounter = refreshTimer;
     }
 
     let switchHeight: number = 0;
@@ -302,25 +402,36 @@
     let switchTimeout: boolean = false;
     $: switchWidthHalf = parseFloat((switchHeight/2).toFixed(4))-2;
 
-    export let refreshTimer: number = 0;
+    const switchTokens = () => {
+        if(gettingData || switchTimeout) return;
+        switching = true;
+        switchTimeout = true;
+        let tempToken = selectedTokenA;
+        inputBValue = '';
+        selectedTokenA = selectedTokenB;
+        selectedTokenB = tempToken;
+        switching = false;
+        setTimeout(()=>{switchTimeout=false}, 800);
+    }
+
+    const refreshTimer: Readonly<number> = 30;
+    export let refreshCounter: number = refreshTimer;
     onMount(async () => {
         getTokensList().then((data) => {
             if (data?.results && data?.results.length > 0) tokensList.set(data?.results);
             else tokensList.set(tokens);
         })
-        getTokenDecimals(selectedTokenA?.address, (data)=>{selectedTokenADecimals = parseInt(data)});
-        getTokenDecimals(selectedTokenB?.address, (data)=>{selectedTokenBDecimals = parseInt(data)});
         mounted = true;
         setInterval(() => {
             if(selectedTokenA?.address || selectedTokenB?.address){
-                if(refreshTimer>-1) refreshTimer--;
-                if(refreshTimer<=-1){
+                if(refreshCounter>-1) refreshCounter--;
+                if(refreshCounter<=-1){
                     if(gettingData) return;
                     if(!selectedTokenA?.address && !selectedTokenB?.address) return;
                     updateData();
                 }
             }else{
-                refreshTimer = 0;
+                refreshCounter = refreshTimer;
             }
         }, 1000);
     });    
@@ -333,9 +444,11 @@
         </div>
         <div class="flex justify-end gap-3 h-fit w-fit">   
             {#if selectedTokenA?.address || selectedTokenB?.address || selectedTokenA?.is_native || selectedTokenB?.is_native}
-                <svg on:click={()=>{updateData()}} on:keyup xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 cursor-pointer hover:opacity-70 text-zinc-900 dark:text-zinc-300 {gettingData?'animate-spin':''}">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                </svg>
+                <Tooltip content="Refresh">
+                    <svg on:click={()=>{updateData()}} on:keyup xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 cursor-pointer hover:opacity-70 text-zinc-900 dark:text-zinc-300 {gettingData?'animate-spin':''}">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                </Tooltip>
             {/if} 
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 cursor-pointer hover:opacity-70 text-zinc-900 dark:text-zinc-300">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
@@ -352,19 +465,22 @@
             selectedTokens={[selectedTokenA?.is_native?'native':selectedTokenA?.address || '', selectedTokenB?.is_native?'native':selectedTokenB?.address || '']}
             id="swap-input-a"
             bind:value={inputAValue}
+            on:switch={switchTokens}
             />
         <div class="z-10" bind:clientHeight={switchHeight} style="margin-top: -{switchWidthHalf}px; margin-bottom: -{switchWidthHalf}px;">
             <div
                 disabled={gettingData || switchTimeout}
                 on:click={()=>{
                     if(gettingData || switchTimeout) return;
+                    switching = true;
                     switchTimeout = true;
                     let tempToken = selectedTokenA;
-                    let tempInput = inputAValue;
-                    selectedTokenA=selectedTokenB;
+                    let tempInput = inputBValue;
+                    selectedTokenA = selectedTokenB;
                     selectedTokenB=tempToken;
-                    inputAValue = inputBValue;
-                    inputBValue = tempInput;
+                    inputBValue = '';
+                    inputAValue = tempInput;
+                    switching = false;
                     setTimeout(()=>{switchTimeout=false}, 800);
                 }}
                 on:keyup
@@ -385,6 +501,8 @@
             id="swap-input-b"
             disabled
             bind:value={inputBValue}
+            loading={gettingQuote}
+            on:switch={switchTokens}
             />
     </div>
     {#if noBalance || !selectedTokenA?.address || !selectedTokenB?.address}
