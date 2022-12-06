@@ -27,6 +27,7 @@
 		"prettier-plugin-svelte": "^2.7.0",
 		"svelte": "^3.44.0",
 		"svelte-check": "^2.7.1",
+		"svelte-loading-spinners": "^0.3.4",
 		"svelte-preprocess": "^4.10.7",
 		"tailwindcss": "^3.2.4",
 		"tslib": "^2.3.1",
@@ -37,6 +38,10 @@
 	"dependencies": {
 		"flowbite": "^1.5.4",
 		"fuse.js": "^6.6.2",
+		"netlify-cli": "^12.2.8",
+		"node-sass": "^8.0.0",
+		"sass": "^1.56.1",
+		"web3": "^1.8.1",
 		"yarn": "^1.22.19"
 	}
 }
