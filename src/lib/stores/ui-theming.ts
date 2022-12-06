@@ -9,4 +9,4 @@ export const toggleTheme = () => {
     });
 };
 
-export const showLoading = writable(true);
+export const showLoading = writable(false);

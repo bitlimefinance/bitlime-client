@@ -6,6 +6,9 @@
 		<meta name="viewport" content="width=device-width" />
 		<style>
 			/* global styles */
+			* {
+				font-family: 'Montserrat', sans-serif;
+			}
 			.dark *:not(svg):not(path):not(span){
 				color: #fff;
 			}
@@ -14,6 +17,9 @@
 	</head>
 	<body class="dark">
 		<div style="display: contents">%sveltekit.body%</div>
-		<script src="https://unpkg.com/flowbite@1.5.4/dist/flowbite.js"></script>
+		<script src="https://unpkg.com/flowbite@1.5.4/dist/flowbite.js" async></script>
+		<link rel="preconnect" href="https://fonts.googleapis.com" async>
+		<link rel="preconnect" href="https://fonts.gstatic.com" async crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" async>
 	</body>
 </html>

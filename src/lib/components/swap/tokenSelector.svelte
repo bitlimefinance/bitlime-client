@@ -2,13 +2,29 @@
 	import Button from "../general/button.svelte";
     import Fuse from 'fuse.js'
 	import FullScreenContainer from "../general/fullScreenContainer.svelte";
-	import { tokensList } from "$lib/stores/application";
+	import { selectedNetwork, tokensList } from "$lib/stores/application";
 	import { readLocalStorage, writeLocalStorage } from "$lib/core/utils/localStorage";
-	import { onMount } from "svelte";
-	import Alert from "../general/alert.svelte";
+	import { createEventDispatcher, onMount } from "svelte";
 
     export let value: any;
     export let defaultToken: string = '';
+    export let selectedTokens: Array<any> = [];
+    
+    const dispatch = createEventDispatcher();
+
+    let nativeCoin: any;
+
+    selectedNetwork.subscribe((value)=>{
+        nativeCoin= {
+                "is_native": true,
+                "image": value?.logo,
+                "name": value?.name,
+                "symbol": value?.currency_symbol,
+                "decimals": value?.decimals,
+                "chain_id": value?.id,
+                "address": "native",
+            }
+    });
 
     let searchInputFocused: boolean;
 
@@ -62,12 +78,30 @@
         }
     })
 
-    onMount(() => {
+    selectedNetwork.subscribe(() => {
         recentTokens = readLocalStorage('recent-tokens') || '[]';
         parsedRecentTokens = JSON.parse(recentTokens);
     })
-</script>
 
+    const onSelect = (token: any) => {
+        try{
+            if(selectedTokens.includes(token?.address)){
+                dispatch('switch');
+            } else {
+                value = token;
+            }
+        }catch(e){
+            console.error(e);
+        }finally{
+            showModal = false;
+        }
+    }
+
+    onMount(() => {
+        recentTokens = readLocalStorage('recent-tokens') || '[]';
+        parsedRecentTokens = JSON.parse(recentTokens);
+    });
+</script>
 
 <div class="flex space-x-1 items-center cursor-pointer bg-zinc-400 bg-opacity-10 w-fit rounded-lg p-2" on:click={() => showModal = true} on:keyup>
     <Button
@@ -99,12 +133,9 @@
                 <p class="text-sm font-normal text-gray-500 dark:text-gray-400">Recent tokens</p>
                 <div class="grid grid-cols-3 gap-1 mt-2 {parsedRecentTokens&&parsedRecentTokens.length>0?'':'hidden'}">
                     {#each parsedRecentTokens as token}
-                        {#if token?.symbol}
+                        {#if token?.symbol && token?.chain_id==$selectedNetwork?.id}
                             <div
-                                on:click={()=>{
-                                    value = token;
-                                    showModal = false;
-                                    }}
+                                on:click={()=>{onSelect(token)}}
                                 on:keyup
                                 class="flex justify-start items-center w-fit min-w-fit gap-2 cursor-pointer p-2 rounded-lg border dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800"
                                 >
@@ -129,35 +160,58 @@
                     />
             </div>
             <ul class="space-y-2 w-full h-80 min-h-80 max-h-80 overflow-auto border-t dark:border-zinc-800">
-            {#each tokensToShow as token}
-                <li class="w-full">
-                    <div
-                        on:click={() => {
-                            try{
-                                value = token;
-                                showModal = false;
-                                recentTokens = readLocalStorage('recent-tokens') || '[]';
-                                parsedRecentTokens = JSON.parse(recentTokens) || [];
-                                let recentTokensAddresses = parsedRecentTokens?.map((t) => t?.address);
-                                if (!recentTokensAddresses?.includes(token.address)) {
-                                    if (parsedRecentTokens.length >= 6) parsedRecentTokens.shift();
-                                    parsedRecentTokens = [...parsedRecentTokens,token];
-                                    writeLocalStorage('recent-tokens', JSON.stringify(parsedRecentTokens));
+                {#if !(selectedTokens?.includes('native'))}
+                    <li class="w-full">
+                        <div
+                            on:click={() => {
+                                try{
+                                    value = nativeCoin;
+                                    showModal = false;
+                                }catch(e){
+                                    console.error(e);
                                 }
-                            }catch(e){
-                                console.error(e);
-                            }
-                        }}
-                        on:keyup
-                        class="flex items-center cursor-pointer px-4 py-2.5 text-base font-bold text-gray-900 bg-transparent hover:bg-gray-50 group dark:hover:bg-zinc-800 dark:text-white"
-                        >
-                        <img src={token.image} alt="" class="h-6 w-6"/>
-                        <div class="ml-2 flex flex-col">
-                            <span class="flex-1 whitespace-nowrap">{token.name || '-'}</span>
-                            <span class="flex-1 whitespace-nowrap text-sm text-zinc-300 dark:text-zinc-500 font-normal">{token.symbol?.toUpperCase() || ''}</span>
+                            }}
+                            on:keyup
+                            class="flex items-center cursor-pointer px-4 py-2.5 text-base font-bold text-gray-900 bg-transparent hover:bg-gray-50 group dark:hover:bg-zinc-800 dark:text-white"
+                            >
+                            <img src={nativeCoin.image} alt="" class="h-6 w-6"/>
+                            <div class="ml-2 flex items-center justify-between w-full">
+                                <span class="flex-1 whitespace-nowrap">{nativeCoin.symbol || '-'}</span>
+                                <span class="w-fit text-xs bg-zinc-200 dark:bg-zinc-800 px-1 rounded-full text-zinc-500 dark:text-zinc-400 font-normal">Native coin</span>
+                            </div>
                         </div>
-                    </div>
-                </li>
+                    </li>
+                {/if}
+            {#each tokensToShow as token}
+                {#if token?.address && token?.chain_id==$selectedNetwork?.id}
+                    <li class="w-full">
+                        <div
+                            on:click={() => {
+                                try{
+                                    onSelect(token);
+                                    recentTokens = readLocalStorage('recent-tokens') || '[]';
+                                    parsedRecentTokens = JSON.parse(recentTokens) || [];
+                                    let recentTokensAddresses = parsedRecentTokens?.map((t) => t?.address);
+                                    if (!recentTokensAddresses?.includes(token.address)) {
+                                        if (parsedRecentTokens.length >= 6) parsedRecentTokens.shift();
+                                        parsedRecentTokens = [...parsedRecentTokens,token];
+                                        writeLocalStorage('recent-tokens', JSON.stringify(parsedRecentTokens));
+                                    }
+                                }catch(e){
+                                    console.error(e);
+                                }
+                            }}
+                            on:keyup
+                            class="flex items-center cursor-pointer px-4 py-2.5 text-base font-bold text-gray-900 bg-transparent hover:bg-gray-50 group dark:hover:bg-zinc-800 dark:text-white"
+                            >
+                            <img src={token.image} alt="" class="h-6 w-6"/>
+                            <div class="ml-2 flex flex-col">
+                                <span class="flex-1 whitespace-nowrap">{token.name || '-'}</span>
+                                <span class="flex-1 whitespace-nowrap text-sm text-zinc-300 dark:text-zinc-500 font-normal">{token.symbol?.toUpperCase() || ''}</span>
+                            </div>
+                        </div>
+                    </li>
+                {/if}
             {/each}
             {#if tokensToShow?.length == 0}
                 <li class="flex justify-center items-center h-40">

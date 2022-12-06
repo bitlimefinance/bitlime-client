@@ -2,9 +2,11 @@
 	import { _themes } from "$lib/globals";
 	import { latestBlock } from "$lib/stores/application";
 	import Tooltip from "$lib/components/general/tooltip.svelte";
-	import Swap from "$lib/components/swap/swap.svelte";
-	import { getTokensList } from "$lib/core/contents/token-list";
-
+	import Spinner from "$lib/components/general/spinner.svelte";
+	
+	let refreshCounter: number;
+	let tokenA: any;
+	let tokenB: any;
 </script>
 
 <svelte:head>
@@ -14,11 +16,19 @@
 <main class="flex flex-col min-w-full px-5" style="height: 90vh;">
 	<div class="h-10"/>
 	<div class="flex justify-center my-auto w-full">
-
-		<Swap/>
-		
+		{#await import("$lib/components/swap/swap.svelte")}
+			<Spinner size='30'/>
+		{:then swapComponent}
+			<svelte:component this={swapComponent.default} bind:refreshCounter={refreshCounter} bind:selectedTokenA={tokenA} bind:selectedTokenB={tokenB}/>
+		{/await}
 	</div>
-	<div class="w-full flex justify-end">
+	<div class="w-full flex justify-between">
+		<div class="text-xs text-emerald-200 font-medium dark:font-normal dark:text-zinc-700">
+			{#if tokenA?.address || tokenB?.address}
+				Updating in {refreshCounter}
+			{/if}
+		</div>
+		
 		<Tooltip invertX invertY content="Latest block number">
 			<div class="flex items-center text-sm cursor-default">
 				<span class="text-green-500">
