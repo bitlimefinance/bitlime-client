@@ -1,5 +1,5 @@
 import { _contracts } from '$lib/contractsReference';
-import { getTransactionObject } from '$lib/core/web3Manager';
+import { getTransactionObject } from '$lib/core/sdk/web3';
 import { _WALLETS } from '$lib/globals';
 import type { TransactionParameters } from '$lib/interfaces';
 import { setConnected } from '$lib/stores/application';

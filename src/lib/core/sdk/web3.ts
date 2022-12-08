@@ -4,7 +4,7 @@ import Web3 from "web3";
 export const loadWeb3 = async (rpc: string) => {
     try {
         if(window.ethereum) window.web3 = new Web3(window.ethereum);
-        else window.web3 = new Web3(rpc || window?.bl_rpc || 'https://rpc.ankr.com/eth');
+        else window.web3 = new Web3(rpc || window.bl_rpc || 'https://rpc.ankr.com/eth');
     } catch (error) {
         console.error(error);
     }
@@ -49,17 +49,6 @@ export const readSmartContract = async (args: {
 export const getAddressPreview = (address: string) => {
     if (!address) return;
     return `${address.slice(0, 5)}...${address.slice(-4)}`;
-}
-
-export const isConnected = async () => {
-    let connected: boolean = false;
-    if (window?.ethereum) {
-        connected = Boolean(window.ethereum.isConnected());
-        if (!connected) return false;
-        let ethAccounts = await window.ethereum?.request({ method: 'eth_accounts' });
-        if(ethAccounts && ethAccounts.length && ethAccounts.length > 0) connected = true;
-    }
-    return connected;
 }
 
 export const getBalance = async (address: string) => {

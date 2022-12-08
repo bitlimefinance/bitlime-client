@@ -6,7 +6,7 @@
 	import { onMount, tick } from 'svelte';
 	import { connected, init, selectedNetwork, setAccounts } from '$lib/stores/application';
 	import Spinner from '$lib/components/general/spinner.svelte';
-	import { loadWeb3 } from '$lib/core/web3Manager';
+	import { loadWeb3 } from '$lib/core/sdk/web3';
 	import { writeLocalStorage } from '$lib/core/utils/localStorage';
 	import FullScreenContainer from '$lib/components/general/fullScreenContainer.svelte';
 	import { _themes, _WALLETS } from '$lib/globals';

@@ -2,7 +2,7 @@
 	import { getChainsList } from "$lib/core/contents/apis";
 	import { chains } from "$lib/core/contents/fallbacks";
 	import { readLocalStorage } from "$lib/core/utils/localStorage";
-	import { getAddressPreview } from "$lib/core/web3Manager";
+	import { getAddressPreview } from "$lib/core/sdk/web3";
 	import { _themes, _WALLETS, _WALLETS_INFO } from "$lib/globals";
 	import { accounts, chainsList, connected, selectedNetwork, selectNetwork, showConnenct } from "$lib/stores/application";
 	import { theme } from "$lib/stores/ui-theming";

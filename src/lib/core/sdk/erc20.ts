@@ -1,12 +1,14 @@
-import { _contracts } from "$lib/contractsReference";
-import { readSmartContract } from "../web3Manager";
 
+import { readSmartContract } from "./web3";
+import abi from "./abis/erc20.json" assert {type: 'json'};
+
+export const ERC20_ABI: Array<any> = abi;
 
 export const decimals = async (args: {
     tokenAddress: string,
 }) => {
     return await readSmartContract({
-        abi: _contracts.erc20.abi,
+        abi: abi,
         address: args.tokenAddress,
         methodName: 'decimals',
         methodParams: []
@@ -25,7 +27,7 @@ export const allowance = async (args: {
     tokenAddress: string,
 }) => {
     return await readSmartContract({
-        abi: _contracts.erc20.abi,
+        abi: abi,
         address: args.tokenAddress,
         methodName: 'allowance',
         methodParams: [args.address, args.spender]
@@ -43,7 +45,7 @@ export const balanceOf = async (args: {
     tokenAddress: string,
 }) => {
     return await readSmartContract({
-        abi: _contracts.erc20.abi,
+        abi: abi,
         address: args.tokenAddress,
         methodName: 'balanceOf',
         methodParams: [args.address]

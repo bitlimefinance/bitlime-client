@@ -2,8 +2,7 @@ import { metamaskAccounts } from "$lib/metamask/core";
 import { isIterable } from "$lib/core/utils/utilities";
 import { get, writable } from "svelte/store";
 import { _WALLETS } from "$lib/globals";
-import { isConnected } from "$lib/core/web3Manager";
-import { getTokensList } from "$lib/core/contents/apis";
+import { isConnected } from "$lib/core/sdk/eip-1193";
 
 export const connected = writable();
 export const setConnected = (wallet: _WALLETS) => {
