@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import Nav from '$lib/components/nav.svelte';
-	import { connectMetamask } from '$lib/core/sdk/eip-1193/metamask';
+	import { connectMetamask } from '$lib/core/sdk/wallets/metamask';
 	import { showLoading, theme } from '$lib/stores/ui-theming';
 	import { onMount, tick } from 'svelte';
 	import { connected, init, selectedNetwork, setAccounts } from '$lib/stores/application';
@@ -10,12 +10,14 @@
 	import { writeLocalStorage } from '$lib/core/utils/localStorage';
 	import FullScreenContainer from '$lib/components/general/fullScreenContainer.svelte';
 	import { _themes, _WALLETS } from '$lib/globals';
+	import { recordData } from '$lib/core/utils/analytics';
 	
 	let mounted = false;
 
 	const setBodyTheme = () => {
 		try{
-			if (document) {
+			if (mounted) {
+				writeLocalStorage('theme', $theme);
 				let body:HTMLBodyElement = document.getElementsByTagName('body')[0];
 				if (!body) return;
 				if ($theme && $theme == _themes.dark) {
@@ -29,14 +31,10 @@
 		}
 	};
 
-	theme.subscribe((value: string) => {
-		writeLocalStorage('theme', value);
-		setBodyTheme();
-	});
+	$: mounted, setBodyTheme();
+	theme.subscribe(setBodyTheme);
 
-	connected.subscribe(() => {
-		setAccounts();
-	});
+	connected.subscribe(setAccounts);
 
 	selectedNetwork.subscribe(async (value: any) => {
 		if (mounted) {
@@ -68,6 +66,7 @@
 				clickCount = 0;
 			}, 1000);
 			document.addEventListener('click', botGuard);
+			recordData('pageview', {});
 		}catch(e){
 			console.error(e);
 		}finally{

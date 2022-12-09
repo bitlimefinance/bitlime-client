@@ -1,8 +1,8 @@
-import UAParser from 'ua-parser-js';
+import { UAParser } from 'ua-parser-js'; 
 import { browser as isBrowser } from '$app/environment';
 import { readLocalStorage, readSessionStorage } from './localStorage';
 import { debug } from './debug';
-// import { env } from './env';
+import { Env, getEnv } from './env';
 
 const getBrowserDataRecorder = () => {
 	const uaParser = new UAParser(window.navigator.userAgent);
@@ -27,11 +27,10 @@ const getBrowserDataRecorder = () => {
 		inner_height: window?.innerHeight
 	};
 
-	const encoder = new TextEncoder();
-
-	return async (data: Record<string, unknown>, currentTimeStamp: string) => {
+	return async (event: string, data: Object) => {
 		const record = {
-			env:'',
+			env: getEnv(),
+			event: event,
 			session_id: 'sid-' + sessionId,
 			user_uuid: uuid,
 			user_ip: ip,
@@ -42,11 +41,11 @@ const getBrowserDataRecorder = () => {
 			// determine the url of any data-point captured in between navigation events by looking at
 			// the closest preceding navigation event.
 			url: window.location.href,
-			timestamp: currentTimeStamp ? currentTimeStamp : new Date().toISOString(),
+			timestamp: new Date(),
 			...data
 		};
 
-		//if (env != 'prod' && window && window.debugAnalytics) debug('ANALYTICS', record);
+		if (getEnv() == Env.LOCAL) debug('ANALYTICS', record);
 
 		return record;
 	};

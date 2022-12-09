@@ -38,7 +38,7 @@
 	"dependencies": {
 		"flowbite": "^1.5.4",
 		"fuse.js": "^6.6.2",
-		"netlify-cli": "^12.2.8",
+		"netlify-cli": "^12.2.9",
 		"node-sass": "^8.0.0",
 		"sass": "^1.56.1",
 		"ua-parser-js": "^1.0.32",
