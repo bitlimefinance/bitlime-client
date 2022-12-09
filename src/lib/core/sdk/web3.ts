@@ -1,4 +1,4 @@
-import type { GetTransactionObject } from "$lib/interfaces";
+import type { GetTransactionObject } from "$lib/core/descriptors/interfaces";
 import Web3 from "web3";
 
 export const loadWeb3 = async (rpc: string) => {

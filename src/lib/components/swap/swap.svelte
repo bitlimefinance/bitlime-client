@@ -7,7 +7,7 @@
 	import { sleep } from "$lib/core/utils/utilities";
 	import { getBalance, getTransactionObject, noOfDecimalsToUnits, readSmartContract } from "$lib/core/sdk/web3";
 	import { _WALLETS } from "$lib/globals";
-	import { sendTransactionMetamask } from "$lib/metamask/core";
+	import { sendTransaction } from "$lib/core/sdk/eip-1193";
 	import { accounts, connected, latestBlock, selectedNetwork, showConnenct, tokensList } from "$lib/stores/application";
 	import { onMount } from "svelte";
     import Button from "../general/button.svelte";
@@ -303,7 +303,7 @@
                     address: selectedTokenB.address,
                     deadline: null,
                     callBack: async (data: any) => {
-                        sendTransactionMetamask({
+                        sendTransaction({
                             to: ROUTER_ADDRESS,
                             from: $accounts[0],
                             value: amountToWei,
@@ -344,7 +344,7 @@
                         ],
                     })
                     .then(async (data)=>{
-                        await sendTransactionMetamask({
+                        await sendTransaction({
                             to: selectedTokenA.address,
                             from: $accounts[0],
                             value: null,
@@ -377,7 +377,7 @@
                         deadline: null,
                         slippage: null,
                         callBack: async (data: any) => {
-                            await sendTransactionMetamask({
+                            await sendTransaction({
                                 to: ROUTER_ADDRESS,
                                 from: $accounts[0],
                                 value: null,

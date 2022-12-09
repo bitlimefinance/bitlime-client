@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import Nav from '$lib/components/nav.svelte';
-	import { connectMetamask } from '$lib/metamask/core';
+	import { connectMetamask } from '$lib/core/sdk/eip-1193/metamask';
 	import { showLoading, theme } from '$lib/stores/ui-theming';
 	import { onMount, tick } from 'svelte';
 	import { connected, init, selectedNetwork, setAccounts } from '$lib/stores/application';
