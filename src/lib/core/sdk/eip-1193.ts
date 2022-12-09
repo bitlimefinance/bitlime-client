@@ -10,7 +10,9 @@ export function ethereumSupported(): boolean {
     return typeof window !== 'undefined' && typeof window.ethereum !== 'undefined';
   }
 
-export const isConnectedToRPC = ethereumSupported() && await window.ethereum.isConnected();
+export const isConnectedToRPC = async () => {
+    return ethereumSupported() && await window.ethereum.isConnected()
+};
 
 export const isConnectedToWallet = async () => {
     let connected: boolean = false;
