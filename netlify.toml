@@ -15,10 +15,18 @@
 
 [context.nightly]
     environment = { ENV = "nightly" }
+    [[headers]]
+    for = "/*"
+    [headers.values]
+        X-Robots-Tag = "noindex"
 # nightly branch
 
 [context.development]
     environment = { ENV = "dev" }
+    [[headers]]
+    for = "/*"
+    [headers.values]
+        X-Robots-Tag = "noindex"
 # development branch
 
 [context.dev]
