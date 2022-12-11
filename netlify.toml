@@ -8,7 +8,6 @@
 # these settings. You can define environment variables
 # here but we recommend using the Netlify UI for sensitive
 # values to keep them out of your source repository.
-
 [context.production]
     environment  = { ENV = "prod" }
 # Deploy generated from the production branch set in the UI under Site settings > Build & deploy > Continuous Deployment > Branches

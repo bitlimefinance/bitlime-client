@@ -1,3 +1,5 @@
+import { ENV } from "$lib/stores/envVars";
+import { get } from "svelte/store";
 
 
 export enum Env {
@@ -9,7 +11,7 @@ export enum Env {
 
 export const getEnv = () => {
 	try {
-		return process?.env?.ENV || Env.LOCAL;
+		return get(ENV) || Env.LOCAL;
 	} catch (error) {
 		return Env.LOCAL;
 	}

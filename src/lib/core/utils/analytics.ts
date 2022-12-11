@@ -3,13 +3,34 @@ import { browser as isBrowser } from '$app/environment';
 import { readLocalStorage, readSessionStorage } from './localStorage';
 import { debug } from './debug';
 import { Env, getEnv } from './env';
+import createLog from '../sdk/internal-api/createLog';
+import { get } from 'svelte/store';
+import { ipStore } from '$lib/stores/analytics';
 
 const getBrowserDataRecorder = () => {
 	const uaParser = new UAParser(window.navigator.userAgent);
 	const { browser, cpu, device, engine, os, ua } = uaParser.getResult();
 	const uuid = readLocalStorage('user_uuid', window.crypto.randomUUID());
 	const sessionId = readSessionStorage('session_id', window.crypto.randomUUID());
-    const ip='';
+    const getIp = async () => {
+		try{
+			let fromStore = get(ipStore);
+			if(fromStore) return fromStore;
+			else return (
+				await fetch('/api/getIp')
+				.then((res) => res.json())
+				.then((data) => {
+					return data.ip;
+				})
+				.catch((err) => {
+					console.error(err);
+					return '';
+				}));
+		} catch (e) {
+			console.error(e);
+			return '';
+		}
+	};
 
 	const userDevice = {
 		ua_string: ua,
@@ -33,7 +54,7 @@ const getBrowserDataRecorder = () => {
 			event: event,
 			session_id: 'sid-' + sessionId,
 			user_uuid: uuid,
-			user_ip: ip,
+			user_ip: await getIp(),
 			...userDevice,
 			// Unsure about any edge-cases where this wouldn't match the href from the
 			// Svelte router. Keep an eye out for data points in a user's timeline where the url
@@ -45,9 +66,7 @@ const getBrowserDataRecorder = () => {
 			...data
 		};
 
-		if (getEnv() == Env.LOCAL) debug('ANALYTICS', record);
-
-		return record;
+		createLog(record);
 	};
 };
 

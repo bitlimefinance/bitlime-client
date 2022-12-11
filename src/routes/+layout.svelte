@@ -11,7 +11,12 @@
 	import FullScreenContainer from '$lib/components/general/fullScreenContainer.svelte';
 	import { _themes, _WALLETS } from '$lib/globals';
 	import { recordData } from '$lib/core/utils/analytics';
-	
+	import { B_KEY, ENV } from '$lib/stores/envVars';
+	import { afterNavigate } from '$app/navigation';
+
+	/** @type {import('./$types').LayoutData} */
+	export let data: any;
+
 	let mounted = false;
 
 	const setBodyTheme = () => {
@@ -54,9 +59,18 @@
 		}
 	};
 
+	afterNavigate(async () => {
+		try{
+			recordData('PAGE_LOAD', {});
+		}catch(e){
+			console.error(e);
+		}
+	});
+
 	onMount(async () => {
 		try{
 			mounted = true;
+			ENV.set(data?.envVars?.ENV);
 			if(window) window.bl_rpc = $selectedNetwork?.rpc;
 			await loadWeb3($selectedNetwork?.rpc);
 			setBodyTheme();
@@ -66,7 +80,6 @@
 				clickCount = 0;
 			}, 1000);
 			document.addEventListener('click', botGuard);
-			recordData('pageview', {});
 		}catch(e){
 			console.error(e);
 		}finally{
