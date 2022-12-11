@@ -1,5 +1,5 @@
-import type { WalletInfo } from "./interfaces";
-import { connectMetamask } from "./metamask/core";
+import type { WalletInfo } from "./core/descriptors/interfaces";
+import { connectMetamask } from "./core/sdk/wallets/metamask";
 
 
 export const _themes: Readonly<{

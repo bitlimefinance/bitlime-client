@@ -1,8 +1,12 @@
-import { _contracts } from "$lib/contractsReference";
+
 import { accounts, latestBlock } from "$lib/stores/application";
 import { get } from "svelte/store";
-import { getTransactionObject, readSmartContract } from "../web3Manager";
+import { getTransactionObject, readSmartContract } from "./web3";
+import abi from "./abis/router.json" assert {type: 'json'};
 
+
+export const ROUTER_ADDRESS: Readonly<string> = '0xAcfA21F4f4148A0EAf0420D972E1a75c17ef9B4b';
+export const ROUTER_ABI: Array<any> = abi;
 
 export const swapExactTokensForTokens = async (args: {
     to: any,
@@ -15,8 +19,8 @@ export const swapExactTokensForTokens = async (args: {
 }) => {
     try{
         await getTransactionObject({
-            abi: _contracts.router.abi,
-            address: _contracts.router.address,
+            abi: ROUTER_ABI,
+            address: ROUTER_ADDRESS,
             methodName: 'swapExactTokensForTokens', //0x05a1450d
             methodParams: [
                 args.amount.toString(), // amountIn
@@ -46,15 +50,17 @@ export const swapExactETHForTokens = async (args: {
 }) => {
     try{
         readSmartContract({
-            abi: _contracts.router.abi,
-            address: _contracts.router.address,
+            abi: ROUTER_ABI,
+            address: ROUTER_ADDRESS,
             methodName: 'WETH',
             methodParams: [],
         })
         .then(async (wethAddress)=>{
+            console.log([wethAddress,args.address]);
+            
             await getTransactionObject({
-                abi: _contracts.router.abi,
-                address: _contracts.router.address,
+                abi: ROUTER_ABI,
+                address: ROUTER_ADDRESS,
                 methodName: 'swapExactETHForTokens', //0x344933be
                 methodParams: [
                     0, // amountOutMin

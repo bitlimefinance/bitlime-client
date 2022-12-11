@@ -1,9 +1,18 @@
-// import { PUBLIC_ENV } from '$env/static/public';
+import { ENV } from "$lib/stores/envVars";
+import { get } from "svelte/store";
 
-// export enum Env {
-// 	PROD = 'prod',
-// 	DEV = 'dev',
-// 	LOCAL = 'local'
-// }
 
-// export const env = Env[(PUBLIC_ENV as keyof typeof Env) || 'LOCAL'];
+export enum Env {
+	PROD = 'prod',
+    NIGHTLY = 'nightly',
+	DEV = 'dev',
+	LOCAL = 'local'
+}
+
+export const getEnv = () => {
+	try {
+		return get(ENV) || Env.LOCAL;
+	} catch (error) {
+		return Env.LOCAL;
+	}
+};

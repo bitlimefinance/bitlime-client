@@ -1,9 +1,8 @@
-import { metamaskAccounts } from "$lib/metamask/core";
+import { metamaskAccounts } from "$lib/core/sdk/eip-1193";
 import { isIterable } from "$lib/core/utils/utilities";
 import { get, writable } from "svelte/store";
 import { _WALLETS } from "$lib/globals";
-import { isConnected } from "$lib/core/web3Manager";
-import { getTokensList } from "$lib/core/contents/apis";
+import { isConnectedToWallet } from "$lib/core/sdk/eip-1193";
 
 export const connected = writable();
 export const setConnected = (wallet: _WALLETS) => {
@@ -13,7 +12,7 @@ export const setConnected = (wallet: _WALLETS) => {
 export const accounts = writable([]);
 export const setAccounts = async () => {
     try {
-        if (await isConnected()) {
+        if (await isConnectedToWallet()) {
             latestBlock.set(await window.ethereum.request({ method: 'eth_blockNumber' }));
             let allAccounts: Array<any> = [get(metamaskAccounts)];
             let list: any = [];

@@ -1,12 +1,15 @@
-import { _contracts } from "$lib/contractsReference";
-import { readSmartContract } from "../web3Manager";
 
+import { getTransactionObject, readSmartContract } from "./web3";
+import abi from "./abis/erc20.json" assert {type: 'json'};
+import { sendTransaction } from "./eip-1193";
+
+export const ERC20_ABI: Array<any> = abi;
 
 export const decimals = async (args: {
     tokenAddress: string,
 }) => {
     return await readSmartContract({
-        abi: _contracts.erc20.abi,
+        abi: abi,
         address: args.tokenAddress,
         methodName: 'decimals',
         methodParams: []
@@ -25,7 +28,7 @@ export const allowance = async (args: {
     tokenAddress: string,
 }) => {
     return await readSmartContract({
-        abi: _contracts.erc20.abi,
+        abi: abi,
         address: args.tokenAddress,
         methodName: 'allowance',
         methodParams: [args.address, args.spender]
@@ -43,7 +46,7 @@ export const balanceOf = async (args: {
     tokenAddress: string,
 }) => {
     return await readSmartContract({
-        abi: _contracts.erc20.abi,
+        abi: abi,
         address: args.tokenAddress,
         methodName: 'balanceOf',
         methodParams: [args.address]
@@ -55,3 +58,36 @@ export const balanceOf = async (args: {
         // console.error(err);
     });
 };
+
+export const approve = async (args: {
+    address: string,
+    amount: number,
+    tokenAddress: string,
+    decimals: number,
+    ownerAddress: string,
+}) => {
+    getTransactionObject({
+        abi: ERC20_ABI,
+        address: args.tokenAddress,
+        methodName: 'approve',
+        methodParams: [
+            args.address, // spender
+            (args.amount*Math.pow(10,args.decimals)), // amount
+        ],
+    })
+    .then(async (data)=>{
+        await sendTransaction({
+            to: args.tokenAddress,
+            from: args.ownerAddress,
+            value: null,
+            data: data?.encodeABI(),
+            chainId: null,
+            gasPrice: null,
+            gas: null,
+            nonce: null
+        });
+    })
+    .catch((err)=>{
+        console.log(err);
+    });
+}

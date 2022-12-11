@@ -1,4 +1,4 @@
-import type { _WALLETS } from "./globals";
+import type { _WALLETS } from "../../globals";
 
 export interface GetTransactionObject {
     abi: Array<any>,

@@ -2,17 +2,20 @@
 	import { _contracts } from "$lib/contractsReference";
 	import { getTokensList } from "$lib/core/contents/apis";
 	import { tokens } from "$lib/core/contents/fallbacks";
-	import { swapExactETHForTokens, swapExactTokensForTokens } from "$lib/core/utils/blUtils";
-	import { allowance, balanceOf, decimals } from "$lib/core/utils/erc20Utils";
+	import { ROUTER_ABI, ROUTER_ADDRESS, swapExactETHForTokens, swapExactTokensForTokens } from "$lib/core/sdk/router";
+	import { allowance, balanceOf, decimals, ERC20_ABI } from "$lib/core/sdk/erc20";
 	import { sleep } from "$lib/core/utils/utilities";
-	import { getBalance, getTransactionObject, noOfDecimalsToUnits, readSmartContract } from "$lib/core/web3Manager";
+	import { getBalance, getTransactionObject, noOfDecimalsToUnits, readSmartContract } from "$lib/core/sdk/web3";
 	import { _WALLETS } from "$lib/globals";
-	import { sendTransactionMetamask } from "$lib/metamask/core";
+	import { sendTransaction } from "$lib/core/sdk/eip-1193";
 	import { accounts, connected, latestBlock, selectedNetwork, showConnenct, tokensList } from "$lib/stores/application";
 	import { onMount } from "svelte";
     import Button from "../general/button.svelte";
 	import Tooltip from "../general/tooltip.svelte";
 	import SwapInput from "./swapInput.svelte";
+	import { FACTORY_ABI, FACTORY_ADDRESS } from "$lib/core/sdk/factory";
+	import { PAIR_ABI } from "$lib/core/sdk/pair";
+
 
     let mounted: boolean = false;
 
@@ -133,7 +136,7 @@
             allowance({
                 address: $accounts[0],
                 tokenAddress: selectedTokenA.address,
-                spender: _contracts.router.address,
+                spender: ROUTER_ADDRESS,
             })
             .then((data) => {
                 let allowanceAmount = parseFloat(data);
@@ -184,8 +187,8 @@
             return;
         }
         await readSmartContract({
-            address: _contracts.factory.address,
-            abi: _contracts.factory.abi,
+            address: FACTORY_ADDRESS,
+            abi: FACTORY_ABI,
             methodName: 'getPair',
             methodParams: [selectedTokenA.address, selectedTokenB.address],
         })
@@ -196,7 +199,7 @@
             }
             readSmartContract({
                 address: pairAddress,
-                abi: _contracts.pair.abi,
+                abi: PAIR_ABI,
                 methodName: 'getReserves',
                 methodParams: [],
             })
@@ -204,8 +207,8 @@
                 let amountToQuote = await window.web3.utils.toBN(await window?.web3.utils.toWei(inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals)));
                 if(!amountToQuote) throw new Error('Something went wrong converting amount');                
                 readSmartContract({
-                    address: _contracts.router.address,
-                    abi: _contracts.router.abi,
+                    address: ROUTER_ADDRESS,
+                    abi: ROUTER_ABI,
                     methodName: 'quote',
                     methodParams: [amountToQuote, reserves[0], reserves[1]]
                 })
@@ -293,14 +296,15 @@
         
         try {
             if(selectedTokenA.address == 'native') {
-                let amountToWei = await window.web3.utils.toWei(inputAValue.toString(), 'ether');
+                let amountToWei = await window.web3.utils.toWei(inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals));
+                
                 swapExactETHForTokens({
                     to: $accounts[0],
                     address: selectedTokenB.address,
                     deadline: null,
                     callBack: async (data: any) => {
-                        sendTransactionMetamask({
-                            to: _contracts.router.address,
+                        sendTransaction({
+                            to: ROUTER_ADDRESS,
                             from: $accounts[0],
                             value: amountToWei,
                             data: data?.encodeABI(),
@@ -331,16 +335,16 @@
             if ($connected && $connected != _WALLETS.DISCONNECTED) {
                 if(tokenNeedsAllowance){
                     await getTransactionObject({
-                        abi: _contracts.erc20.abi,
+                        abi: ERC20_ABI,
                         address: selectedTokenA.address,
                         methodName: 'approve',
                         methodParams: [
-                            _contracts.router.address,
+                            ROUTER_ADDRESS,
                             selectedTokenABalance+'000000000',
                         ],
                     })
                     .then(async (data)=>{
-                        await sendTransactionMetamask({
+                        await sendTransaction({
                             to: selectedTokenA.address,
                             from: $accounts[0],
                             value: null,
@@ -373,8 +377,8 @@
                         deadline: null,
                         slippage: null,
                         callBack: async (data: any) => {
-                            await sendTransactionMetamask({
-                                to: _contracts.router.address,
+                            await sendTransaction({
+                                to: ROUTER_ADDRESS,
                                 from: $accounts[0],
                                 value: null,
                                 data: data?.encodeABI(),

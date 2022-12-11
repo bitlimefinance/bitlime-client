@@ -1,21 +1,28 @@
 <script lang="ts">
 	import '../app.css';
 	import Nav from '$lib/components/nav.svelte';
-	import { connectMetamask } from '$lib/metamask/core';
+	import { connectMetamask } from '$lib/core/sdk/wallets/metamask';
 	import { showLoading, theme } from '$lib/stores/ui-theming';
 	import { onMount, tick } from 'svelte';
 	import { connected, init, selectedNetwork, setAccounts } from '$lib/stores/application';
 	import Spinner from '$lib/components/general/spinner.svelte';
-	import { loadWeb3 } from '$lib/core/web3Manager';
+	import { loadWeb3 } from '$lib/core/sdk/web3';
 	import { writeLocalStorage } from '$lib/core/utils/localStorage';
 	import FullScreenContainer from '$lib/components/general/fullScreenContainer.svelte';
 	import { _themes, _WALLETS } from '$lib/globals';
-	
+	import { recordData } from '$lib/core/utils/analytics';
+	import { B_KEY, ENV } from '$lib/stores/envVars';
+	import { afterNavigate } from '$app/navigation';
+
+	/** @type {import('./$types').LayoutData} */
+	export let data: any;
+
 	let mounted = false;
 
 	const setBodyTheme = () => {
 		try{
-			if (document) {
+			if (mounted) {
+				writeLocalStorage('theme', $theme);
 				let body:HTMLBodyElement = document.getElementsByTagName('body')[0];
 				if (!body) return;
 				if ($theme && $theme == _themes.dark) {
@@ -29,14 +36,10 @@
 		}
 	};
 
-	theme.subscribe((value: string) => {
-		writeLocalStorage('theme', value);
-		setBodyTheme();
-	});
+	$: mounted, setBodyTheme();
+	theme.subscribe(setBodyTheme);
 
-	connected.subscribe(() => {
-		setAccounts();
-	});
+	connected.subscribe(setAccounts);
 
 	selectedNetwork.subscribe(async (value: any) => {
 		if (mounted) {
@@ -56,9 +59,18 @@
 		}
 	};
 
+	afterNavigate(async () => {
+		try{
+			recordData('PAGE_LOAD', {});
+		}catch(e){
+			console.error(e);
+		}
+	});
+
 	onMount(async () => {
 		try{
 			mounted = true;
+			ENV.set(data?.envVars?.ENV);
 			if(window) window.bl_rpc = $selectedNetwork?.rpc;
 			await loadWeb3($selectedNetwork?.rpc);
 			setBodyTheme();
