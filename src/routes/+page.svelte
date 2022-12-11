@@ -3,6 +3,7 @@
 	import { latestBlock } from "$lib/stores/application";
 	import Tooltip from "$lib/components/general/tooltip.svelte";
 	import Spinner from "$lib/components/general/spinner.svelte";
+	import createLog from "$lib/core/sdk/internal-api/createLog";
 	
 	let refreshCounter: number;
 	let tokenA: any;
