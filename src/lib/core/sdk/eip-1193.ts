@@ -49,9 +49,10 @@ export const sendTransaction = async (params: TransactionParameters) => {
             method: 'eth_sendTransaction',
             params: [transactionParameters],
         });
-        console.log(txHash);
+        return txHash;
     } catch (error) {
-        console.error(error);      
+        console.error(error);
+        return null;  
     }
 };
 

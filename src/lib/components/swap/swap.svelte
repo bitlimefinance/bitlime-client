@@ -2,10 +2,10 @@
 	import { _contracts } from "$lib/contractsReference";
 	import { getTokensList } from "$lib/core/contents/apis";
 	import { tokens } from "$lib/core/contents/fallbacks";
-	import { ROUTER_ABI, ROUTER_ADDRESS, swapExactETHForTokens, swapExactTokensForTokens } from "$lib/core/sdk/router";
-	import { allowance, balanceOf, decimals, ERC20_ABI } from "$lib/core/sdk/erc20";
+	import { getAmountsOut, getNativeToken, methodsSwitcher, ROUTER_ABI, ROUTER_ADDRESS, swapExactETHForTokens, swapExactTokensForTokens } from "$lib/core/sdk/router";
+	import { allowance, approve, balanceOf, decimals, ERC20_ABI } from "$lib/core/sdk/erc20";
 	import { sleep } from "$lib/core/utils/utilities";
-	import { getBalance, getTransactionObject, noOfDecimalsToUnits, readSmartContract } from "$lib/core/sdk/web3";
+	import { ADDRESS_0, estimateGas, getBalance, getGasPrice, getTransactionObject, noOfDecimalsToUnits, readSmartContract } from "$lib/core/sdk/web3";
 	import { _WALLETS } from "$lib/globals";
 	import { sendTransaction } from "$lib/core/sdk/eip-1193";
 	import { accounts, connected, latestBlock, selectedNetwork, showConnenct, tokensList } from "$lib/stores/application";
@@ -18,6 +18,8 @@
 
 
     let mounted: boolean = false;
+
+    let nativeTokenAddress: string;
 
     let inputAValue: any;
     let inputBValue: any;
@@ -178,69 +180,38 @@
     }
 
     const getQuote = async () => {
-        gettingData = true;
-        gettingQuote = true;
-        if(!(inputAValue && selectedTokenA?.address != 'native' && selectedTokenB?.address)) {
-            gettingData = false;
-            gettingQuote = false;
-            inputBValue = '';
-            return;
-        }
-        await readSmartContract({
-            address: FACTORY_ADDRESS,
-            abi: FACTORY_ABI,
-            methodName: 'getPair',
-            methodParams: [selectedTokenA.address, selectedTokenB.address],
-        })
-        .then((pairAddress) => {
-            if(pairAddress == '0x0000000000000000000000000000000000000000') {
-                inputBValue = 0;
-                return;
-            }
-            readSmartContract({
-                address: pairAddress,
-                abi: PAIR_ABI,
-                methodName: 'getReserves',
-                methodParams: [],
-            })
-            .then(async (reserves) => {
-                let amountToQuote = await window.web3.utils.toBN(await window?.web3.utils.toWei(inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals)));
-                if(!amountToQuote) throw new Error('Something went wrong converting amount');                
-                readSmartContract({
-                    address: ROUTER_ADDRESS,
-                    abi: ROUTER_ABI,
-                    methodName: 'quote',
-                    methodParams: [amountToQuote, reserves[0], reserves[1]]
-                })
-                .then((data) => {
-                    inputBValue = parseFloat(data.substring(0,selectedTokenBDecimals))/Math.pow(10, selectedTokenBDecimals);
-                })
-                .catch((err) => {
-                    console.error(err);
-                })
-                .finally(() => {
-                    gettingData = false;
-                    gettingQuote = false;
-                })
-            })
-            .catch((err) => {
-                console.error(err);
-            })
-            .finally(() => {
+        try{
+            gettingData = true;
+            gettingQuote = true;
+            nativeTokenAddress = await getNativeToken();
+            if(!(inputAValue && selectedTokenA?.address && selectedTokenB?.address)) {
                 gettingData = false;
                 gettingQuote = false;
+                inputBValue = '';
+                return;
+            }
+            let _tokenA = selectedTokenA.address;
+            let _tokenB = selectedTokenB.address;
+            if(_tokenA == 'native') _tokenA = nativeTokenAddress;
+            if(_tokenB == 'native') _tokenB = nativeTokenAddress;
+            
+            let amountToQuote = await window.web3.utils.toBN(await window?.web3.utils.toWei(inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals)));
+            if(!amountToQuote) throw new Error('Something went wrong converting amount');
+            let quote = await getAmountsOut({
+                amountIn: amountToQuote,
+                tokenAddressA: _tokenA,
+                tokenAddressB: _tokenB
             })
-        })
-        .catch((err) => {
-            console.error(err);
-        })
-        .finally(() => {
+            inputBValue = await window?.web3.utils.fromWei(quote[1].toString(), noOfDecimalsToUnits(selectedTokenBDecimals));
+        }catch(err) {
+            // console.error(err);
+        }finally{
             gettingData = false;
             gettingQuote = false;
-        })
+        }
     }
 
-    const onTokenChange = (doCheckAllowance: boolean = false) => {
+    const fetchTokenInfo = (doCheckAllowance: boolean = false) => {
         if(switching) return;
         gettingData = true;
         try {
@@ -261,9 +232,9 @@
         }
     }
 
-    $: inputAValue, onTokenChange();
-    $: selectedTokenA, onTokenChange(true);
-    $: selectedTokenB, onTokenChange();
+    $: inputAValue, fetchTokenInfo();
+    $: selectedTokenA, fetchTokenInfo(true);
+    $: selectedTokenB, fetchTokenInfo();
 
     selectedNetwork.subscribe(() => {
         if(mounted) {
@@ -281,7 +252,7 @@
         if(!canUpdateTrashold) return;
         canUpdateTrashold = false;
         try { 
-            onTokenChange();
+            fetchTokenInfo();
         } catch (error) {
             // console.error(error);
         } finally {
@@ -293,70 +264,28 @@
 
     const onSwap = async () => {
         if(!(selectedTokenA?.address && selectedTokenB?.address && !noBalance && selectedTokenA?.address!=selectedTokenB?.address)) return;
-        
         try {
-            if(selectedTokenA.address == 'native') {
-                let amountToWei = await window.web3.utils.toWei(inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals));
-                
-                swapExactETHForTokens({
+            let amountToWei = '0';
+            if(selectedTokenA.address == 'native' || selectedTokenB.address == 'native') {
+                amountToWei = await window.web3.utils.toWei(await inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals));
+                await methodsSwitcher({
                     to: $accounts[0],
-                    address: selectedTokenB.address,
-                    deadline: null,
-                    callBack: async (data: any) => {
-                        sendTransaction({
-                            to: ROUTER_ADDRESS,
-                            from: $accounts[0],
-                            value: amountToWei,
-                            data: data?.encodeABI(),
-                            chainId: null,
-                            gasPrice: null,
-                            gas: null,
-                            nonce: null
-                        });
-                    }
+                    tokenAddressA: selectedTokenA.address,
+                    tokenAddressB: selectedTokenB.address,
+                    amountIn: amountToWei
                 });
                 return;
             };
-            getTokenDecimals(selectedTokenA.address, (data) => {
-                selectedTokenADecimals = parseInt(data);
-                gettingData = false;
-            });
-            getTokenDecimals(selectedTokenB.address, (data) => {
-                selectedTokenBDecimals = parseInt(data);
-                gettingData = false;
-            });
-            checkAllowance();
-            getTokenBalance(selectedTokenB.address, (data) => {
-                selectedTokenBBalance = parseInt(data);
-                gettingData = false;
-            });
+            fetchTokenInfo(true);
             await sleep(1000);
             if(gettingData || !selectedTokenADecimals || !selectedTokenBDecimals) return;
             if ($connected && $connected != _WALLETS.DISCONNECTED) {
                 if(tokenNeedsAllowance){
-                    await getTransactionObject({
-                        abi: ERC20_ABI,
-                        address: selectedTokenA.address,
-                        methodName: 'approve',
-                        methodParams: [
-                            ROUTER_ADDRESS,
-                            selectedTokenABalance+'000000000',
-                        ],
-                    })
-                    .then(async (data)=>{
-                        await sendTransaction({
-                            to: selectedTokenA.address,
-                            from: $accounts[0],
-                            value: null,
-                            data: data?.encodeABI(),
-                            chainId: null,
-                            gasPrice: null,
-                            gas: null,
-                            nonce: null
-                        });
-                    })
-                    .catch((err)=>{
-                        console.log(err);
+                    await approve({
+                        tokenAddress: selectedTokenA.address,
+                        spenderAddress: ROUTER_ADDRESS,
+                        amount: await window.web3.utils.toWei(await selectedTokenABalance.toString(), noOfDecimalsToUnits(selectedTokenADecimals))+'000000000',
+                        ownerAddress: $accounts[0]
                     });
                 }else {
                     gettingData = true;
@@ -368,27 +297,13 @@
                         window.alert('Please select tokens and enter amount');
                         return;
                     }
-
-                    swapExactTokensForTokens({
-                        amount: inputAValue*Math.pow(10, selectedTokenADecimals),
-                        addressA: selectedTokenA?.address,
-                        addressB: selectedTokenB?.address,
+                    amountToWei = await window.web3.utils.toWei(await inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals));
+                    await methodsSwitcher({
                         to: $accounts[0],
-                        deadline: null,
-                        slippage: null,
-                        callBack: async (data: any) => {
-                            await sendTransaction({
-                                to: ROUTER_ADDRESS,
-                                from: $accounts[0],
-                                value: null,
-                                data: data?.encodeABI(),
-                                chainId: null,
-                                gasPrice: null,
-                                gas: null,
-                                nonce: null
-                            });
-                        }
-                    })
+                        tokenAddressA: selectedTokenA.address,
+                        tokenAddressB: selectedTokenB.address,
+                        amountIn: amountToWei
+                    });
                 }
             }else{
                 showConnenct.set(true);
@@ -524,3 +439,4 @@
             on:click={onSwap}/>
     {/if}
 </div>
+

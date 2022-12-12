@@ -1,5 +1,8 @@
 import type { GetTransactionObject } from "$lib/core/descriptors/interfaces";
 import Web3 from "web3";
+import type { EtherUnit } from "../descriptors/types";
+
+export const ADDRESS_0: Readonly<string> = "0x0000000000000000000000000000000000000000";
 
 export const loadWeb3 = async (rpc: string) => {
     try {
@@ -64,7 +67,9 @@ export const getBalance = async (address: string) => {
 
 export const noOfDecimalsToUnits = (decimals: number = 18) => {
     let decimalsString = decimals.toString();
-    let unitMap: any = {
+    let unitMap: {
+        [key: string]: Array<EtherUnit>
+    } = {
         '0': ['noether'],
         '1': ['wei'],
         '3': ['kwei', 'Kwei', 'babbage', 'femtoether'],
@@ -78,6 +83,18 @@ export const noOfDecimalsToUnits = (decimals: number = 18) => {
         '27': ['gether'],
         '30': ['tether']
     };
+    
     if(unitMap[decimalsString]) return unitMap[decimalsString][0];
     else return null;
+}
+
+export const getGasPrice = async () => {
+    const gas = await window?.web3.eth.getGasPrice();
+    return await gas.toString();
+}
+
+
+export const estimateGas = async (txObj: any, from: string, value: string) => {
+    const gas = await txObj.estimateGas({ from: from, value: value, gasPrice: await getGasPrice() });
+    return await gas.toString();
 }

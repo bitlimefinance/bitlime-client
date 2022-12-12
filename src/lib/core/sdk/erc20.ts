@@ -1,5 +1,5 @@
 
-import { getTransactionObject, readSmartContract } from "./web3";
+import { getTransactionObject, noOfDecimalsToUnits, readSmartContract } from "./web3";
 import abi from "./abis/erc20.json" assert {type: 'json'};
 import { sendTransaction } from "./eip-1193";
 
@@ -60,10 +60,9 @@ export const balanceOf = async (args: {
 };
 
 export const approve = async (args: {
-    address: string,
-    amount: number,
+    spenderAddress: string,
+    amount: string,
     tokenAddress: string,
-    decimals: number,
     ownerAddress: string,
 }) => {
     getTransactionObject({
@@ -71,8 +70,8 @@ export const approve = async (args: {
         address: args.tokenAddress,
         methodName: 'approve',
         methodParams: [
-            args.address, // spender
-            (args.amount*Math.pow(10,args.decimals)), // amount
+            args.spenderAddress, // spender
+            args.amount, // amount
         ],
     })
     .then(async (data)=>{
