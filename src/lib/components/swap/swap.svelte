@@ -13,8 +13,7 @@
     import Button from "../general/button.svelte";
 	import Tooltip from "../general/tooltip.svelte";
 	import SwapInput from "./swapInput.svelte";
-	import { FACTORY_ABI, FACTORY_ADDRESS } from "$lib/core/sdk/factory";
-	import { PAIR_ABI } from "$lib/core/sdk/pair";
+	import { SyncLoader } from "svelte-loading-spinners";
 
 
     let mounted: boolean = false;
@@ -43,12 +42,17 @@
     let gettingQuote: boolean = false;
     let switching: boolean = false;
 
+    let swapRate: number = 0;
+    let gettingSwapRate: boolean = false;
+    let swapRatePath: any[] = [selectedTokenA, selectedTokenB];
+    let swapRatePathDecimals: any[] = [selectedTokenADecimals, selectedTokenBDecimals];
+
     const getTokenDecimals = async (address: string, callback: FunctionStringCallback) => {
         if(!address) return;
         if(address == 'native') {
-            callback($selectedNetwork?.decimals);
+            await callback($selectedNetwork?.decimals);
         }else{
-            decimals({tokenAddress: address})
+            await decimals({tokenAddress: address})
             .then((data) => {
                 callback(data);
             })
@@ -59,8 +63,8 @@
     }
 
     const getTokenBalance = async (address: string, callback: FunctionStringCallback) => {        
-        if(!address) return;
-        if(address == 'native') {
+        if(!address && $accounts?.length <= 0) return;
+        if(address === 'native' && $accounts[0]) {
             getBalance($accounts[0])
             .then((data) => {
                 callback(data);
@@ -86,7 +90,7 @@
     const checkBalance = async () =>{   
         gettingData = true;
         if(selectedTokenA?.address) {
-            getTokenBalance(selectedTokenA?.address, (data) => {
+            getTokenBalance(selectedTokenA?.address, async (data) => {
                 try{
                     selectedTokenABalance = parseFloat(data);
                     if(selectedTokenABalance == 0 || selectedTokenABalance < (inputAValue*Math.pow(10, selectedTokenADecimals))) {
@@ -103,7 +107,7 @@
         }
         gettingData = true;
         if(selectedTokenB?.address) {
-            getTokenBalance(selectedTokenB?.address, (data) => {
+            getTokenBalance(selectedTokenB?.address, async (data) => {
                 try{
                     selectedTokenBBalance = parseFloat(data);
                 }catch(err) {
@@ -179,39 +183,54 @@
         }
     }
 
-    const getQuote = async () => {
+    const getQuote = async (getSwapRate?: boolean) => {
+        let value = getSwapRate?1:inputAValue;
+        let unorderedPathDirty: boolean = !([selectedTokenA.address, selectedTokenB.address].includes(swapRatePath[0].address) && [selectedTokenA.address, selectedTokenB.address].includes(swapRatePath[1].address));
+        if(unorderedPathDirty) {
+            swapRatePath = [selectedTokenA, selectedTokenB];
+            swapRatePathDecimals = [selectedTokenADecimals, selectedTokenBDecimals];
+        }
+        
+        let path = getSwapRate?swapRatePath:[selectedTokenA, selectedTokenB];
+        let pathDecimals = getSwapRate?swapRatePathDecimals:[selectedTokenADecimals, selectedTokenBDecimals];
         try{
-            gettingData = true;
-            gettingQuote = true;
-            nativeTokenAddress = await getNativeToken();
-            if(!(inputAValue && selectedTokenA?.address && selectedTokenB?.address)) {
+            if(!getSwapRate) gettingData = true;
+            if(!getSwapRate) gettingQuote = true;
+            if(getSwapRate) gettingSwapRate = true;
+            if(!(value && path[0]?.address && path[1]?.address)) {
                 gettingData = false;
                 gettingQuote = false;
-                inputBValue = '';
+                if(!getSwapRate) inputBValue = '';
                 return;
             }
-            let _tokenA = selectedTokenA.address;
-            let _tokenB = selectedTokenB.address;
+            nativeTokenAddress = await getNativeToken();
+            let _tokenA = path[0].address;
+            let _tokenB = path[1].address;
             if(_tokenA == 'native') _tokenA = nativeTokenAddress;
             if(_tokenB == 'native') _tokenB = nativeTokenAddress;
             
-            let amountToQuote = await window.web3.utils.toBN(await window?.web3.utils.toWei(inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals)));
+
+            let amountToQuote = await window.web3.utils.toBN(await window?.web3.utils.toWei(value.toString(), noOfDecimalsToUnits(pathDecimals[0])));
             if(!amountToQuote) throw new Error('Something went wrong converting amount');
             let quote = await getAmountsOut({
                 amountIn: amountToQuote,
                 tokenAddressA: _tokenA,
                 tokenAddressB: _tokenB
             })
-            inputBValue = await window?.web3.utils.fromWei(quote[1].toString(), noOfDecimalsToUnits(selectedTokenBDecimals));
+            
+            let res = await window?.web3.utils.fromWei(quote[1].toString(), noOfDecimalsToUnits(pathDecimals[1]));
+            if(getSwapRate) swapRate = res;
+            else inputBValue = res;
         }catch(err) {
             // console.error(err);
         }finally{
             gettingData = false;
             gettingQuote = false;
+            gettingSwapRate = false;
         }
     }
 
-    const fetchTokenInfo = (doCheckAllowance: boolean = false) => {
+    const fetchTokenInfo = async (doCheckAllowance: boolean = false) => {
         if(switching) return;
         gettingData = true;
         try {
@@ -221,10 +240,11 @@
             console.warn(error);
         }
         try{
-            if(doCheckAllowance) checkAllowance();
-            else checkBalance();
-            checkDecimals();
-            getQuote();
+            if(doCheckAllowance) await checkAllowance();
+            else await checkBalance();
+            await checkDecimals();
+            await getQuote();
+            getQuote(true);
         }catch(err) {
             console.error(err);
         }finally{
@@ -321,18 +341,6 @@
     let switchTimeout: boolean = false;
     $: switchWidthHalf = parseFloat((switchHeight/2).toFixed(4))-2;
 
-    const switchTokens = () => {
-        if(gettingData || switchTimeout) return;
-        switching = true;
-        switchTimeout = true;
-        let tempToken = selectedTokenA;
-        inputBValue = '';
-        selectedTokenA = selectedTokenB;
-        selectedTokenB = tempToken;
-        switching = false;
-        setTimeout(()=>{switchTimeout=false}, 800);
-    }
-
     const refreshTimer: Readonly<number> = 30;
     export let refreshCounter: number = refreshTimer;
     onMount(async () => {
@@ -384,7 +392,6 @@
             selectedTokens={[selectedTokenA?.is_native?'native':selectedTokenA?.address || '', selectedTokenB?.is_native?'native':selectedTokenB?.address || '']}
             id="swap-input-a"
             bind:value={inputAValue}
-            on:switch={switchTokens}
             />
         <div class="z-10" bind:clientHeight={switchHeight} style="margin-top: -{switchWidthHalf}px; margin-bottom: -{switchWidthHalf}px;">
             <div
@@ -393,12 +400,11 @@
                     if(gettingData || switchTimeout) return;
                     switching = true;
                     switchTimeout = true;
+                    inputBValue = '';
+                    inputAValue = '';
                     let tempToken = selectedTokenA;
-                    let tempInput = inputBValue;
                     selectedTokenA = selectedTokenB;
                     selectedTokenB=tempToken;
-                    inputBValue = '';
-                    inputAValue = tempInput;
                     switching = false;
                     setTimeout(()=>{switchTimeout=false}, 800);
                 }}
@@ -421,22 +427,51 @@
             disabled
             bind:value={inputBValue}
             loading={gettingQuote}
-            on:switch={switchTokens}
             />
     </div>
+    {#if swapRatePath[0] && swapRatePath[1] && swapRate}
+        <div class="flex justify-center items-center gap-2 w-full text-sm text-gray-900 dark:text-zinc-200 mt-6 mb-3">
+            {#if !gettingSwapRate}
+                <div>
+                    1 {swapRatePath[0].symbol} = {swapRate} {swapRatePath[1].symbol}
+                </div>
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-5 h-5 bg-zinc-800 rounded-full p-1 cursor-pointer"
+                    on:click={()=>{
+                        swapRatePathDecimals = [swapRatePathDecimals[1], swapRatePathDecimals[0]];
+                        swapRatePath = [swapRatePath[1], swapRatePath[0]];
+                        getQuote(true);
+                    }}
+                    on:keyup
+                    >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                </svg>
+            {:else}
+                <SyncLoader size="20" color="#94949450" unit="px" duration="1s"/>
+            {/if}
+        </div>
+    {/if}
     {#if noBalance || !selectedTokenA?.address || !selectedTokenB?.address}
         <Button
             showLoading={gettingData}
             disabled
             label="{noBalance?"You don't have enough balance":"Select tokens"}"
             additionalClassList="min-w-full justify-center font-normal text-base rounded-xl px-4 py-5 mt-4 bg-gray-300 hover:bg-gray-300 dark:bg-zinc-800 hover:dark:bg-zinc-800"
+            style='min-height: 64px;'
             />
     {:else}
         <Button
             showLoading={gettingData}
             label="{$connected==_WALLETS.DISCONNECTED || !$connected?'CONNECT A WALLET':(tokenNeedsAllowance?'APPROVE '+(selectedTokenA.name?selectedTokenA.name:'TOKEN'):'PLACE ORDER')}"
             additionalClassList="min-w-full justify-center font-normal text-base rounded-xl px-4 py-5 mt-4"
-            on:click={onSwap}/>
+            style='min-height: 64px;'
+            on:click={onSwap}
+            />
     {/if}
 </div>
 

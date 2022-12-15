@@ -19,6 +19,7 @@
 	export let image: string = '';
 	export let imageRounded: boolean = false;
 	export let id: string='';
+	export let style: string = '';
 	// TODO: implement
 	// export let link: string = '';
 
@@ -95,6 +96,7 @@
 		class={`${classes} flex flex-row gap-2 items-center ${showLoading ? '' : 'w-full sm:w-auto'} ${additionalClassList}`}
 		on:click={onClick}
 		id={id&&id!=''? id : randomString(5)}
+		style={style}
 		>
 		{#if image && !showLoading}
 			<img src={image} alt="" class="h-5 w-5 {imageRounded?'rounded-md':''}"/>
