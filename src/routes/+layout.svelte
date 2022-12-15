@@ -100,7 +100,7 @@
 
 <div id="global-container" class="min-h-screen bg-emerald-100 bg-opacity-70 dark:bg-opacity-100 dark:bg-zinc-900">
 	{#if $showLoading}
-		<FullScreenContainer zIndex='1000' noBg>
+		<FullScreenContainer alwaysShow zIndex='1000' noBg>
 			<div class="flex flex-col space-y-4 p-0">
 				<div class="flex w-full justify-center">
 					<Spinner size={'70'} additionalClassList='text-gray-600 dark:text-gray-800'/>
