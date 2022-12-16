@@ -1,14 +1,16 @@
 <script lang="ts">
 	import Button from "../general/button.svelte";
 	import FullScreenContainer from "../general/fullScreenContainer.svelte";
-	import { selectedNetwork, tokensList } from "$lib/stores/application";
+	import { autoSlippage, deadlineStore, selectedNetwork, slippageStore, tokensList } from "$lib/stores/application";
 	import { readLocalStorage, writeLocalStorage } from "$lib/core/utils/localStorage";
 	import { createEventDispatcher, onMount } from "svelte";
 	import TooltipIcon from "../general/tooltipIcon.svelte";
 	import Input from "../general/input.svelte";
+	import Tooltip from "../general/tooltip.svelte";
     
     const dispatch = createEventDispatcher();
 
+    let mounted: boolean = false;
     let showModal: boolean = false;
 
     const onToggle = () => {
@@ -20,6 +22,36 @@
 
     let deadline: number;
     let deadlineInput: HTMLInputElement; 
+
+    const onUpdate = () => {
+        if(!mounted) return;
+        try{
+            slippageStore.set(slippage);
+            deadlineStore.set(deadline);
+            writeLocalStorage('autoSlippage', JSON.stringify($autoSlippage));
+            writeLocalStorage('slippage', JSON.stringify(slippage));
+            writeLocalStorage('deadline', JSON.stringify(deadline));
+        }catch(e){
+            /* do nothing */
+        }
+    }
+
+    autoSlippage.subscribe(() => {
+        onUpdate();
+    });
+
+    $: slippage, deadline, onUpdate();
+
+    onMount(() => {
+        try{
+            autoSlippage.set(JSON.parse(readLocalStorage('autoSlippage') || 'true'));
+            slippage = JSON.parse(readLocalStorage('slippage') || '0.1');
+            deadline = JSON.parse(readLocalStorage('deadline') || '20');
+        }catch(e){
+            console.error(e);
+        }
+        mounted = true;
+    });
 
 </script>
 
@@ -44,19 +76,49 @@
         <div class="mt-5 pb-5 border-b dark:border-zinc-700">
             <div class="flex justify-start gap-2 text-md font-medium mb-2">
                 Slippage tolerance
-                <TooltipIcon text="Lorem ipsum" />
+                <TooltipIcon text={`
+                    Your transaction will revert if the price changes unfavorably by more than this percentage.
+                    <br><br>
+                    Suggested Values:<br>
+                    - Mainstream Asset Pairs: 0.5%<br>
+                    - Stablecoin Pairs: 0.01%<br>
+                    - Others: 3% <span class="opacity-70 text-xs">(be careful when setting a high slippage tolerance)</span>
+                `}/>
             </div>
-            <div>
-                <Input bind:input={slippageInput} bind:value={slippage} type='number' placeholder={'3'}/>
+            <div class="flex justify-start items-center gap-2">
+                <Tooltip content="<div class='bg-zinc-600 w-fit py-1 px-2 rounded-md mb-1 text-xs'>{$autoSlippage?'ACTIVE':'NOT ACTIVE'}</div>Automatically set the slippage tolerance to the lowest possible value for the transaction to succeed.">
+                    <Button
+                        label={'Auto'}
+                        additionalClassList={'py-3 px-3'}
+                        theme={$autoSlippage ? 'primary' : 'tertiary'}
+                        on:click={() => {
+                            autoSlippage.set(!$autoSlippage);
+                            slippageInput.value = '';
+                        }}
+                    />
+                </Tooltip>
+                <Input
+                    bind:input={slippageInput}
+                    bind:value={slippage}
+                    type='number'
+                    placeholder={'0.1'}
+                    on:input={() => {
+                        if($autoSlippage) autoSlippage.set(false);
+                    }}
+                />
+                %
             </div>
         </div>
         <div class="my-5">
             <div class="flex justify-start gap-2 text-md font-medium mb-2">
                 Transaction deadline
-                <TooltipIcon text="Lorem ipsum" />
+                <TooltipIcon text={`
+                    Your transaction will revert if it is pending for more than this long.<br>
+                    <span class='font-light opacity-70'>Please note that a long period may lead to your trade executing at a subpar price, as the market price may change during that time.</span>
+                `}/>
             </div>
             <div class="flex justify-start items-center gap-2">
-                <Input bind:input={deadlineInput} bind:value={deadline} type='number' placeholder={'10'} additionalClasses='w-20'/> minutes
+                <Input bind:input={deadlineInput} bind:value={deadline} type='number' placeholder={'20'} additionalClasses='w-20'/> minutes
             </div>
         </div>
     </div>

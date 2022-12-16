@@ -14,6 +14,7 @@
 	import { B_KEY, ENV } from '$lib/stores/envVars';
 	import { afterNavigate } from '$app/navigation';
 	import { subscribeToEvent } from '$lib/core/sdk/eip-1193';
+	import Footer from '$lib/components/footer.svelte';
 
 	/** @type {import('./$types').LayoutData} */
 	export let data: any;
@@ -68,9 +69,12 @@
 		}
 	});
 
+	let nav: HTMLElement, footer: HTMLElement;
+	let mainHeight: number = 0;
 	onMount(async () => {
 		try{
 			mounted = true;
+			mainHeight = window.innerHeight - nav.offsetHeight - footer.offsetHeight;
 			subscribeToEvent('disconnect', () => {
 				window.alert('You have been disconnected from your wallet. The page will reload after dismissing this alert.');
 				accounts.set([]);
@@ -98,7 +102,7 @@
 </script>
 
 
-<div id="global-container" class="min-h-screen bg-emerald-100 bg-opacity-70 dark:bg-opacity-100 dark:bg-zinc-900">
+<div id="global-container" class="min-h-screen bg-emerald-100/[0.4] bg-opacity-70 dark:bg-opacity-100 dark:bg-zinc-900">
 	{#if $showLoading}
 		<FullScreenContainer alwaysShow zIndex='1000' noBg>
 			<div class="flex flex-col space-y-4 p-0">
@@ -109,6 +113,11 @@
 			</div>
 		</FullScreenContainer>
 	{/if}
-	<Nav/>
-	<slot />
+	<Nav bind:element={nav}/>
+	<main style="min-height: {mainHeight}px;">
+		<slot />
+	</main>
+	<span class="{mainHeight?'':'opacity-0'}">
+		<Footer bind:element={footer}/>
+	</span>
 </div>

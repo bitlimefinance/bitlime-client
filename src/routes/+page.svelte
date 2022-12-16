@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { _themes } from "$lib/globals";
-	import { latestBlock } from "$lib/stores/application";
 	import Tooltip from "$lib/components/general/tooltip.svelte";
 	import Spinner from "$lib/components/general/spinner.svelte";
-	import createLog from "$lib/core/sdk/internal-api/createLog";
+	import FullScreenContainer from "$lib/components/general/fullScreenContainer.svelte";
 	
-	let refreshCounter: number;
 	let tokenA: any;
 	let tokenB: any;
 </script>
@@ -14,29 +12,12 @@
 	<title>BitLime - The future of DeFi</title>
 </svelte:head>
 
-<main class="flex flex-col min-w-full px-5" style="height: 90vh;">
-	<div class="h-10"/>
-	<div class="flex justify-center my-auto w-full">
-		{#await import("$lib/components/swap/swap.svelte")}
+<div class="flex justify-center my-auto w-full" style="padding-top: min(200px, 8%);">
+	{#await import("$lib/components/swap/swap.svelte")}
+		<FullScreenContainer noBg alwaysShow>
 			<Spinner size='30'/>
-		{:then swapComponent}
-			<svelte:component this={swapComponent.default} bind:refreshCounter={refreshCounter} bind:selectedTokenA={tokenA} bind:selectedTokenB={tokenB}/>
-		{/await}
-	</div>
-	<div class="w-full flex justify-between">
-		<div class="text-xs text-emerald-200 font-medium dark:font-normal dark:text-zinc-700">
-			{#if tokenA?.address || tokenB?.address}
-				Updating in {refreshCounter}
-			{/if}
-		</div>
-		
-		<Tooltip invertX invertY content="Latest block number">
-			<div class="flex items-center text-sm cursor-default">
-				<span class="text-green-500">
-					{parseInt($latestBlock, 16)||'-'}
-				</span>
-				<div class="animate-pulse rounded-full h-2 w-2 ml-2 bg-green-500"></div>
-			</div>
-		</Tooltip>
-	</div>
-</main>
+		</FullScreenContainer>
+	{:then swapComponent}
+		<svelte:component this={swapComponent.default} bind:selectedTokenA={tokenA} bind:selectedTokenB={tokenB}/>
+	{/await}
+</div>
