@@ -366,7 +366,7 @@
 </script>
 
 <div class="rounded-xl p-4 w-11/12 max-w-lg">
-    <div class="flex justify-between items-end mb-3">
+    <div class="flex justify-between items-center mb-3">
         <div class="text-zinc-900 dark:text-white font-medium text-2xl">
             Swap
         </div>
@@ -395,27 +395,29 @@
             bind:value={inputAValue}
             />
         <div class="z-10" bind:clientHeight={switchHeight} style="margin-top: -{switchWidthHalf}px; margin-bottom: -{switchWidthHalf}px;">
-            <div
-                disabled={gettingData || switchTimeout}
-                on:click={()=>{
-                    if(gettingData || switchTimeout) return;
-                    switching = true;
-                    switchTimeout = true;
-                    inputBValue = '';
-                    inputAValue = '';
-                    let tempToken = selectedTokenA;
-                    selectedTokenA = selectedTokenB;
-                    selectedTokenB=tempToken;
-                    switching = false;
-                    setTimeout(()=>{switchTimeout=false}, 800);
-                }}
-                on:keyup
-                class="bg-white dark:bg-zinc-800 cursor-pointer p-1.5 mx-auto w-fit border-4 border-emerald-100 dark:border-zinc-900 rounded-full"
-                >
-                <svg class="w-5 h-5 dark:text-zinc-500 dark:hover:text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.4" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
-                </svg>
-            </div>              
+            <div class="rounded-full border border-zinc-400 w-fit mx-auto dark:border-0">
+                <div
+                    disabled={gettingData || switchTimeout}
+                    on:click={()=>{
+                        if(gettingData || switchTimeout) return;
+                        switching = true;
+                        switchTimeout = true;
+                        inputBValue = '';
+                        inputAValue = '';
+                        let tempToken = selectedTokenA;
+                        selectedTokenA = selectedTokenB;
+                        selectedTokenB=tempToken;
+                        switching = false;
+                        setTimeout(()=>{switchTimeout=false}, 800);
+                    }}
+                    on:keyup
+                    class="bg-zinc-50 dark:bg-zinc-800 cursor-pointer p-1.5 mx-auto w-fit border-4 border-zinc-50 dark:border-zinc-900 rounded-full"
+                    >
+                    <svg class="w-5 h-5 text-zinc-800 dark:text-zinc-500 dark:hover:text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.4" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
+                    </svg>
+                </div> 
+            </div>             
         </div>
 
         <SwapInput
@@ -442,7 +444,7 @@
                     viewBox="0 0 24 24"
                     stroke-width="1.5"
                     stroke="currentColor"
-                    class="w-5 h-5 bg-zinc-800 rounded-full p-1 cursor-pointer"
+                    class="w-5 h-5 bg-zinc-200 dark:bg-zinc-800 rounded-full p-1 cursor-pointer"
                     on:click={()=>{
                         swapRatePathDecimals = [swapRatePathDecimals[1], swapRatePathDecimals[0]];
                         swapRatePath = [swapRatePath[1], swapRatePath[0]];

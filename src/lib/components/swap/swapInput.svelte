@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { _WALLETS } from "$lib/globals";
-	import { connected } from "$lib/stores/application";
+	import { accounts, connected } from "$lib/stores/application";
 	import Input from "../general/input.svelte";
 	import TokenSelector from "./tokenSelector.svelte";
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import { createEventDispatcher } from "svelte";
-	import Tooltip from "../general/tooltip.svelte";
 
     export let id: string = 'swap-input';
     export let value: number;
@@ -25,11 +24,11 @@
 </script>
 
 
-<div id="{id}-container" class='bg-white dark:bg-zinc-800 rounded-xl p-3'>
+<div id="{id}-container" class='bg-zinc-50/[0.3] border border-zinc-400 dark:bg-zinc-800 dark:border-0 rounded-xl p-3'>
     <div class="flex justify-between">
         <TokenSelector bind:value={selectedToken} selectedTokens={selectedTokens} defaultToken={defaultToken} on:switch={()=>{dispatch('switch')}}/>
     </div>
-    <div  class="{selectedToken.address?'input-area-lg':'input-area-sm'}">
+    <div  class="{selectedToken.address && $accounts[0]?'input-area-lg':'input-area-sm'}">
         <div class={loading?'hidden':'block'}>
             <Input
                 bind:isFocused={inputIsFocused}
@@ -42,7 +41,7 @@
                 additionalClasses="text-4xl w-full bg-transparent border-0 px-0 py-3"
                 />
             {#if $connected&&$connected!=_WALLETS.DISCONNECTED&&selectedToken?.address}
-                <div class="opacity-50 text-sm font-light mb-3">
+                <div class="dark:opacity-50 text-sm font-light mb-3">
                     Balance: {(balance/(Math.pow(10, decimals)))||'0'}
                 </div>
             {/if}
