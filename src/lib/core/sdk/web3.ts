@@ -1,6 +1,9 @@
 import type { GetTransactionObject } from "$lib/core/descriptors/interfaces";
 import Web3 from "web3";
 import type { EtherUnit } from "../descriptors/types";
+import { writable } from "svelte/store";
+
+export const web3Ready_ = writable(false);
 
 export const ADDRESS_0: Readonly<string> = "0x0000000000000000000000000000000000000000";
 
@@ -8,6 +11,7 @@ export const loadWeb3 = async (rpc: string) => {
     try {
         if(window.ethereum) window.web3 = new Web3(window.ethereum);
         else window.web3 = new Web3(rpc || window.bl_rpc || 'https://rpc.ankr.com/eth');
+        web3Ready_.set(true);
     } catch (error) {
         console.error(error);
     }

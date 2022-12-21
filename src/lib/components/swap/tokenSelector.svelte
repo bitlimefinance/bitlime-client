@@ -103,7 +103,7 @@
     });
 </script>
 
-<div class="flex space-x-1 items-center cursor-pointer bg-zinc-400 bg-opacity-10 w-fit rounded-lg p-2" on:click={() => showModal = true} on:keyup>
+<div class="flex space-x-1 items-center cursor-pointer bg-zinc-400 border border-zinc-200 dark:border-transparent bg-opacity-10 w-fit rounded-lg p-2" on:click={() => showModal = true} on:keyup>
     <Button
         label="{value?.symbol?value.symbol:'Select a token'}"
         classList="bg-transparent font-semibold"

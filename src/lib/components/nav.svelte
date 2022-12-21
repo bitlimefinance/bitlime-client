@@ -37,7 +37,7 @@
         route: '/',
       },
       {
-        text: 'Pools',
+        text: 'Earn',
         route: '/pools',
       },
       {

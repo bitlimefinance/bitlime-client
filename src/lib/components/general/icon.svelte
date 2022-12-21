@@ -1,11 +1,12 @@
 
 <script lang="ts">
 	import type { Heroicon } from "$lib/icons/icons";
+    import "$lib/icons/icons.css";
 
-    export let solid: boolean = true;
+    export let outline: boolean = false;
     export let icon: Heroicon = 'face-smile'; // icons from https://heroicons.com/
 
-    $: path = '../../icons/' + (solid ? 'solid' : 'outline') + '/' + icon + '.svelte';
+    $: path = '../../icons/' + (outline ? 'outline' : 'solid') + '/' + icon + '.svelte';
 
 </script>
 
