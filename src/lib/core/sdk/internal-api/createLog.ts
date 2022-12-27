@@ -11,7 +11,7 @@ const createLog = async (record: Object, schema?: string) => {
   
 	
 	debug('Record', record);
-	debug('Response', await response.json())
+	debug('Response', response)
 	
 }
 

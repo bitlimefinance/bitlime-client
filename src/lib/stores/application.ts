@@ -43,3 +43,7 @@ export const tokensList = writable([]);
 export const chainsList = writable([]);
 
 export const init = writable(false);
+
+export const autoSlippage = writable(true);
+export const slippageStore = writable(0.1);
+export const deadlineStore = writable(20);

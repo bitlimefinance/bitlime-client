@@ -50,7 +50,7 @@ const getBrowserDataRecorder = () => {
 
 	return async (event: string, data: Object) => {
 		const record = {
-			env: getEnv(),
+			context: getEnv(),
 			event: event,
 			session_id: 'sid-' + sessionId,
 			user_uuid: uuid,
@@ -64,7 +64,7 @@ const getBrowserDataRecorder = () => {
 			url: window.location.href,
 			timestamp: new Date(),
 			...data
-		};
+		};		
 
 		createLog(record);
 	};

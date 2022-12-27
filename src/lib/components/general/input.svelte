@@ -12,6 +12,8 @@
 	export let isFocused: boolean = false;
 	export let input: HTMLElement;
 	export let placeholder: string = '';
+
+	let classList = 'rounded-lg block w-full dark:bg-transparent outline-0 ring-0 hover:outline-0 hover:ring-0 focus:outline-0 focus:border-green-600 focus:ring-0 ';
 </script>
 
 <div>
@@ -33,7 +35,7 @@
 			placeholder={placeholder}
 			id={id}
 			type='text'
-			class={'rounded-lg block w-full outline-0 ring-0 hover:outline-0 hover:ring-0 hover:border-0 focus:outline-0 focus:border-0 focus:ring-0 ' + additionalClasses}
+			class={classList + additionalClasses}
 			style={style}
 			/>
 	{:else if type == 'number'}
@@ -47,7 +49,7 @@
 			placeholder={placeholder}
 			id={id}
 			type='number'
-			class={'rounded-lg block w-full outline-0 ring-0 hover:outline-0 hover:ring-0 hover:border-0 focus:outline-0 focus:border-0 focus:ring-0 ' + additionalClasses}
+			class={classList + additionalClasses}
 			style={style}
 			/>
 	{:else if type == 'textarea'}
@@ -60,7 +62,7 @@
 			disabled={disabled}
 			placeholder={placeholder}
 			id={id}
-			class={'rounded-lg block w-full outline-0 ring-0 hover:outline-0 hover:ring-0 hover:border-0 focus:outline-0 focus:border-0 focus:ring-0 ' + additionalClasses}
+			class={classList + additionalClasses}
 			style={style}
 			/>
 	{/if}

@@ -11,6 +11,9 @@
 	import SelectNetwork from "./connect/selectNetwork.svelte";
 	import Button from "./general/button.svelte";
 	import ThemeToggle from "./themeToggle.svelte";
+	import { page } from "$app/stores";
+
+  export let element: HTMLElement;
 
   onMount(async () => {
         getChainsList().then((data) => {
@@ -27,14 +30,40 @@
           /* do nothing */
         }
     });
+
+    const LINKS: {text: string, route: string}[] = [
+      {
+        text: 'Swap',
+        route: '/',
+      },
+      {
+        text: 'Earn',
+        route: '/pools',
+      },
+      {
+        text: 'Farms',
+        route: '/farms',
+      },
+      {
+        text: 'Staking',
+        route: '/staking',
+      },
+      {
+        text: 'Docs',
+        route: 'https://docs.bitlime.io',
+      }
+    ];
 </script>
 
-<nav class="flex justify-between items-center bg-transparent px-5 py-4">
-    <div>
-        <a href="/" class="flex justify-start items-center btn btn-ghost normal-case text-lg">
-            <img src="/assets/bl-logos/{$theme==_themes.dark?'logo.png':'logo-black.png'}" alt="logo" class="h-8 mr-1" />
-            <span class="font-medium dark:font-normal text-xl dark:text-emerald-500">BitLime</span>
+<nav class="flex justify-between items-center bg-transparent px-5 py-4" bind:this={element}>
+    <div class="flex justify-start items-center">
+        <a href="/" class="flex justify-start items-center btn btn-ghost normal-case text-lg mr-2">
+            <img src="/assets/bl-logos/{$theme==_themes.dark?'logo-bold.png':'logo-bold.png'}" alt="logo" class="h-8 mr-1" />
+            <span class="font-medium dark:font-normal text-xl dark:text-emerald-500 sr-only">BitLime</span>
         </a>
+        {#each LINKS as link}
+          <a href={link.route} class="btn btn-ghost normal-case font-medium hover:bg-zinc-600/[0.2] rounded-md py-1 px-2 text-md dark:text-zinc-200">{link.text}</a>
+        {/each}
     </div>
     <div class="flex justify-end items-center gap-3">
       <ThemeToggle/>

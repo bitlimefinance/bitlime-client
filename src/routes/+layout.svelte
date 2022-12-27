@@ -2,17 +2,19 @@
 	import '../app.css';
 	import Nav from '$lib/components/nav.svelte';
 	import { connectMetamask } from '$lib/core/sdk/wallets/metamask';
-	import { showLoading, theme } from '$lib/stores/ui-theming';
+	import { mainHeight_, showLoading, theme } from '$lib/stores/ui-theming';
 	import { onMount, tick } from 'svelte';
-	import { connected, init, selectedNetwork, setAccounts } from '$lib/stores/application';
+	import { accounts, connected, init, selectedNetwork, setAccounts } from '$lib/stores/application';
 	import Spinner from '$lib/components/general/spinner.svelte';
 	import { loadWeb3 } from '$lib/core/sdk/web3';
 	import { writeLocalStorage } from '$lib/core/utils/localStorage';
 	import FullScreenContainer from '$lib/components/general/fullScreenContainer.svelte';
 	import { _themes, _WALLETS } from '$lib/globals';
 	import { recordData } from '$lib/core/utils/analytics';
-	import { B_KEY, ENV } from '$lib/stores/envVars';
+	import { ENV } from '$lib/stores/envVars';
 	import { afterNavigate } from '$app/navigation';
+	import { subscribeToEvent } from '$lib/core/sdk/eip-1193';
+	import Footer from '$lib/components/footer.svelte';
 
 	/** @type {import('./$types').LayoutData} */
 	export let data: any;
@@ -67,10 +69,23 @@
 		}
 	});
 
+	let nav: HTMLElement, footer: HTMLElement;
+	let mainHeight: number = 0;
 	onMount(async () => {
 		try{
 			mounted = true;
+			mainHeight = window.innerHeight - nav.offsetHeight - footer.offsetHeight;
+			mainHeight_.set(mainHeight);
+			subscribeToEvent('disconnect', () => {
+				window.alert('You have been disconnected from your wallet. The page will reload after dismissing this alert.');
+				accounts.set([]);
+			});
+			subscribeToEvent('connect', () => {
+				window.alert('You have been disconnected from your wallet. The page will reload after dismissing this alert.');
+				accounts.set([]);
+			});
 			ENV.set(data?.envVars?.ENV);
+			
 			if(window) window.bl_rpc = $selectedNetwork?.rpc;
 			await loadWeb3($selectedNetwork?.rpc);
 			setBodyTheme();
@@ -89,9 +104,9 @@
 </script>
 
 
-<div id="global-container" class="min-h-screen bg-emerald-100 bg-opacity-70 dark:bg-opacity-100 dark:bg-zinc-900">
+<div id="global-container" class="min-h-screen bg-white bg-opacity-70 dark:bg-opacity-100 dark:bg-zinc-900">
 	{#if $showLoading}
-		<FullScreenContainer zIndex='1000' noBg>
+		<FullScreenContainer alwaysShow zIndex='1000' noBg>
 			<div class="flex flex-col space-y-4 p-0">
 				<div class="flex w-full justify-center">
 					<Spinner size={'70'} additionalClassList='text-gray-600 dark:text-gray-800'/>
@@ -100,6 +115,11 @@
 			</div>
 		</FullScreenContainer>
 	{/if}
-	<Nav/>
-	<slot />
+	<Nav bind:element={nav}/>
+	<main style="min-height: {mainHeight}px;">
+		<slot/>
+	</main>
+	<span class="{mainHeight?'':'opacity-0'}">
+		<Footer bind:element={footer}/>
+	</span>
 </div>

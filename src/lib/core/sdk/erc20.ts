@@ -1,7 +1,8 @@
 
-import { getTransactionObject, noOfDecimalsToUnits, readSmartContract } from "./web3";
+import { getBalance, getTransactionObject, noOfDecimalsToUnits, readSmartContract } from "./web3";
 import abi from "./abis/erc20.json" assert {type: 'json'};
 import { sendTransaction } from "./eip-1193";
+import { getNativeToken } from "./router";
 
 export const ERC20_ABI: Array<any> = abi;
 
@@ -45,18 +46,27 @@ export const balanceOf = async (args: {
     address: string,
     tokenAddress: string,
 }) => {
-    return await readSmartContract({
-        abi: abi,
-        address: args.tokenAddress,
-        methodName: 'balanceOf',
-        methodParams: [args.address]
-    })
-    .then((data) => {
-        return data;
-    })
-    .catch((err) => {
-        // console.error(err);
-    });
+    try {
+        if(!args.address || !args.tokenAddress) return 0;
+        let res: number = 0;
+        switch(args.tokenAddress){
+            case 'native' || '':
+                let res = await getBalance(args.address);
+                break;
+            default:
+                res = await readSmartContract({
+                    abi: abi,
+                    address: args.tokenAddress,
+                    methodName: 'balanceOf',
+                    methodParams: [args.address]
+                });
+            break;
+        }
+        return res; 
+    } catch (error) {
+        console.error(error);
+        return 0;
+    }
 };
 
 export const approve = async (args: {
