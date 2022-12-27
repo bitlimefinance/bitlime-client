@@ -42,11 +42,11 @@
       },
       {
         text: 'Farms',
-        route: '/farms',
+        route: '/',
       },
       {
         text: 'Staking',
-        route: '/staking',
+        route: '/',
       },
       {
         text: 'Docs',
