@@ -2,7 +2,7 @@
 	import Input from "$lib/components/general/input.svelte";
 	import Tooltip from "$lib/components/general/tooltip.svelte";
 	import TokenSelector from "$lib/components/swap/tokenSelector.svelte";
-	import { balanceOf, decimals } from "$lib/core/sdk/erc20";
+	import { allowance, balanceOf, decimals } from "$lib/core/sdk/erc20";
 	import { accounts } from "$lib/stores/application";
 	import Button from "$lib/components/general/button.svelte";
 	import SwapInput from "$lib/components/swap/swapInput.svelte";
@@ -43,7 +43,7 @@
 
     const validateToken = async () => {
         gettingData = true;
-        needsApprovalA = 
+        needsApprovalA = await allowance({ address: $accounts[0], tokenAddress: tokenA.address }) < inputAValue;
         gettingData = false;
     }
 
