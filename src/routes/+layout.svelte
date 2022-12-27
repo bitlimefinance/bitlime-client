@@ -11,11 +11,10 @@
 	import FullScreenContainer from '$lib/components/general/fullScreenContainer.svelte';
 	import { _themes, _WALLETS } from '$lib/globals';
 	import { recordData } from '$lib/core/utils/analytics';
-	import { B_KEY, ENV } from '$lib/stores/envVars';
+	import { ENV } from '$lib/stores/envVars';
 	import { afterNavigate } from '$app/navigation';
 	import { subscribeToEvent } from '$lib/core/sdk/eip-1193';
 	import Footer from '$lib/components/footer.svelte';
-	import { setContext } from 'svelte';
 
 	/** @type {import('./$types').LayoutData} */
 	export let data: any;
@@ -86,6 +85,7 @@
 				accounts.set([]);
 			});
 			ENV.set(data?.envVars?.ENV);
+			
 			if(window) window.bl_rpc = $selectedNetwork?.rpc;
 			await loadWeb3($selectedNetwork?.rpc);
 			setBodyTheme();

@@ -1,4 +1,3 @@
-import { ENV } from "$env/static/private";
 import { Env } from "$lib/core/utils/env";
 
  
@@ -6,7 +5,7 @@ import { Env } from "$lib/core/utils/env";
 export async function load() {
     return {
         envVars: {
-            EMV: ENV || Env.LOCAL
+            ENV: process.env.ENV || Env.LOCAL
         }
     };
   }

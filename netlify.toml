@@ -9,11 +9,9 @@
 # here but we recommend using the Netlify UI for sensitive
 # values to keep them out of your source repository.
 [context.production]
-    environment  = { ENV = "prod" }
 # Deploy generated from the production branch set in the UI under Site settings > Build & deploy > Continuous Deployment > Branches
 
 [context.nightly]
-    environment = { ENV = "nightly" }
     [[headers]]
     for = "/*"
     [headers.values]
@@ -21,7 +19,6 @@
 # nightly branch
 
 [context.development]
-    environment = { ENV = "dev" }
     [[headers]]
     for = "/*"
     [headers.values]
@@ -29,5 +26,4 @@
 # development branch
 
 [context.dev]
-    environment = { ENV = "local" }
 # Local development environments run using Netlify Dev
