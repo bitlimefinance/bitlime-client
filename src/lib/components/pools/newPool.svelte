@@ -7,14 +7,22 @@
 	import Button from "$lib/components/general/button.svelte";
 	import SwapInput from "$lib/components/swap/swapInput.svelte";
 	import { onMount } from "svelte";
+	import { ROUTER_ADDRESS } from "$lib/core/sdk/router";
+	import Select from "../general/select.svelte";
+	import type { PoolType } from "$lib/core/descriptors/types";
+	import Toggle from "../general/toggle.svelte";
+
+    let advanced: boolean = false;
 
     let gettingData: boolean = false;
+
+    let poolType: PoolType;
 
     let tokenA: any = {};
     let tokenB: any = {};
 
-    let inputAValue: number | undefined | null;
-    let inputBValue: number | undefined | null;
+    let inputAValue: any;
+    let inputBValue: any;
 
     let needsApprovalA: boolean = false;
     let needsApprovalB: boolean = false;
@@ -43,7 +51,7 @@
 
     const validateToken = async () => {
         gettingData = true;
-        needsApprovalA = await allowance({ address: $accounts[0], tokenAddress: tokenA.address }) < inputAValue;
+        needsApprovalA = await allowance({ address: $accounts[0] as string, spender: ROUTER_ADDRESS, tokenAddress: tokenA.address }) < inputAValue;
         gettingData = false;
     }
 
@@ -63,7 +71,7 @@
 </script>
 
 <div class="rounded-xl p-4 max-w-lg">
-    <div class="flex justify-between items-center mb-3">
+    <div class="flex justify-between items-end mb-3">
         <div>
             <h1
                 class="text-zinc-900 dark:text-white font-medium text-2xl"
@@ -76,19 +84,32 @@
                 If the pool doesn't exist, it will be created.
             </p>
         </div>
-        <div class="flex justify-end items-center gap-3 h-fit w-fit">   
-                <Tooltip content={`
-                    Click to update data
-                `}>
-                    <svg on:click={()=>{}} on:keyup xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 cursor-pointer hover:opacity-70 text-zinc-900 dark:text-zinc-300 {gettingData?'animate-spin':''}">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                    </svg>
-                </Tooltip>
+        <div class="flex justify-end gap-3 items-center w-fit">
+            <Tooltip content="Advanced mode">
+                <Toggle showIcon bind:value={advanced}/>
+            </Tooltip>
         </div>
     </div>
     
-    <div class="flex flex-col bg-zinc-50 border dark:border-transparent dark:bg-zinc-800 rounded-lg">
-        <div id="token-a-container" class='rounded-xl'>
+    <div class="flex flex-col space-y-2">
+        {#if advanced}
+        <div id="token-b-container" class='bg-zinc-50 border dark:border-transparent dark:bg-zinc-800 rounded-xl p-3 space-y-3'>
+            <div class="flex justify-center items-center gap-4">
+                <Select
+                    value={poolType}
+                    id="pool-type"
+                    options={[
+                        ['Standard', 'weighted'],
+                        ['Stable', 'stable'],
+                        ['Pegged', 'pegged'],
+                    ]}
+                    label="Pool type"
+                    />
+                <Toggle showIcon label={'Meta assets?'} inline={false} fullWidth/>
+            </div>
+        </div>
+        {/if}
+        <div id="token-a-container" class='bg-zinc-50 border dark:border-transparent dark:bg-zinc-800 rounded-xl'>
             <SwapInput
                 bind:input={inputA}
                 bind:selectedToken={tokenA}
@@ -98,32 +119,25 @@
                 id="token-input-a"
                 bind:value={inputAValue}
                 />
-            <div class="flex justify-center items-center">
-                <div class="border-b-4 border-b-zinc-900 h-1 w-full mx-0"/>
-                <div class="min-w-fit border-4 border-zinc-900 rounded-full">
-                    <svg class="w-8 h-8 text-zinc-800 dark:text-zinc-500 dark:hover:text-white bg-zinc-800 p-1.5 rounded-full" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.4" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
-                    </svg>
+            <div class="p-3">
+                <div class="flex gap-2 font-medium items-center bg-zinc-400 border border-zinc-200 dark:border-transparent bg-opacity-10 w-fit rounded-lg p-2">
+			        <img src={"/assets/bl-logos/logo-bold.png"} alt="" class="h-5 w-5 rounded-md"/>
+                    Lime
                 </div>
-                <div class="border-b-4 border-b-zinc-900 h-1 w-full mx-0"/>
+                <Input
+                    placeholder="0.00"
+                    type="number"
+                    additionalClasses="text-4xl w-full bg-transparent border-0 px-0 py-3"
+                    />
+                <div class="dark:opacity-50 text-sm font-light mb-3">
+                    Balance: 0
+                </div>
             </div>
-            <SwapInput
-                bind:input={inputB}
-                bind:selectedToken={tokenB}
-                bind:balance={balanceB}
-                bind:decimals={decimalsB}
-                selectedTokens={[tokenA?.is_native?'native':tokenA?.address || '', tokenB?.is_native?'native':tokenB?.address || '']}
-                id="token-input-b"
-                disabled
-                bind:value={inputBValue}
-                />
         </div>
-        <div class="w-full p-3">
-            <Button
-                label="Add Liquidity"
-                additionalClassList="min-w-full"
-                />
-        </div>
+        <Button
+            label="Add Liquidity"
+            additionalClassList="min-w-full mt-2 pt-3"
+            />
     </div> 
 </div>
 

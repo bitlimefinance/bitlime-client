@@ -51,7 +51,7 @@ export const balanceOf = async (args: {
         let res: number = 0;
         switch(args.tokenAddress){
             case 'native' || '':
-                let res = await getBalance(args.address);
+                res = await getBalance(args.address);
                 break;
             default:
                 res = await readSmartContract({
