@@ -28,7 +28,7 @@
     <div class="flex justify-between">
         <TokenSelector bind:value={selectedToken} selectedTokens={selectedTokens} defaultToken={defaultToken} on:switch={()=>{dispatch('switch')}}/>
     </div>
-    <div  class="{selectedToken.address && $accounts[0]?'input-area-lg':'input-area-sm'}">
+    <div  class="{selectedToken?.address && $accounts[0]?'input-area-lg':'input-area-sm'}">
         <div class={loading?'hidden':'block'}>
             <Input
                 bind:isFocused={inputIsFocused}

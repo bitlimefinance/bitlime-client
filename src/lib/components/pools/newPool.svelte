@@ -11,6 +11,7 @@
 	import Select from "../general/select.svelte";
 	import type { PoolType } from "$lib/core/descriptors/types";
 	import Toggle from "../general/toggle.svelte";
+	import { getPair } from "$lib/core/sdk/factory";
 
     let advanced: boolean = false;
 
@@ -36,11 +37,14 @@
     let balanceA: number, balanceB = 0;
     let decimalsA: number | undefined | null, decimalsB: number | undefined | null;
 
+    let poolExists: boolean = false;
+
     const getTokensData = async () => {
         gettingData = true;
         if(tokenA.address){
             decimalsA = await decimals({ tokenAddress: tokenA.address });
             balanceA = await balanceOf({ address: $accounts[0], tokenAddress: tokenA.address });
+            poolExists = await getPair({tokenAddressA: tokenA?.address, tokenAddressB: tokenB?.address});
         }
         if(tokenB.address){
             decimalsB = await decimals({ tokenAddress: tokenB.address });

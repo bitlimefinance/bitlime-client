@@ -2,10 +2,32 @@ import type { GetTransactionObject } from "$lib/core/descriptors/interfaces";
 import Web3 from "web3";
 import type { EtherUnit } from "../descriptors/types";
 import { writable } from "svelte/store";
+import { debug, debugError } from "../utils/debug";
 
 export const web3Ready_ = writable(false);
 
 export const ADDRESS_0: Readonly<string> = "0x0000000000000000000000000000000000000000";
+
+export const isAddress = async (address: string) => {
+    try {
+        return await window.web3.utils.isAddress(address);
+    } catch (error) {
+        debugError(error);
+        return false;
+    }
+}
+
+export const validateAddresses = async (addresses: Array<string>) => {
+    let valid = true;
+    for (let i = 0; i < addresses.length; i++) {
+        const address = addresses[i];
+        if (!await isAddress(address)) {
+            valid = false;
+            break;
+        }
+    }
+    return valid;
+}
 
 export const loadWeb3 = async (rpc: string) => {
     try {
