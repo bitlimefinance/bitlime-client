@@ -12,6 +12,7 @@
 	import type { PoolType } from "$lib/core/descriptors/types";
 	import Toggle from "../general/toggle.svelte";
 	import { getPair } from "$lib/core/sdk/factory";
+	import { LIME_ADDRESS } from "$lib/core/sdk/lime";
 
     let advanced: boolean = false;
 
@@ -20,7 +21,14 @@
     let poolType: PoolType;
 
     let tokenA: any = {};
-    let tokenB: any = {};
+    let tokenB: any = {
+        "address": "0xBbD41C7668e08d39F0D2360D7756CaacCC7008B0",
+        "image": "https://s3.amazonaws.com/appforest_uf/f1670644353042x979300179939404800/logo.png",
+        "name": "Lime Coin",
+        "symbol": "LMC",
+        "chain_id": "5",
+        "_id": "0"
+    };
 
     let inputAValue: any;
     let inputBValue: any;
@@ -34,21 +42,19 @@
     let inputA: HTMLInputElement;
     let inputB: HTMLInputElement;
 
-    let balanceA: number, balanceB = 0;
-    let decimalsA: number | undefined | null, decimalsB: number | undefined | null;
+    let balanceA: number, balanceB: number;
+    let decimalsA: number | undefined | null;
+    let decimalsB: number = 18;
 
     let poolExists: boolean = false;
 
     const getTokensData = async () => {
         gettingData = true;
-        if(tokenA.address){
+        balanceB = await balanceOf({ address: $accounts[0], tokenAddress: LIME_ADDRESS });
+        if(tokenA?.address){
             decimalsA = await decimals({ tokenAddress: tokenA.address });
             balanceA = await balanceOf({ address: $accounts[0], tokenAddress: tokenA.address });
             poolExists = await getPair({tokenAddressA: tokenA?.address, tokenAddressB: tokenB?.address});
-        }
-        if(tokenB.address){
-            decimalsB = await decimals({ tokenAddress: tokenB.address });
-            balanceB = await balanceOf({ address: $accounts[0], tokenAddress: tokenB.address });
         }
         gettingData = false;
     }
@@ -63,14 +69,15 @@
         inputAValue = null;
         inputBValue = null;
         balanceA = 0;
-        balanceB = 0;
         decimalsA = null;
-        decimalsB = null;
         getTokensData();
     }
 
     $: tokenA, tokenChanged();
-    $: tokenB, tokenChanged();
+
+    accounts.subscribe(() => {
+        tokenChanged();
+    })
 
 </script>
 
@@ -134,7 +141,7 @@
                     additionalClasses="text-4xl w-full bg-transparent border-0 px-0 py-3"
                     />
                 <div class="dark:opacity-50 text-sm font-light mb-3">
-                    Balance: 0
+                    Balance: {(balanceB/(Math.pow(10, decimalsB)))||'0'}
                 </div>
             </div>
         </div>

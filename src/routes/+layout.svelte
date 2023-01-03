@@ -74,14 +74,15 @@
 	let mainHeight: number = 0;
 	onMount(async () => {
 		try{
+			console.log(data);
 			ENV.set(data?.env);
 			if (data?.chainsList && data?.chainsList?.length && data?.chainsList.length > 0) chainsList.set(data?.chainsList);
 			else chainsList.set(chains);
 			if (data?.tokensList && data?.tokensList?.length && data?.tokensList.length > 0) tokensList.set(data?.tokensList);
 			else tokensList.set(tokens);
-			mounted = true;
 			mainHeight = window.innerHeight - nav.offsetHeight - footer.offsetHeight;
 			mainHeight_.set(mainHeight);
+			mounted = true;
 			subscribeToEvent('disconnect', () => {
 				window.alert('You have been disconnected from your wallet. The page will reload after dismissing this alert.');
 				accounts.set([]);
@@ -119,9 +120,18 @@
 				<div class="animate-pulse text-center text-gray-200 w-full text-4xl p-0">BitLime</div>
 			</div>
 		</FullScreenContainer>
+	{:else if !mounted}
+		<FullScreenContainer alwaysShow zIndex='0' noBg noBackDrop>
+			<div class="flex flex-col space-y-4 p-0">
+				<div class="flex w-full justify-center">
+					<Spinner size={'40'} additionalClassList='text-gray-600 dark:text-gray-800'/>
+				</div>
+			</div>
+		</FullScreenContainer>
 	{/if}
 	<Nav bind:element={nav}/>
-	<main style="min-height: {mainHeight}px;">
+	<main style="min-height: {mainHeight}px; display: {mounted?"block":"none"}">
+		
 		<slot/>
 	</main>
 	<span class="{mainHeight?'':'opacity-0'}">

@@ -37,10 +37,6 @@
         route: '/',
       },
       {
-        text: 'Staking',
-        route: '/',
-      },
-      {
         text: 'Docs',
         route: 'https://docs.bitlime.io',
       }

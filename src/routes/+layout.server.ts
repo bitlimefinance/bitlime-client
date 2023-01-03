@@ -16,10 +16,7 @@ export async function load() {
           'Authorization': `Bearer ${key}`,
         }
     })
-    .then(response => response.json())
-    .then(async data => {
-        chains = await data.json();
-    })
+    .then(async response => chains = await response.json())
     .catch(() => {
         chains = null;
     });
@@ -31,10 +28,7 @@ export async function load() {
           'Authorization': `Bearer ${key}`,
         }
     })
-    .then(response => response.json())
-    .then(async data => {
-        tokens = await data.json();
-    })
+    .then(async response => tokens = await response.json())
     .catch(() => {
         tokens = null;
     });

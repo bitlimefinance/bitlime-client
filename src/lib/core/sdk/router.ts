@@ -7,7 +7,7 @@ import { sendTransaction } from "./eip-1193";
 
 
 export const ROUTER_ADDRESS: Readonly<string> = '0xAcfA21F4f4148A0EAf0420D972E1a75c17ef9B4b';
-export const ROUTER_ABI: Array<any> = abi;
+export const ROUTER_ABI: Readonly<any[]> = abi;
 
 
 export const getNativeToken = async () => {

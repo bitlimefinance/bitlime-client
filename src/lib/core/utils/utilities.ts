@@ -212,8 +212,13 @@ export const toggleElement = (elementId, displayStyle = 'block') => {
 	}
 };
 
-export function formatNumber(number, style, minDecimals = 0, maxDecimals = 0, currency = 'USD') {
+export function formatNumber(number: number | string, style: "currency" | "percent" | "number" = "number", minDecimals = 0, maxDecimals = 0, currency = 'USD') {
 	let formatter;
+	let n: number;
+	
+	if (typeof number === 'string') n = parseFloat(number);
+	else n = number;
+
 	switch (style) {
 		case 'currency':
 			formatter = new Intl.NumberFormat('en-US', {
@@ -242,7 +247,7 @@ export function formatNumber(number, style, minDecimals = 0, maxDecimals = 0, cu
 		default:
 			break;
 	}
-	return formatter ? formatter.format(number) : number;
+	return formatter ? formatter.format(n) : n;
 }
 
 export function loadFileFromUrl(url, inputQuerySelector, then = () => {}) {

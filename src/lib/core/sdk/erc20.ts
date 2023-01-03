@@ -4,7 +4,7 @@ import abi from "./abis/erc20.json" assert {type: 'json'};
 import { sendTransaction } from "./eip-1193";
 import { getNativeToken } from "./router";
 
-export const ERC20_ABI: Array<any> = abi;
+export const ERC20_ABI: Readonly<any[]> = abi;
 
 export const decimals = async (args: {
     tokenAddress: string,
