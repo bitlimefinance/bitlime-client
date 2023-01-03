@@ -117,7 +117,7 @@
 </div>
 
 <FullScreenContainer bind:show={showModal} noPadding>
-    <div class="w-90 max-w-sm bg-transparent dark:border-gray-700">
+    <div class="min-w-sm max-w-sm bg-transparent dark:border-gray-700">
         <div class="p-4">
             <div class="flex justify-between mb-4">
                 <h5 class="text-base font-semibold text-gray-900 md:text-xl dark:text-white">
