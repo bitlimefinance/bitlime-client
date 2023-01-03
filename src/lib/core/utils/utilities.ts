@@ -212,12 +212,17 @@ export const toggleElement = (elementId, displayStyle = 'block') => {
 	}
 };
 
-export function formatNumber(number: number | string, style: "currency" | "percent" | "number" = "number", minDecimals = 0, maxDecimals = 0, currency = 'USD') {
+export function formatNumber(number: number | string, style: "currency" | "percent" | "number" = "number", minDec = 0, maxDec = 0, currency = 'USD') {
 	let formatter;
 	let n: number;
+	let minDecimals: number = minDec;
+	let maxDecimals: number = maxDec;
 	
 	if (typeof number === 'string') n = parseFloat(number);
 	else n = number;
+
+	if (style === 'percent') n = n / 100;
+	if (minDecimals > 0 && minDecimals > maxDecimals) maxDecimals = minDecimals;
 
 	switch (style) {
 		case 'currency':

@@ -104,7 +104,7 @@
     
     <div class="flex flex-col space-y-2">
         {#if advanced}
-        <div id="token-b-container" class='bg-zinc-50 border dark:border-transparent dark:bg-zinc-800 rounded-xl p-3 space-y-3'>
+        <div id="token-b-container" class='bg-zinc-50 border dark:border-transparent dark:bg-zinc-800 rounded-xl px-3 space-y-3'>
             <div class="flex justify-center items-center gap-4">
                 <Select
                     value={poolType}
