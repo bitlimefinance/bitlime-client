@@ -463,7 +463,7 @@
     {:else}
         <Button
             showLoading={gettingData}
-            label="{$connected==_WALLETS.DISCONNECTED || !$connected?'CONNECT A WALLET':(tokenNeedsAllowance?'APPROVE '+(selectedTokenA.name?selectedTokenA.name:'TOKEN'):'PLACE ORDER')}"
+            label="{$connected==_WALLETS.DISCONNECTED || !$connected?'CONNECT A WALLET':(tokenNeedsAllowance?'APPROVE '+(selectedTokenA?.symbol || 'TOKEN'):'PLACE ORDER')}"
             additionalClassList="min-w-full justify-center font-normal text-base rounded-xl px-4 py-5 mt-4"
             style='min-height: 64px;'
             on:click={onSwap}

@@ -3,24 +3,29 @@ import { getBalance, getTransactionObject, noOfDecimalsToUnits, readSmartContrac
 import abi from "./abis/erc20.json" assert {type: 'json'};
 import { sendTransaction } from "./eip-1193";
 import { debugError } from "../utils/debug";
+import { get } from "svelte/store";
+import { selectNetwork } from "$lib/stores/application";
 
 export const ERC20_ABI: any[] = abi;
 
 export const decimals = async (args: {
     tokenAddress: string,
 }) => {
-    return await readSmartContract({
-        abi: abi,
-        address: args.tokenAddress,
-        methodName: 'decimals',
-        methodParams: []
-    })
-    .then((data) => {
-        return data;
-    })
-    .catch((err) => {
-        // console.error(err);
-    });
+    try{
+        if(args.tokenAddress === 'native') return get(selectNetwork)?.decimals || 18;
+        else {
+            let res = await readSmartContract({
+                abi: abi,
+                address: args.tokenAddress,
+                methodName: 'decimals',
+                methodParams: []
+            });
+            return res;
+        }
+    } catch (error) {
+        debugError(error);
+        return null;
+    }
 };
 
 export const allowance = async (args: {

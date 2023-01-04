@@ -5,6 +5,7 @@
 	import TokenSelector from "./tokenSelector.svelte";
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import { createEventDispatcher } from "svelte";
+	import { formatNumber } from "$lib/core/utils/utilities";
 
     export let id: string = 'swap-input';
     export let value: number;
@@ -42,7 +43,7 @@
                 />
             {#if $connected&&$connected!=_WALLETS.DISCONNECTED&&selectedToken?.address}
                 <div class="dark:opacity-50 text-sm font-light mb-3">
-                    Balance: {(balance/(Math.pow(10, decimals)))||'0'}
+                    Balance: {formatNumber((balance/(Math.pow(10, decimals)))||'0', 'number',0,decimals)}
                 </div>
             {/if}
         </div>

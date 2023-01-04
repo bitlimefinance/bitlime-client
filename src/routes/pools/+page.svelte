@@ -5,7 +5,7 @@
 	import Tooltip from "$lib/components/general/tooltip.svelte";
 	import { balanceOf, totalSupply } from "$lib/core/sdk/erc20";
     import { FACTORY_ABI, FACTORY_ADDRESS } from "$lib/core/sdk/factory";
-	import { LIME_ADDRESS } from "$lib/core/sdk/lime";
+	import { LMC_ADDRESS } from "$lib/core/sdk/lime";
 	import { readSmartContract, web3Ready_ } from "$lib/core/sdk/web3";
 	import { bigNumberToShort, changeRoute, formatNumber } from "$lib/core/utils/utilities";
 	import { accounts, showConnenct } from "$lib/stores/application";
@@ -35,8 +35,8 @@
         }
     });
     accounts.subscribe(async () => {
-        if(!limeBalance) limeBalance = await balanceOf({ address: $accounts[0], tokenAddress: LIME_ADDRESS });
-        if(!limeSupply) limeSupply = await totalSupply({tokenAddress: LIME_ADDRESS});
+        if(!limeBalance) limeBalance = await balanceOf({ address: $accounts[0], tokenAddress: LMC_ADDRESS });
+        if(!limeSupply) limeSupply = await totalSupply({tokenAddress: LMC_ADDRESS});
     })
 </script>
 

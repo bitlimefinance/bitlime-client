@@ -22,3 +22,25 @@ export const getPair = async (args: {
     if (pair && pair!==ADDRESS_0) return pair;
     return null;
 }
+
+export const allPairsLength = async () => {
+    return await readSmartContract({
+        abi: FACTORY_ABI,
+        address: FACTORY_ADDRESS,
+        methodName: 'allPairsLength',
+        methodParams: [],
+    });
+}
+
+export const allPairs = async (args: {
+    index: string,
+}) => {
+    const { index } = args;
+    if (!index) return null;
+    return await readSmartContract({
+        abi: FACTORY_ABI,
+        address: FACTORY_ADDRESS,
+        methodName: 'allPairs',
+        methodParams: [index],
+    });
+}

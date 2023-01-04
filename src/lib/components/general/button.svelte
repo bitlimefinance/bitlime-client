@@ -9,11 +9,11 @@
 	export let asyncLabel: string = '';
 	export let theme: string = 'primary';
 	export let classList: string =
-		'text-zinc-100 bg-green-400 hover:bg-green-500 dark:bg-green-500 dark:hover:bg-green-600 font-medium rounded-lg text-sm px-4 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
+		'text-zinc-100 bg-green-400 '+ (disabled?'':'hover:bg-green-500 dark:hover:bg-green-600') +' disabled:opacity-60 dark:bg-green-500 font-medium rounded-lg text-sm px-4 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
 	export let classListSecondary: string =
-		'text-green-900 dark:text-green-900 bg-green-300 hover:bg-green-400 font-medium rounded-full px-4 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
+		'bg-white dark:bg-zinc-400/[0.1] '+ (disabled?'':' dark:hover:bg-zinc-500/[0.2]') +' text-zinc-900 dark:text-white hover:shadow-md font-medium rounded-lg text-sm px-3 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
 	export let classListTertiary: string =
-		'text-zinc-900 dark:text-white bg-white hover:shadow-md dark:bg-opacity-10 hover:dark:bg-opacity-20 font-medium rounded-lg text-sm px-3 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
+		'text-zinc-900 dark:text-white bg-white hover:shadow-md dark:bg-opacity-10 '+ (disabled?'':'hover:dark:bg-opacity-20') +' font-medium rounded-lg text-sm px-3 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
 	export let additionalClassList: string = '';
 	export let asyncAction: (() => Promise<void>) | null = null;
 	export let image: string = '';
