@@ -2,9 +2,9 @@
 import { getBalance, getTransactionObject, noOfDecimalsToUnits, readSmartContract } from "./web3";
 import abi from "./abis/erc20.json" assert {type: 'json'};
 import { sendTransaction } from "./eip-1193";
-import { getNativeToken } from "./router";
+import { debugError } from "../utils/debug";
 
-export const ERC20_ABI: Readonly<any[]> = abi;
+export const ERC20_ABI: any[] = abi;
 
 export const decimals = async (args: {
     tokenAddress: string,
@@ -99,4 +99,23 @@ export const approve = async (args: {
     .catch((err)=>{
         console.log(err);
     });
+}
+
+export const totalSupply = async (args: {
+    tokenAddress: string,
+}) => {
+    try {
+        let tokenAddress = args.tokenAddress;
+        if(!tokenAddress) return 0;
+        let res: number = await readSmartContract({
+            abi: ERC20_ABI,
+            address: tokenAddress,
+            methodName: 'totalSupply',
+            methodParams: []
+        });
+        return res; 
+    } catch (error) {
+        debugError(error);
+        return 0;
+    }
 }

@@ -130,8 +130,7 @@
 		</FullScreenContainer>
 	{/if}
 	<Nav bind:element={nav}/>
-	<main style="min-height: {mainHeight}px; display: {mounted?"block":"none"}">
-		
+	<main class="mx-auto" style="min-height: {mainHeight}px; display: {mounted?"block":"none"}; max-width: 1080px;">
 		<slot/>
 	</main>
 	<span class="{mainHeight?'':'opacity-0'}">

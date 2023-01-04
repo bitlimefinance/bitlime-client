@@ -58,7 +58,7 @@ export const getTransactionObject = async (args: GetTransactionObject) => {
 }
 
 export const readSmartContract = async (args: {
-    abi: Array<any>,
+    abi: any[],
     address: string,
     methodName: string,
     methodParams: Array<any>,

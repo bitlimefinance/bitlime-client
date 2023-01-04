@@ -252,8 +252,16 @@ export function formatNumber(number: number | string, style: "currency" | "perce
 		default:
 			break;
 	}
-	return formatter ? formatter.format(n) : n;
+	return formatter ? formatter.format(n).toString() : n.toString();
 }
+
+export const bigNumberToShort = (number) => {
+	if (number < 1000) return number;
+	if (number < 1000000) return formatNumber((number / 1000)) + ' K';
+	if (number < 1000000000) return formatNumber((number / 1000000)) + ' M';
+	if (number < 1000000000000) return formatNumber((number / 1000000000)) + ' B';
+	if (number > 1000000000000) return formatNumber((number / 1000000000)) + ' B';
+};
 
 export function loadFileFromUrl(url, inputQuerySelector, then = () => {}) {
 	getFileFromURL(url, (fileBlob) => {
@@ -406,11 +414,27 @@ export const getFileType = (file) => {
 }
 
 export const getPageHeight = () => {
-	let body = document.body,
-    html = document.documentElement;
+	// let body = document.body,
+    // html = document.documentElement;
 
-	let height = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
-	return height;
+	// let height = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
+	// return height;
+	let pageHeight = 0;
+
+    function findHighestNode(nodesList) {
+        for (var i = nodesList.length - 1; i >= 0; i--) {
+            if (nodesList[i].scrollHeight && nodesList[i].clientHeight) {
+                var elHeight = Math.max(nodesList[i].scrollHeight, nodesList[i].clientHeight);
+                pageHeight = Math.max(elHeight, pageHeight);
+            }
+            if (nodesList[i].childNodes.length) findHighestNode(nodesList[i].childNodes);
+        }
+    }
+
+    findHighestNode(document.documentElement.childNodes);
+
+    // The entire page height is found
+    return pageHeight;
 }
 
 export const blinkElement = async (element, times = 2, interval = 50) => {
@@ -421,4 +445,19 @@ export const blinkElement = async (element, times = 2, interval = 50) => {
 		element.style.opacity='1';
 		await sleep(interval);
 	}
+}
+
+export function disableScroll() {
+    // Get the current page scroll position
+    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    let scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+  
+	// if any scroll is attempted, set this to the previous value
+	window.onscroll = function() {
+		window.scrollTo(scrollLeft, scrollTop);
+	};
+}
+  
+export function enableScroll() {
+    window.onscroll = function() {};
 }
