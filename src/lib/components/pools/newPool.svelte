@@ -14,6 +14,7 @@
 	import { noOfDecimalsToUnits } from "$lib/core/sdk/web3";
 	import { debugWarn } from "$lib/core/utils/debug";
 	import { formatNumber } from "$lib/core/utils/utilities";
+	import { addLiquidityETH, addLiquidty } from "$lib/core/sdk/router";
 
     let advanced: boolean = false;
     let mounted: boolean = false;
@@ -113,6 +114,35 @@
     accounts.subscribe(() => {
         updateData();
     })
+
+    const provideLiquidity = async () => {
+        gettingData = true;
+        if(!tokenA?.address || !tokenB?.address) return;
+        if(tokenA.address == tokenB.address) return;
+        if(needsApprovalA) return getApprovalA();
+        if(needsApprovalB) return getApprovalB();
+        if(notEnoughBalanceA || notEnoughBalanceB) return;
+        if(!inputAValue || !inputBValue) return;
+        let inputAToWei = await window.web3.utils.toWei(inputAValue.toString(), noOfDecimalsToUnits(decimalsA));
+        let inputBToWei = await window.web3.utils.toWei(inputBValue.toString(), noOfDecimalsToUnits(decimalsB));
+        if(tokenA.address == "native") addLiquidityETH({
+            tokenAddress: LMC_ADDRESS,
+            amountTokenDesired: inputBToWei,
+            amountETHDesired: inputAToWei,
+            amountTokenMin: inputBToWei,
+            amountETHMin: inputAToWei,
+            to: $accounts[0],
+        });
+        else addLiquidty({
+            tokenAddressA: tokenA.address,
+            tokenAddressB: LMC_ADDRESS,
+            amountADesired: inputAToWei,
+            amountBDesired: inputBToWei,
+            amountAMin: inputAToWei,
+            amountBMin: inputBToWei,
+            to: $accounts[0],
+        });
+    }
     
     onMount(async () => {
         mounted = true;
@@ -128,7 +158,7 @@
                 refreshCounter = refreshTimer;
             }
         }, 1000);
-    });  
+    });
 </script>
 
 <div class="rounded-xl p-4 max-w-lg">
@@ -234,6 +264,7 @@
             additionalClassList="min-w-full justify-center font-normal text-base rounded-xl px-4 py-5 mt-2"
             disabled={addLiquidityButtonDisabled}
             theme={addLiquidityButtonDisabled?"secondary":"primary"}
+            on:click={addLiquidity}
             />
     </div> 
 </div>
