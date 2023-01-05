@@ -9,12 +9,12 @@
 	import Select from "../general/select.svelte";
 	import type { PoolType } from "$lib/core/descriptors/types";
 	import Toggle from "../general/toggle.svelte";
-	import { FACTORY_ADDRESS, getPair } from "$lib/core/sdk/factory";
+	import { getPair } from "$lib/core/sdk/factory";
 	import { LMC_ADDRESS } from "$lib/core/sdk/lime";
 	import { noOfDecimalsToUnits } from "$lib/core/sdk/web3";
 	import { debugWarn } from "$lib/core/utils/debug";
 	import { formatNumber } from "$lib/core/utils/utilities";
-	import { addLiquidityETH, addLiquidty } from "$lib/core/sdk/router";
+	import { addLiquidityETH, addLiquidty, ROUTER_ADDRESS } from "$lib/core/sdk/router";
 
     let advanced: boolean = false;
     let mounted: boolean = false;
@@ -54,8 +54,8 @@
     $: addLiquidityButtonDisabled = gettingData || notEnoughBalanceA || notEnoughBalanceB || !inputAValue || !inputBValue || needsApprovalA || needsApprovalB;
 
     const validateTokens = async () => {
-        if(tokenA?.address) needsApprovalA = await allowance({ address: $accounts[0] as string, spender: FACTORY_ADDRESS, tokenAddress: tokenA.address }) <= (inputAValue || 0);
-        needsApprovalB = await allowance({ address: $accounts[0] as string, spender: FACTORY_ADDRESS, tokenAddress: LMC_ADDRESS }) <= (inputBValue || 0);
+        if(tokenA?.address) needsApprovalA = await allowance({ address: $accounts[0] as string, spender: ROUTER_ADDRESS, tokenAddress: tokenA.address }) <= (inputAValue || 0);
+        needsApprovalB = await allowance({ address: $accounts[0] as string, spender: ROUTER_ADDRESS, tokenAddress: LMC_ADDRESS }) <= (inputBValue || 0);
         if(tokenA?.address) notEnoughBalanceA = balanceA < (inputAValue || 0);
         notEnoughBalanceB = balanceB < (inputBValue || 0);
     }
@@ -76,7 +76,7 @@
         if(needsApprovalA && tokenA?.address){
             await approve({
                         tokenAddress: tokenA.address,
-                        spenderAddress: FACTORY_ADDRESS,
+                        spenderAddress: ROUTER_ADDRESS,
                         amount: await window.web3.utils.toWei(await balanceA.toString(), noOfDecimalsToUnits(decimalsA))+'000000000',
                         ownerAddress: $accounts[0]
                     });
@@ -90,7 +90,7 @@
         if(needsApprovalB){
             await approve({
                         tokenAddress: LMC_ADDRESS,
-                        spenderAddress: FACTORY_ADDRESS,
+                        spenderAddress: ROUTER_ADDRESS,
                         amount: await window.web3.utils.toWei(await balanceB.toString(), noOfDecimalsToUnits(18))+'000000000',
                         ownerAddress: $accounts[0]
                     });
