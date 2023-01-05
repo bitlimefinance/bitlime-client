@@ -1,4 +1,5 @@
 import { browser } from '$app/environment';
+import { debugError } from './debug';
 
 // Simple interface over retrieving (but not modifying) values from localStorage.
 // Can be used for STRING values by itself or in READABLE stores.

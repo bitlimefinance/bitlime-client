@@ -13,7 +13,7 @@ export async function POST({request}: {request: any}) {
   // let res: any;
   // const key = process.env.B_KEY;
   // const { chainId } = await request.json();
-  // await fetch(getBaseWfEndpoint()+'chains-list?'+'chain_id='+JSON.stringify(chainId), {
+  // await fetch(getBaseWfEndpoint()+'chains-list?'+'chain_id='+JSON.stringify(chainId)+'&&suid='+JSON.stringify(session_id), {
   //   method: 'GET',
   //   headers: {
   //     'Content-Type': 'application/json',
