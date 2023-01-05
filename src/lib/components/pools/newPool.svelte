@@ -116,7 +116,6 @@
     })
 
     const provideLiquidity = async () => {
-        gettingData = true;
         if(!tokenA?.address || !tokenB?.address) return;
         if(tokenA.address == tokenB.address) return;
         if(needsApprovalA) return getApprovalA();
@@ -138,8 +137,8 @@
             tokenAddressB: LMC_ADDRESS,
             amountADesired: inputAToWei,
             amountBDesired: inputBToWei,
-            amountAMin: inputAToWei,
-            amountBMin: inputBToWei,
+            amountAMin: '0',
+            amountBMin: '0',
             to: $accounts[0],
         });
     }
@@ -264,7 +263,7 @@
             additionalClassList="min-w-full justify-center font-normal text-base rounded-xl px-4 py-5 mt-2"
             disabled={addLiquidityButtonDisabled}
             theme={addLiquidityButtonDisabled?"secondary":"primary"}
-            on:click={addLiquidity}
+            on:click={provideLiquidity}
             />
     </div> 
 </div>

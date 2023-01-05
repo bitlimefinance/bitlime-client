@@ -63,14 +63,10 @@
         `}
     />
 
-    <div class="mt-20 mb-14 flex justify-between items-center">
+    <div class="mt-20 mb-14 ">
         <div>
-            <h1 class="text-5xl font-semibold text-zinc-900 dark:text-white mb-2">Earn</h1>
-            <h2 class="font-light text-lg text-zinc-900 dark:text-white">
-                You can earn <span class="font-medium">passive income</span> by providing liquidity to the pools,<br> or simply by owning Lime Coins.
-            </h2>
-        </div>
-        <div class="space-y-3">
+            <h1 class="text-5xl font-semibold text-zinc-900 dark:text-white mb-4">Invest</h1>
+            <div class="flex justify-start items-center gap-3">
             <Button
                 label="How does this work?"
                 on:click={() => {
@@ -101,12 +97,18 @@
                 </svg> 
             </Button>
             {/if}
+            </div>
         </div>
     </div>
 
     <div class="mb-6 w-full">
         <div class="flex justify-between items-end">
-            <h2 class="text-xl font-semibold text-zinc-900 dark:text-white">Hold to earn</h2>
+            <div>
+                <h2 class="text-xl font-semibold text-zinc-900 dark:text-white">Hold Lime to earn</h2>
+                <h3 class="font-light text-zinc-900 dark:text-white">
+                    You can earn <span class="font-medium">passive income</span> by simply by owning Lime Coins.
+                </h3>
+            </div>
         </div>
         <div
             class="px-5 py-3 dark:border-zinc-700 rounded-lg bg-zinc-100 dark:bg-zinc-800/[0.4] mt-5 flex items-center"
@@ -165,7 +167,7 @@
     </div>
 
     <!-- POOLS -->
-	<div class="flex justify-between items-end py-5 w-full">
+	<div class="flex justify-between items-end py-5 w-full mt-10">
         <h2 class="text-xl font-semibold text-zinc-900 dark:text-white">Pools</h2>
         <Button
             label="Provide Liquidity"

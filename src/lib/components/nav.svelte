@@ -29,11 +29,15 @@
         route: '/',
       },
       {
-        text: 'Earn',
+        text: 'Invest',
         route: '/pools',
       },
       {
-        text: 'Farms',
+        text: 'Lime Coin',
+        route: '/',
+      },
+      {
+        text: 'Affiliate',
         route: '/',
       },
       {

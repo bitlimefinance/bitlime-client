@@ -35,7 +35,7 @@ export const loadWeb3 = async (rpc: string) => {
         else window.web3 = new Web3(rpc || window.bl_rpc || 'https://rpc.ankr.com/eth');
         web3Ready_.set(true);
     } catch (error) {
-        console.error(error);
+        debugError(error);
     }
 }
 
@@ -51,7 +51,7 @@ export const getTransactionObject = async (args: GetTransactionObject) => {
         let contract = await loadContract(args.abi, args.address);
         txObj = contract.methods[args.methodName](...args.methodParams);
     } catch (error) {
-        console.error(error);
+        debugError(error);
     } finally {
         return txObj;
     }
@@ -69,7 +69,7 @@ export const readSmartContract = async (args: {
         let contract = await loadContract(args.abi, args.address);
         result = await contract.methods[args.methodName](...args.methodParams).call();
     } catch (error) {
-        console.error(error);
+        debugError(error);
     } finally {
         return result;
     }
@@ -87,7 +87,7 @@ export const getBalance = async (address: string) => {
         return data;
     })
     .catch((err) => {
-        console.error(err);
+        debugError(err);
     });
 }
 

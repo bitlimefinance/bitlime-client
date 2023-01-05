@@ -235,6 +235,8 @@ export const addLiquidty = async (args: {
     callBack?: Function
 }) => {
     try{
+        console.log('addLiquidty', args);
+        
         const txObj = await getTransactionObject({
             abi: ROUTER_ABI,
             address: ROUTER_ADDRESS,
