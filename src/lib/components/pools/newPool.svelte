@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Input from "$lib/components/general/input.svelte";
 	import Tooltip from "$lib/components/general/tooltip.svelte";
 	import { allowance, approve, balanceOf, decimals } from "$lib/core/sdk/erc20";
 	import { accounts } from "$lib/stores/application";
@@ -13,8 +12,8 @@
 	import { LMC_ADDRESS } from "$lib/core/sdk/lime";
 	import { noOfDecimalsToUnits } from "$lib/core/sdk/web3";
 	import { debugWarn } from "$lib/core/utils/debug";
-	import { formatNumber } from "$lib/core/utils/utilities";
 	import { addLiquidityETH, addLiquidty, ROUTER_ADDRESS } from "$lib/core/sdk/router";
+	import Icon from "../general/icon.svelte";
 
     let advanced: boolean = false;
     let mounted: boolean = false;
@@ -142,7 +141,7 @@
             to: $accounts[0],
         });
     }
-    
+
     onMount(async () => {
         mounted = true;
         setInterval(() => {
@@ -160,7 +159,7 @@
     });
 </script>
 
-<div class="rounded-xl p-4 max-w-lg">
+<div class="rounded-xl p-4 max-w-2xl">
     <div class="flex justify-between items-end mb-3">
         <div>
             <h1
@@ -195,7 +194,7 @@
     
     <div class="flex flex-col space-y-2">
         {#if advanced}
-        <div id="token-b-container" class='bg-zinc-50 border dark:border-transparent dark:bg-zinc-800 rounded-xl p-3 space-y-3'>
+        <div class='bg-zinc-50 border dark:border-transparent dark:bg-zinc-800 rounded-xl p-3 space-y-3'>
             <div class="flex justify-center items-center gap-4">
                 <Select
                     value={poolType}
@@ -211,51 +210,74 @@
             </div>
         </div>
         {/if}
-        <div id="token-a-container" class='bg-zinc-50 border dark:border-transparent dark:bg-zinc-800 rounded-xl'>
-            <SwapInput
-                bind:input={inputA}
-                bind:selectedToken={tokenA}
-                bind:balance={balanceA}
-                bind:decimals={decimalsA}
-                selectedTokens={[tokenA?.is_native?'native':tokenA?.address || '', tokenB?.is_native?'native':tokenB?.address || '']}
-                id="token-input-a"
-                bind:value={inputAValue}
-                />
-            {#if needsApprovalA}
-            <div class="px-3 -mt-5 mb-2">
-                <Button
-                    label={"APPROVE " + tokenA?.symbol || 'TOKEN'}
-                    additionalClassList="min-w-full mt-2 pt-3"
-                    theme="secondary"
-                    on:click={getApprovalA}
+        <div class='flex items-stretch justify-center'>
+            <div class="w-full bg-zinc-50/[0.3] border border-transparent dark:bg-zinc-800/[0.7] dark:border-0 rounded-xl p-3">
+                <SwapInput
+                    bind:input={inputA}
+                    bind:selectedToken={tokenA}
+                    bind:balance={balanceA}
+                    bind:decimals={decimalsA}
+                    selectedTokens={[tokenA?.is_native?'native':tokenA?.address || '', tokenB?.is_native?'native':tokenB?.address || '']}
+                    id="token-input-a"
+                    customClassList="bg-transparent"
+                    bind:value={inputAValue}
                     />
-            </div>
-            {/if}
-            <div class="p-3">
-                <div class="flex gap-2 font-medium items-center bg-zinc-400 border border-zinc-200 dark:border-transparent bg-opacity-10 w-fit rounded-lg p-2">
-			        <img src={"/assets/bl-logos/logo-bold.png"} alt="" class="h-5 w-5 rounded-md"/>
-                    Lime
-                </div>
-                <Input
-                    placeholder={poolExists?"":"0.00"}
-                    type="number"
-                    additionalClasses="text-4xl w-full bg-transparent border-0 px-0 py-3{poolExists?" placeholder-white":""}"
-                    bind:value={inputBValue}
-                    disabled={poolExists}
-                    />
-                <div class="dark:opacity-50 text-sm font-light mb-3">
-                    Balance: {formatNumber((balanceB/(Math.pow(10, decimalsB)))||'0', 'number',0,decimalsB)}
-                </div>
-                {#if needsApprovalB}
-                <div class="-mt-3">
-                    <Button
-                        label={"APPROVE " + tokenB?.symbol || 'TOKEN'}
-                        additionalClassList="min-w-full mt-2 pt-3"
-                        theme="secondary"
-                        on:click={getApprovalB}
-                        />
+                {#if needsApprovalA || needsApprovalB}
+                <div>
+                    {#if needsApprovalA}
+                        <Button
+                            label={"APPROVE " + tokenA?.symbol || 'TOKEN'}
+                            additionalClassList="min-w-full pt-3"
+                            theme="secondary"
+                            on:click={getApprovalA}
+                            />
+                    {:else} 
+                        <div class="flex justify-center gap-2 items-center w-full bg-transparent text-green-400 dark:text-green-400 hover:shadow-md font-medium rounded-lg text-sm px-3 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default">
+                            <div class="dark:text-green-400 text-green-400">
+                                <Icon icon="check-circle"/>
+                            </div>
+                            ALREADY APPROVED
+                        </div>
+                    {/if}
                 </div>
                 {/if}
+            </div>
+            <div class="my-auto mx-2 w-fit h-fit text-2xl text-center">
+                +
+            </div>
+            <div class="w-full bg-zinc-50/[0.3] border border-transparent dark:bg-zinc-800/[0.7] dark:border-0 rounded-xl">
+                <div class="w-full bg-zinc-50/[0.3] border border-transparent dark:bg-zinc-800/[0.7] dark:border-0 rounded-xl p-3">
+                    <SwapInput
+                        bind:input={inputB}
+                        bind:selectedToken={tokenB}
+                        bind:balance={balanceB}
+                        bind:decimals={decimalsB}
+                        selectedTokenDisabled
+                        selectedTokens={[tokenA?.is_native?'native':tokenA?.address || '', tokenB?.is_native?'native':tokenB?.address || '']}
+                        id="token-input-b"
+                        customClassList="bg-transparent"
+                        bind:value={inputBValue}
+                    />
+                    {#if needsApprovalB || needsApprovalA}
+                    <div>
+                        {#if needsApprovalB}
+                        <Button
+                            label={"APPROVE " + tokenB?.symbol || 'TOKEN'}
+                            additionalClassList="min-w-full mt-2 pt-3"
+                            theme="secondary"
+                            on:click={getApprovalB}
+                            />
+                        {:else}
+                        <div class="flex justify-center gap-2 items-center w-full bg-transparent text-green-400 dark:text-green-400 hover:shadow-md font-medium rounded-lg text-sm px-3 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default">
+                            <div class="dark:text-green-400 text-green-400">
+                                <Icon icon="check-circle"/>
+                            </div>
+                            ALREADY APPROVED
+                        </div>
+                        {/if}
+                    </div>
+                    {/if}
+                </div>
             </div>
         </div>
         <Button

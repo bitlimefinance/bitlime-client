@@ -12,8 +12,8 @@ export async function POST({request}: {request: any}) {
 
   // let res: any;
   // const key = process.env.B_KEY;   
-  // const { symbols } = await request.json();
-  // await fetch(getBaseWfEndpoint()+'tokens-list?'+'symbols='+JSON.stringify(symbols), {
+  // const { symbols, session_id } = await request.json();
+  // await fetch(getBaseWfEndpoint()+'tokens-list?'+'symbols='+JSON.stringify(symbols)'+'&&suid='+JSON.stringify(session_id), {
   //   method: 'GET',
   //   headers: {
   //     'Content-Type': 'application/json',

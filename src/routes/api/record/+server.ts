@@ -9,7 +9,7 @@ import { json } from '@sveltejs/kit';
 export async function POST({request}: {request: any}) {
   let res: any;
   const key = process.env.B_KEY;   
-  const { record, schema } = await request.json();
+  const { record, schema, session_id } = await request.json();
   await fetch(getBaseWfEndpoint()+'record-data', {
     method: 'POST',
     headers: {
@@ -18,7 +18,8 @@ export async function POST({request}: {request: any}) {
     },
     body: JSON.stringify({
       data: JSON.stringify(record),
-      schemaId: schema || 'schema-1'
+      schemaId: schema || 'schema-1',
+      suid: session_id
     })
   })
   .then(response => response.json())
