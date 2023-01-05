@@ -5,6 +5,7 @@
 	import TokenSelector from "./tokenSelector.svelte";
 	import { SyncLoader } from 'svelte-loading-spinners';
 	import { createEventDispatcher } from "svelte";
+	import { formatNumber } from "$lib/core/utils/utilities";
 
     export let id: string = 'swap-input';
     export let value: number;
@@ -24,11 +25,11 @@
 </script>
 
 
-<div id="{id}-container" class='bg-zinc-50/[0.3] border border-zinc-400 dark:bg-zinc-800 dark:border-0 rounded-xl p-3'>
+<div id="{id}-container" class='bg-zinc-50/[0.3] border border-transparent dark:bg-zinc-800 dark:border-0 rounded-xl p-3'>
     <div class="flex justify-between">
         <TokenSelector bind:value={selectedToken} selectedTokens={selectedTokens} defaultToken={defaultToken} on:switch={()=>{dispatch('switch')}}/>
     </div>
-    <div  class="{selectedToken.address && $accounts[0]?'input-area-lg':'input-area-sm'}">
+    <div  class="{selectedToken?.address && $accounts[0]?'input-area-lg':'input-area-sm'}">
         <div class={loading?'hidden':'block'}>
             <Input
                 bind:isFocused={inputIsFocused}
@@ -42,7 +43,7 @@
                 />
             {#if $connected&&$connected!=_WALLETS.DISCONNECTED&&selectedToken?.address}
                 <div class="dark:opacity-50 text-sm font-light mb-3">
-                    Balance: {(balance/(Math.pow(10, decimals)))||'0'}
+                    Balance: {formatNumber((balance/(Math.pow(10, decimals)))||'0', 'number',0,decimals)}
                 </div>
             {/if}
         </div>

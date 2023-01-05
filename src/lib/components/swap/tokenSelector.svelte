@@ -117,7 +117,7 @@
 </div>
 
 <FullScreenContainer bind:show={showModal} noPadding>
-    <div class="w-90 max-w-sm bg-transparent dark:border-gray-700">
+    <div class="w-96 max-w-sm bg-transparent dark:border-gray-700">
         <div class="p-4">
             <div class="flex justify-between mb-4">
                 <h5 class="text-base font-semibold text-gray-900 md:text-xl dark:text-white">
@@ -153,11 +153,13 @@
                 on:change={(e)=>{searchTokens(e)}}
                 on:focusin={()=>{searchInputFocused = true}}
                 on:focusout={()=>{searchInputFocused = false}}
+                disabled={$selectedNetwork?false:true}
                 type="text"
                 placeholder="Search by name, symbol or address"
                 class="w-full focus:outline-0 focus:ring-0 hover:outline-0 hover:ring-0 bg-transparent border-0 dark:border-zinc-800"
                 />
         </div>
+        {#if $selectedNetwork}
         <ul class="space-y-2 w-full h-80 min-h-80 max-h-80 overflow-auto border-t dark:border-zinc-800">
             {#if !(selectedTokens?.includes('native'))}
                 <li class="w-full">
@@ -218,5 +220,10 @@
             </li>
         {/if}
         </ul>
+        {:else}
+            <div class="flex justify-center items-center h-40">
+                <p class="text-sm font-normal text-gray-500 dark:text-gray-400">Select a network</p>
+            </div>
+        {/if}
     </div>
 </FullScreenContainer>

@@ -6,3 +6,15 @@ export const debug = (...args: any[]) => {
 		console.log(...args);
 	}
 };
+
+export const debugError = (...args: any[]) => {
+	if (browser) {
+		console.error(...args);
+	}
+};
+
+export const debugWarn = (...args: any[]) => {
+	if (browser) {
+		console.warn(...args);
+	}
+};

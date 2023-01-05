@@ -2,25 +2,30 @@
 import { getBalance, getTransactionObject, noOfDecimalsToUnits, readSmartContract } from "./web3";
 import abi from "./abis/erc20.json" assert {type: 'json'};
 import { sendTransaction } from "./eip-1193";
-import { getNativeToken } from "./router";
+import { debugError } from "../utils/debug";
+import { get } from "svelte/store";
+import { selectNetwork } from "$lib/stores/application";
 
-export const ERC20_ABI: Array<any> = abi;
+export const ERC20_ABI: any[] = abi;
 
 export const decimals = async (args: {
     tokenAddress: string,
 }) => {
-    return await readSmartContract({
-        abi: abi,
-        address: args.tokenAddress,
-        methodName: 'decimals',
-        methodParams: []
-    })
-    .then((data) => {
-        return data;
-    })
-    .catch((err) => {
-        // console.error(err);
-    });
+    try{
+        if(args.tokenAddress === 'native') return get(selectNetwork)?.decimals || 18;
+        else {
+            let res = await readSmartContract({
+                abi: abi,
+                address: args.tokenAddress,
+                methodName: 'decimals',
+                methodParams: []
+            });
+            return res;
+        }
+    } catch (error) {
+        debugError(error);
+        return null;
+    }
 };
 
 export const allowance = async (args: {
@@ -51,7 +56,7 @@ export const balanceOf = async (args: {
         let res: number = 0;
         switch(args.tokenAddress){
             case 'native' || '':
-                let res = await getBalance(args.address);
+                res = await getBalance(args.address);
                 break;
             default:
                 res = await readSmartContract({
@@ -99,4 +104,23 @@ export const approve = async (args: {
     .catch((err)=>{
         console.log(err);
     });
+}
+
+export const totalSupply = async (args: {
+    tokenAddress: string,
+}) => {
+    try {
+        let tokenAddress = args.tokenAddress;
+        if(!tokenAddress) return 0;
+        let res: number = await readSmartContract({
+            abi: ERC20_ABI,
+            address: tokenAddress,
+            methodName: 'totalSupply',
+            methodParams: []
+        });
+        return res; 
+    } catch (error) {
+        debugError(error);
+        return 0;
+    }
 }

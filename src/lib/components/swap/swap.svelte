@@ -1,14 +1,11 @@
 <script lang="ts">
 	import { _contracts } from "$lib/contractsReference";
-	import { getTokensList } from "$lib/core/contents/apis";
-	import { tokens } from "$lib/core/contents/fallbacks";
-	import { getAmountsOut, getNativeToken, methodsSwitcher, ROUTER_ABI, ROUTER_ADDRESS, swapExactETHForTokens, swapExactTokensForTokens } from "$lib/core/sdk/router";
-	import { allowance, approve, balanceOf, decimals, ERC20_ABI } from "$lib/core/sdk/erc20";
+	import { getAmountsOut, getNativeToken, methodsSwitcher, ROUTER_ADDRESS} from "$lib/core/sdk/router";
+	import { allowance, approve, balanceOf, decimals } from "$lib/core/sdk/erc20";
 	import { sleep } from "$lib/core/utils/utilities";
-	import { ADDRESS_0, estimateGas, getBalance, getGasPrice, getTransactionObject, noOfDecimalsToUnits, readSmartContract } from "$lib/core/sdk/web3";
+	import { getBalance, noOfDecimalsToUnits } from "$lib/core/sdk/web3";
 	import { _WALLETS } from "$lib/globals";
-	import { sendTransaction } from "$lib/core/sdk/eip-1193";
-	import { accounts, connected, latestBlock, selectedNetwork, showConnenct, tokensList } from "$lib/stores/application";
+	import { accounts, connected, selectedNetwork, showConnenct } from "$lib/stores/application";
 	import { onMount } from "svelte";
     import Button from "../general/button.svelte";
 	import Tooltip from "../general/tooltip.svelte";
@@ -185,16 +182,16 @@
     }
 
     const getQuote = async (getSwapRate?: boolean) => {
-        let value = getSwapRate?1:inputAValue;
-        let unorderedPathDirty: boolean = !([selectedTokenA.address, selectedTokenB.address].includes(swapRatePath[0].address) && [selectedTokenA.address, selectedTokenB.address].includes(swapRatePath[1].address));
-        if(unorderedPathDirty) {
-            swapRatePath = [selectedTokenA, selectedTokenB];
-            swapRatePathDecimals = [selectedTokenADecimals, selectedTokenBDecimals];
-        }
-        
-        let path = getSwapRate?swapRatePath:[selectedTokenA, selectedTokenB];
-        let pathDecimals = getSwapRate?swapRatePathDecimals:[selectedTokenADecimals, selectedTokenBDecimals];
         try{
+            let value = getSwapRate?1:inputAValue;
+            let unorderedPathDirty: boolean = !([selectedTokenA.address, selectedTokenB.address].includes(swapRatePath[0].address) && [selectedTokenA.address, selectedTokenB.address].includes(swapRatePath[1].address));
+            if(unorderedPathDirty) {
+                swapRatePath = [selectedTokenA, selectedTokenB];
+                swapRatePathDecimals = [selectedTokenADecimals, selectedTokenBDecimals];
+            }
+            
+            let path = getSwapRate?swapRatePath:[selectedTokenA, selectedTokenB];
+            let pathDecimals = getSwapRate?swapRatePathDecimals:[selectedTokenADecimals, selectedTokenBDecimals];
             if(!getSwapRate) gettingData = true;
             if(!getSwapRate) gettingQuote = true;
             if(getSwapRate) gettingSwapRate = true;
@@ -345,10 +342,6 @@
     const refreshTimer: Readonly<number> = 30;
     export let refreshCounter: number = refreshTimer;
     onMount(async () => {
-        getTokensList().then((data) => {
-            if (data?.results && data?.results.length > 0) tokensList.set(data?.results);
-            else tokensList.set(tokens);
-        })
         mounted = true;
         setInterval(() => {
             if(selectedTokenA?.address || selectedTokenB?.address){
@@ -464,13 +457,13 @@
             showLoading={gettingData}
             disabled
             label="{noBalance?"You don't have enough balance":"Select tokens"}"
-            additionalClassList="min-w-full justify-center font-normal text-base rounded-xl px-4 py-5 mt-4 bg-gray-300 hover:bg-gray-300 dark:bg-zinc-800 hover:dark:bg-zinc-800"
+            additionalClassList="min-w-full justify-center items-center font-normal text-base rounded-xl px-4 py-5 mt-4 bg-gray-300 hover:bg-gray-300 dark:bg-zinc-800 hover:dark:bg-zinc-800"
             style='min-height: 64px;'
             />
     {:else}
         <Button
             showLoading={gettingData}
-            label="{$connected==_WALLETS.DISCONNECTED || !$connected?'CONNECT A WALLET':(tokenNeedsAllowance?'APPROVE '+(selectedTokenA.name?selectedTokenA.name:'TOKEN'):'PLACE ORDER')}"
+            label="{$connected==_WALLETS.DISCONNECTED || !$connected?'CONNECT A WALLET':(tokenNeedsAllowance?'APPROVE '+(selectedTokenA?.symbol || 'TOKEN'):'PLACE ORDER')}"
             additionalClassList="min-w-full justify-center font-normal text-base rounded-xl px-4 py-5 mt-4"
             style='min-height: 64px;'
             on:click={onSwap}

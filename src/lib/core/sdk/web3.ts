@@ -2,10 +2,32 @@ import type { GetTransactionObject } from "$lib/core/descriptors/interfaces";
 import Web3 from "web3";
 import type { EtherUnit } from "../descriptors/types";
 import { writable } from "svelte/store";
+import { debug, debugError } from "../utils/debug";
 
 export const web3Ready_ = writable(false);
 
 export const ADDRESS_0: Readonly<string> = "0x0000000000000000000000000000000000000000";
+
+export const isAddress = async (address: string) => {
+    try {
+        return await window.web3.utils.isAddress(address);
+    } catch (error) {
+        debugError(error);
+        return false;
+    }
+}
+
+export const validateAddresses = async (addresses: Array<string>) => {
+    let valid = true;
+    for (let i = 0; i < addresses.length; i++) {
+        const address = addresses[i];
+        if (!await isAddress(address)) {
+            valid = false;
+            break;
+        }
+    }
+    return valid;
+}
 
 export const loadWeb3 = async (rpc: string) => {
     try {
@@ -13,7 +35,7 @@ export const loadWeb3 = async (rpc: string) => {
         else window.web3 = new Web3(rpc || window.bl_rpc || 'https://rpc.ankr.com/eth');
         web3Ready_.set(true);
     } catch (error) {
-        console.error(error);
+        debugError(error);
     }
 }
 
@@ -29,14 +51,14 @@ export const getTransactionObject = async (args: GetTransactionObject) => {
         let contract = await loadContract(args.abi, args.address);
         txObj = contract.methods[args.methodName](...args.methodParams);
     } catch (error) {
-        console.error(error);
+        debugError(error);
     } finally {
         return txObj;
     }
 }
 
 export const readSmartContract = async (args: {
-    abi: Array<any>,
+    abi: any[],
     address: string,
     methodName: string,
     methodParams: Array<any>,
@@ -47,7 +69,7 @@ export const readSmartContract = async (args: {
         let contract = await loadContract(args.abi, args.address);
         result = await contract.methods[args.methodName](...args.methodParams).call();
     } catch (error) {
-        console.error(error);
+        debugError(error);
     } finally {
         return result;
     }
@@ -65,7 +87,7 @@ export const getBalance = async (address: string) => {
         return data;
     })
     .catch((err) => {
-        console.error(err);
+        debugError(err);
     });
 }
 

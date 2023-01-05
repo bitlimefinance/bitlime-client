@@ -4,7 +4,7 @@
 	import { connectMetamask } from '$lib/core/sdk/wallets/metamask';
 	import { mainHeight_, showLoading, theme } from '$lib/stores/ui-theming';
 	import { onMount, tick } from 'svelte';
-	import { accounts, connected, init, selectedNetwork, setAccounts } from '$lib/stores/application';
+	import { accounts, chainsList, connected, init, selectedNetwork, setAccounts, tokensList } from '$lib/stores/application';
 	import Spinner from '$lib/components/general/spinner.svelte';
 	import { loadWeb3 } from '$lib/core/sdk/web3';
 	import { writeLocalStorage } from '$lib/core/utils/localStorage';
@@ -15,6 +15,7 @@
 	import { afterNavigate } from '$app/navigation';
 	import { subscribeToEvent } from '$lib/core/sdk/eip-1193';
 	import Footer from '$lib/components/footer.svelte';
+	import { chains, tokens } from '$lib/core/contents/fallbacks';
 
 	/** @type {import('./$types').LayoutData} */
 	export let data: any;
@@ -73,9 +74,15 @@
 	let mainHeight: number = 0;
 	onMount(async () => {
 		try{
-			mounted = true;
+			console.log(data);
+			ENV.set(data?.env);
+			if (data?.chainsList && data?.chainsList?.length && data?.chainsList.length > 0) chainsList.set(data?.chainsList);
+			else chainsList.set(chains);
+			if (data?.tokensList && data?.tokensList?.length && data?.tokensList.length > 0) tokensList.set(data?.tokensList);
+			else tokensList.set(tokens);
 			mainHeight = window.innerHeight - nav.offsetHeight - footer.offsetHeight;
 			mainHeight_.set(mainHeight);
+			mounted = true;
 			subscribeToEvent('disconnect', () => {
 				window.alert('You have been disconnected from your wallet. The page will reload after dismissing this alert.');
 				accounts.set([]);
@@ -84,7 +91,6 @@
 				window.alert('You have been disconnected from your wallet. The page will reload after dismissing this alert.');
 				accounts.set([]);
 			});
-			ENV.set(data?.envVars?.ENV);
 			
 			if(window) window.bl_rpc = $selectedNetwork?.rpc;
 			await loadWeb3($selectedNetwork?.rpc);
@@ -114,9 +120,17 @@
 				<div class="animate-pulse text-center text-gray-200 w-full text-4xl p-0">BitLime</div>
 			</div>
 		</FullScreenContainer>
+	{:else if !mounted}
+		<FullScreenContainer alwaysShow zIndex='0' noBg noBackDrop>
+			<div class="flex flex-col space-y-4 p-0">
+				<div class="flex w-full justify-center">
+					<Spinner size={'40'} additionalClassList='text-gray-600 dark:text-gray-800'/>
+				</div>
+			</div>
+		</FullScreenContainer>
 	{/if}
 	<Nav bind:element={nav}/>
-	<main style="min-height: {mainHeight}px;">
+	<main class="mx-auto" style="min-height: {mainHeight}px; display: {mounted?"block":"none"}; max-width: 1080px;">
 		<slot/>
 	</main>
 	<span class="{mainHeight?'':'opacity-0'}">

@@ -423,5 +423,13 @@ export const tokens: any = [
         "symbol": "BAT",
         "chain_id": "5",
         "_id": "1667949639787x399002261151238300"
+    },
+    {
+        "address": "0xBbD41C7668e08d39F0D2360D7756CaacCC7008B0",
+        "image": "https://s3.amazonaws.com/appforest_uf/f1670644353042x979300179939404800/logo.png",
+        "name": "Lime Coin",
+        "symbol": "LMC",
+        "chain_id": "5",
+        "_id": "0"
     }
 ]
