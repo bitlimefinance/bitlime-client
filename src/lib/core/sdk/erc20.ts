@@ -60,7 +60,7 @@ export const balanceOf = async (args: {
                 break;
             default:
                 res = await readSmartContract({
-                    abi: abi,
+                    abi: ERC20_ABI,
                     address: args.tokenAddress,
                     methodName: 'balanceOf',
                     methodParams: [args.address]

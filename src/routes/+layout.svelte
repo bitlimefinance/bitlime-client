@@ -6,7 +6,7 @@
 	import { onMount, tick } from 'svelte';
 	import { accounts, chainsList, connected, init, selectedNetwork, setAccounts, tokensList } from '$lib/stores/application';
 	import Spinner from '$lib/components/general/spinner.svelte';
-	import { loadWeb3 } from '$lib/core/sdk/web3';
+	import { loadWeb3 } from '$lib/core/sdk/web3-dep';
 	import { writeLocalStorage } from '$lib/core/utils/localStorage';
 	import FullScreenContainer from '$lib/components/general/fullScreenContainer.svelte';
 	import { _themes, _WALLETS } from '$lib/globals';
@@ -55,7 +55,6 @@
 	const botGuard = () => {
 		clickCount++;
 		if (clickCount > 15) {
-			window.web3 = null;
 			mounted = false;
 			window.alert('Wait, you might be a bot. The page will reload after dismissing this alert.');
 			window.location.reload();

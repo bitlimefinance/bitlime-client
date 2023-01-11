@@ -6,7 +6,7 @@
 	import { balanceOf, totalSupply } from "$lib/core/sdk/erc20";
     import { FACTORY_ABI, FACTORY_ADDRESS } from "$lib/core/sdk/factory";
 	import { LMC_ADDRESS } from "$lib/core/sdk/lime";
-	import { readSmartContract, web3Ready_ } from "$lib/core/sdk/web3";
+	import { readSmartContract, web3Ready_ } from "$lib/core/sdk/web3-dep";
 	import { bigNumberToShort, changeRoute, formatNumber } from "$lib/core/utils/utilities";
 	import { accounts, showConnenct } from "$lib/stores/application";
 	import { mainHeight_ } from "$lib/stores/ui-theming";

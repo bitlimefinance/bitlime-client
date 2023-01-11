@@ -1,5 +1,5 @@
 import type { GetTransactionObject } from "$lib/core/descriptors/interfaces";
-import Web3 from "web3";
+import { ethers } from "ethers";
 import type { EtherUnit } from "../descriptors/types";
 import { writable } from "svelte/store";
 import { debug, debugError } from "../utils/debug";
@@ -8,9 +8,26 @@ export const web3Ready_ = writable(false);
 
 export const ADDRESS_0: Readonly<string> = "0x0000000000000000000000000000000000000000";
 
+export let web3Provider: any;
+export let web3Signer: any;
+
+export const loadWeb3 = async (rpc?: string) => {
+    try {
+        if(window.ethereum) web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+        else web3Provider = new ethers.providers.JsonRpcProvider(rpc || window.bl_rpc || 'https://rpc.ankr.com/eth');
+        web3Ready_.set(true);
+    } catch (error) {
+        debugError(error);
+    }
+}
+
+export const setSigner = async (provider: any = web3Provider) => {
+    web3Signer = provider.getSigner();
+};
+
 export const isAddress = async (address: string) => {
     try {
-        return await window.web3.utils.isAddress(address);
+        return await ethers.utils.isAddress(address);
     } catch (error) {
         debugError(error);
         return false;
@@ -29,27 +46,24 @@ export const validateAddresses = async (addresses: Array<string>) => {
     return valid;
 }
 
-export const loadWeb3 = async (rpc: string) => {
-    try {
-        if(window.ethereum) window.web3 = new Web3(window.ethereum);
-        else window.web3 = new Web3(rpc || window.bl_rpc || 'https://rpc.ankr.com/eth');
-        web3Ready_.set(true);
-    } catch (error) {
-        debugError(error);
-    }
+
+export const loadContractReadOnly = async (abi: any, address: string) => {
+    if (!web3Provider) await loadWeb3(window.bl_rpc);
+    return new ethers.Contract(address, abi).connect(web3Provider);
 }
 
-export const loadContract = async (abi: any, address: string) => {
-    return await new window.web3.eth.Contract(abi, address);
+export const loadContract = async (abi: any, address: string, signer: any = web3Signer) => {
+    return new ethers.Contract(address, abi, signer);
 }
 
 export const getTransactionObject = async (args: GetTransactionObject) => {
     //console.log(args);
     let txObj;
     try {
-        if (!window.web3) await loadWeb3(window.bl_rpc);
-        let contract = await loadContract(args.abi, args.address);
-        txObj = contract.methods[args.methodName](...args.methodParams);
+        let { abi, address, methodName, methodParams } = args;
+        if (!web3Provider) await loadWeb3(window.bl_rpc);
+        let contract = await loadContract(abi, address);
+        txObj = contract.functions[args.methodName](...args.methodParams);
     } catch (error) {
         debugError(error);
     } finally {
@@ -65,9 +79,9 @@ export const readSmartContract = async (args: {
 }) => {
     let result;
     try {
-        if (!window.web3) await loadWeb3(window.bl_rpc);
-        let contract = await loadContract(args.abi, args.address);
-        result = await contract.methods[args.methodName](...args.methodParams).call();
+        if (!web3Provider) await loadWeb3(window.bl_rpc);
+        let contract = await loadContractReadOnly(args.abi, args.address);
+        result = await contract.functions[args.methodName](...args.methodParams);
     } catch (error) {
         debugError(error);
     } finally {
@@ -81,14 +95,9 @@ export const getAddressPreview = (address: string) => {
 }
 
 export const getBalance = async (address: string) => {
-    if (!window.web3) await loadWeb3(window.bl_rpc);
-    return await window.web3.eth.getBalance(address)
-    .then((data) => {
-        return data;
-    })
-    .catch((err) => {
-        debugError(err);
-    });
+    if (!web3Provider) await loadWeb3(window.bl_rpc);
+    let res = await web3Provider.getBalance(address);
+    return res;
 }
 
 export const noOfDecimalsToUnits = (decimals: number = 18) => {
@@ -115,12 +124,29 @@ export const noOfDecimalsToUnits = (decimals: number = 18) => {
 }
 
 export const getGasPrice = async () => {
-    const gas = await window?.web3.eth.getGasPrice();
-    return await gas.toString();
+    if (!web3Provider) await loadWeb3(window.bl_rpc);
+    const gas = await web3Provider.getGasPrice();
+    return gas;
+}
+
+export const getLatestBlock = async () => {
+    if (!web3Provider) await loadWeb3(window.bl_rpc);
+    const gas = await web3Provider.getBlockNumber();
+    return gas;
 }
 
 
-export const estimateGas = async (txObj: any, from: string, value: string) => {
-    const gas = await txObj.estimateGas({ from: from, value: value, gasPrice: await getGasPrice() });
+export const estimateGas = async (data: any, from: string, value: string) => {
+    if (!web3Provider) await loadWeb3(window.bl_rpc);
+    const gas = await web3Provider.estimateGas({ data, from, value, gasPrice: await getGasPrice() });
     return await gas.toString();
+}
+
+export const toWei = (amount: string, unit: EtherUnit | null) => {
+    try {
+        return ethers.utils.parseUnits(amount, unit || 'ether').toString(); // type: string | null
+    } catch (error) {
+        debugError(error);
+        return null;  
+    }
 }

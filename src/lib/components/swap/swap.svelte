@@ -3,7 +3,7 @@
 	import { getAmountsOut, getNativeToken, methodsSwitcher, ROUTER_ADDRESS} from "$lib/core/sdk/router";
 	import { allowance, approve, balanceOf, decimals } from "$lib/core/sdk/erc20";
 	import { sleep } from "$lib/core/utils/utilities";
-	import { getBalance, noOfDecimalsToUnits } from "$lib/core/sdk/web3";
+	import { getBalance, noOfDecimalsToUnits } from "$lib/core/sdk/web3-dep";
 	import { _WALLETS } from "$lib/globals";
 	import { accounts, connected, selectedNetwork, showConnenct } from "$lib/stores/application";
 	import { onMount } from "svelte";
@@ -12,7 +12,7 @@
 	import SwapInput from "./swapInput.svelte";
 	import { SyncLoader } from "svelte-loading-spinners";
 	import SwapSettings from "./swapSettings.svelte";
-
+	import { toWei, web3Provider } from "$lib/core/sdk/web3";
 
     let mounted: boolean = false;
 
@@ -208,7 +208,7 @@
             if(_tokenB == 'native') _tokenB = nativeTokenAddress;
             
 
-            let amountToQuote = await window.web3.utils.toBN(await window?.web3.utils.toWei(value.toString(), noOfDecimalsToUnits(pathDecimals[0])));
+            let amountToQuote = await web3Provider.utils.toBN(await window?.web3.utils.toWei(value.toString(), noOfDecimalsToUnits(pathDecimals[0])));
             if(!amountToQuote) throw new Error('Something went wrong converting amount');
             let quote = await getAmountsOut({
                 amountIn: amountToQuote,
@@ -283,9 +283,9 @@
     const onSwap = async () => {
         if(!(selectedTokenA?.address && selectedTokenB?.address && !noBalance && selectedTokenA?.address!=selectedTokenB?.address)) return;
         try {
-            let amountToWei = '0';
+            let amountToWei: string | null = '0';
             if(selectedTokenA.address == 'native' || selectedTokenB.address == 'native') {
-                amountToWei = await window.web3.utils.toWei(await inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals));
+                amountToWei = await web3Provider.utils.toWei(await inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals));
                 await methodsSwitcher({
                     to: $accounts[0],
                     tokenAddressA: selectedTokenA.address,
@@ -302,7 +302,7 @@
                     await approve({
                         tokenAddress: selectedTokenA.address,
                         spenderAddress: ROUTER_ADDRESS,
-                        amount: await window.web3.utils.toWei(await selectedTokenABalance.toString(), noOfDecimalsToUnits(selectedTokenADecimals))+'000000000',
+                        amount: await web3Provider.utils.toWei(await selectedTokenABalance.toString(), noOfDecimalsToUnits(selectedTokenADecimals))+'000000000',
                         ownerAddress: $accounts[0]
                     });
                 }else {
@@ -315,7 +315,7 @@
                         window.alert('Please select tokens and enter amount');
                         return;
                     }
-                    amountToWei = await window.web3.utils.toWei(await inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals));
+                    amountToWei = toWei(await inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals));
                     await methodsSwitcher({
                         to: $accounts[0],
                         tokenAddressA: selectedTokenA.address,

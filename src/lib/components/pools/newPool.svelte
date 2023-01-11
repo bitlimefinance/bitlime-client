@@ -10,10 +10,11 @@
 	import Toggle from "../general/toggle.svelte";
 	import { getPair } from "$lib/core/sdk/factory";
 	import { LMC_ADDRESS } from "$lib/core/sdk/lime";
-	import { noOfDecimalsToUnits } from "$lib/core/sdk/web3";
+	import { noOfDecimalsToUnits } from "$lib/core/sdk/web3-dep";
 	import { debugWarn } from "$lib/core/utils/debug";
 	import { addLiquidityETH, addLiquidty, ROUTER_ADDRESS } from "$lib/core/sdk/router";
 	import Icon from "../general/icon.svelte";
+	import { web3Provider } from "$lib/core/sdk/web3";
 
     let advanced: boolean = false;
     let mounted: boolean = false;
@@ -76,7 +77,7 @@
             await approve({
                         tokenAddress: tokenA.address,
                         spenderAddress: ROUTER_ADDRESS,
-                        amount: await window.web3.utils.toWei(await balanceA.toString(), noOfDecimalsToUnits(decimalsA))+'000000000',
+                        amount: await web3Provider.utils.toWei(await balanceA.toString(), noOfDecimalsToUnits(decimalsA))+'000000000',
                         ownerAddress: $accounts[0]
                     });
         } else {
@@ -90,7 +91,7 @@
             await approve({
                         tokenAddress: LMC_ADDRESS,
                         spenderAddress: ROUTER_ADDRESS,
-                        amount: await window.web3.utils.toWei(await balanceB.toString(), noOfDecimalsToUnits(18))+'000000000',
+                        amount: await web3Provider.utils.toWei(await balanceB.toString(), noOfDecimalsToUnits(18))+'000000000',
                         ownerAddress: $accounts[0]
                     });
         } else {
@@ -121,8 +122,8 @@
         if(needsApprovalB) return getApprovalB();
         if(notEnoughBalanceA || notEnoughBalanceB) return;
         if(!inputAValue || !inputBValue) return;
-        let inputAToWei = await window.web3.utils.toWei(inputAValue.toString(), noOfDecimalsToUnits(decimalsA));
-        let inputBToWei = await window.web3.utils.toWei(inputBValue.toString(), noOfDecimalsToUnits(decimalsB));
+        let inputAToWei = await web3Provider.utils.toWei(inputAValue.toString(), noOfDecimalsToUnits(decimalsA));
+        let inputBToWei = await web3Provider.utils.toWei(inputBValue.toString(), noOfDecimalsToUnits(decimalsB));
         if(tokenA.address == "native") addLiquidityETH({
             tokenAddress: LMC_ADDRESS,
             amountTokenDesired: inputBToWei,
