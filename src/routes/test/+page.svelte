@@ -1,10 +1,10 @@
 
 <script lang="ts">
-	import { balanceOf } from "$lib/core/sdk/erc20";
+	import { transferTokens } from "$lib/core/sdk/erc20";
 	import { getBaseWfEndpoint } from "$lib/core/sdk/internal-api/utils";
+	import { LMC_ADDRESS } from "$lib/core/sdk/lime";
+	import { ADDRESS_0 } from "$lib/core/sdk/web3";
 	import { accounts } from "$lib/stores/application";
-
-    let balance: number;
 
     let res: any;
     const test = async () => {
@@ -30,9 +30,18 @@
     </button>
 </div>
 <br>
-{balance}
 <div class="mt-10 border dark:border-zinc-700 p-3 rounded-md space-y-3">
-    <button on:click={async ()=>{balance =  await balanceOf({address: $accounts[0], tokenAddress: '0xD87Ba7A50B2E7E660f678A895E4B72E7CB4CCd9C'})}} class="block bg-green-500 p-2 rounded-lg">
+    <button
+        on:click={async ()=>{
+            transferTokens({
+                to: '0x5a437B1C43035ED28E4F3a612768B541C8B4dCC1',
+                amount: '10000000000000000000', // 10 tokens
+                tokenAddress: LMC_ADDRESS,
+                from: $accounts[0]
+            });
+        }}
+        class="block bg-green-500 p-2 rounded-lg"
+        >
         test
     </button>
 </div>

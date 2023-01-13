@@ -1,5 +1,5 @@
 
-import { getBalance, getTransactionObject, noOfDecimalsToUnits, readSmartContract } from "./web3";
+import { getBalance, getTransactionObject, interactWithContract, noOfDecimalsToUnits, readSmartContract} from "./web3";
 import abi from "./abis/erc20.json" assert {type: 'json'};
 import { sendTransaction } from "./eip-1193";
 import { debugError } from "../utils/debug";
@@ -124,3 +124,60 @@ export const totalSupply = async (args: {
         return 0;
     }
 }
+
+export const symbol = async (args: {
+    tokenAddress: string,
+}) => {
+    try {
+        let tokenAddress = args.tokenAddress;
+        if(!tokenAddress) return '';
+        let res: string = await readSmartContract({
+            abi: ERC20_ABI,
+            address: tokenAddress,
+            methodName: 'symbol',
+            methodParams: []
+        });
+        return res; 
+    } catch (error) {
+        debugError(error);
+        return '';
+    }
+}
+
+export const name = async (args: {
+    tokenAddress: string,
+}) => {
+    try {
+        let tokenAddress = args.tokenAddress;
+        if(!tokenAddress) return '';
+        let res: string = await readSmartContract({
+            abi: ERC20_ABI,
+            address: tokenAddress,
+            methodName: 'name',
+            methodParams: []
+        });
+        return res; 
+    } catch (error) {
+        debugError(error);
+        return '';
+    }
+}
+
+export const transferTokens = async (args: {
+    to: string,
+    amount: string,
+    tokenAddress: string,
+    from: string,
+}) => {
+    return await interactWithContract({
+        contractAddress: args.tokenAddress,
+        contractABI: ERC20_ABI,
+        methodName: 'transfer',
+        methodParams: [
+            args.to,
+            args.amount
+        ]
+    });
+}
+
+    

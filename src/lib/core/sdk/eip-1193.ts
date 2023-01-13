@@ -52,9 +52,11 @@ export const sendTransaction = async (params: TransactionParameters) => {
         return txHash;
     } catch (error) {
         console.error(error);
-        return null;  
+        return null;
     }
 };
+
+
 
 export async function switchEthereumChain(chainId: string) {
     if(!ethereumSupported()) return;
