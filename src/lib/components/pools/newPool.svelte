@@ -10,11 +10,10 @@
 	import Toggle from "../general/toggle.svelte";
 	import { getPair } from "$lib/core/sdk/factory";
 	import { LMC_ADDRESS } from "$lib/core/sdk/lime";
-	import { noOfDecimalsToUnits } from "$lib/core/sdk/web3-dep";
 	import { debugWarn } from "$lib/core/utils/debug";
 	import { addLiquidityETH, addLiquidty, ROUTER_ADDRESS } from "$lib/core/sdk/router";
 	import Icon from "../general/icon.svelte";
-	import { web3Provider } from "$lib/core/sdk/web3";
+	import { web3Provider, noOfDecimalsToUnits } from "$lib/core/sdk/web3";
 
     let advanced: boolean = false;
     let mounted: boolean = false;
