@@ -3,7 +3,6 @@
 	import { getAmountsOut, getNativeToken, methodsSwitcher, ROUTER_ADDRESS} from "$lib/core/sdk/router";
 	import { allowance, approve, balanceOf, decimals } from "$lib/core/sdk/erc20";
 	import { sleep } from "$lib/core/utils/utilities";
-	import { getBalance, noOfDecimalsToUnits } from "$lib/core/sdk/web3-dep";
 	import { _WALLETS } from "$lib/globals";
 	import { accounts, connected, selectedNetwork, showConnenct } from "$lib/stores/application";
 	import { onMount } from "svelte";
@@ -12,7 +11,7 @@
 	import SwapInput from "./swapInput.svelte";
 	import { SyncLoader } from "svelte-loading-spinners";
 	import SwapSettings from "./swapSettings.svelte";
-	import { toWei, web3Provider } from "$lib/core/sdk/web3";
+	import { toWei, web3Provider, getBalance, noOfDecimalsToUnits } from "$lib/core/sdk/web3";
 
     let mounted: boolean = false;
 

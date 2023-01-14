@@ -1,4 +1,4 @@
-import type { GetTransactionObject } from "$lib/core/descriptors/interfaces";
+
 import { ethers, Signer } from "ethers";
 import type { EtherUnit } from "../descriptors/types";
 import { writable } from "svelte/store";
@@ -69,28 +69,28 @@ export const web3Validations = async (requireSigner?: boolean, addressesToCheck?
 };
 
 
-export const interactWithContract = async (args: {contractAddress: string, contractABI: any, methodName: string, methodParams: any[], value?: string}) => {
+export const interactWithContract = async (args: {address: string, abi: any, methodName: string, methodParams: any[], value?: string}) => {
     try {
-        const { contractAddress, contractABI, methodName, methodParams } = args;
+        const { address, abi, methodName, methodParams } = args;
         const value = args.value || '0';
 
-        web3Validations(true, [contractAddress]);
+        web3Validations(true, [address]);
 
         // get signer
         const signer = await getSigner() as Signer;
 
         // Connect to the contract
-        const contract = new ethers.Contract(contractAddress, contractABI, signer);
+        const contract = new ethers.Contract(address, abi, signer);
 
-        // Prepare the contract function call
-        const contractFunction = contract.functions[methodName](...methodParams);
-
-        // Estimate the gas required
+        // Estimate the gas needed for the transaction
         const gasEstimate = await contract.estimateGas[methodName](...methodParams);
         debug(`Gas estimate: ${gasEstimate.toString()}`);
         
-        // Create and sign the transaction
-        const tx = await contractFunction.send({ value, gasLimit: gasEstimate });
+        // Prepare the contract function call
+        const tx = await contract.functions[methodName](...methodParams, {
+            value,
+            gasLimit: gasEstimate
+        });
 
         // Wait for the transaction to be mined
         const receipt = await tx.wait();
@@ -110,6 +110,9 @@ export const sendTransaction = async (args:{toAddress: string, amount: string}) 
         const amount = args.amount || '0';
 
         web3Validations(true, [toAddress]);
+
+        // get signer
+        const signer = await getSigner() as Signer;
 
         // Set the amount to send in wei
         const weiAmount = ethers.utils.parseEther(amount);
@@ -142,22 +145,11 @@ export const loadContractReadOnly = async (abi: any, address: string) => {
 
 export const loadContract = async (abi: any, address: string) => {
     web3Validations(true, [address]);
-    return new ethers.Contract(address, abi, signer);
-}
 
-export const getTransactionObject = async (args: GetTransactionObject) => { // !!! deprecated !!!
-    //console.log(args);
-    let txObj;
-    try {
-        let { abi, address, methodName, methodParams } = args;
-        if (!web3Provider) await loadWeb3(window.bl_rpc);
-        let contract = await loadContract(abi, address);
-        txObj = contract.functions[args.methodName](...args.methodParams);
-    } catch (error) {
-        debugError(error);
-    } finally {
-        return txObj;
-    }
+    // get signer
+    const signer = await getSigner() as Signer;
+
+    return new ethers.Contract(address, abi, signer);
 }
 
 export const readSmartContract = async (args: {

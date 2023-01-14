@@ -1,12 +1,5 @@
 import type { _WALLETS } from "../../globals";
 
-export interface GetTransactionObject {
-    abi: Array<any>,
-    address: string,
-    methodName: string,
-    methodParams: Array<any>
-}
-
 export interface TransactionParameters {
     to: string, // Required except during contract publications.
     from: any, // must match user's active address.

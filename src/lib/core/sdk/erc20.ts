@@ -1,7 +1,6 @@
 
-import { getBalance, getTransactionObject, interactWithContract, noOfDecimalsToUnits, readSmartContract} from "./web3";
+import { getBalance, interactWithContract, readSmartContract} from "./web3";
 import abi from "./abis/erc20.json" assert {type: 'json'};
-import { sendTransaction } from "./eip-1193";
 import { debugError } from "../utils/debug";
 import { get } from "svelte/store";
 import { selectNetwork } from "$lib/stores/application";
@@ -43,7 +42,7 @@ export const allowance = async (args: {
         return data;
     })
     .catch((err) => {
-        // console.error(err);
+        debugError(err);
     });
 };
 
@@ -69,7 +68,7 @@ export const balanceOf = async (args: {
         }
         return res; 
     } catch (error) {
-        console.error(error);
+        debugError(error);
         return 0;
     }
 };
@@ -80,30 +79,19 @@ export const approve = async (args: {
     tokenAddress: string,
     ownerAddress: string,
 }) => {
-    getTransactionObject({
-        abi: ERC20_ABI,
-        address: args.tokenAddress,
-        methodName: 'approve',
-        methodParams: [
-            args.spenderAddress, // spender
-            args.amount, // amount
-        ],
-    })
-    .then(async (data)=>{
-        await sendTransaction({
-            to: args.tokenAddress,
-            from: args.ownerAddress,
-            value: null,
-            data: data?.encodeABI(),
-            chainId: null,
-            gasPrice: null,
-            gas: null,
-            nonce: null
+    try {
+        await interactWithContract({
+            abi: ERC20_ABI,
+            address: args.tokenAddress,
+            methodName: 'approve',
+            methodParams: [
+                args.spenderAddress, // spender
+                args.amount, // amount
+            ]
         });
-    })
-    .catch((err)=>{
-        console.log(err);
-    });
+    } catch (error) {
+        debugError(error);
+    }
 }
 
 export const totalSupply = async (args: {
