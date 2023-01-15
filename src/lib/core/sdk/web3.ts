@@ -1,5 +1,5 @@
 
-import { ethers, Signer } from "ethers";
+import { BigNumber, ethers, Signer } from "ethers";
 import type { EtherUnit } from "../descriptors/types";
 import { writable } from "svelte/store";
 import { debug, debugError } from "../utils/debug";
@@ -57,7 +57,7 @@ export const validateAddresses = async (addresses: Array<string>) => {
     }
 }
 
-export const web3Validations = async (requireSigner?: boolean, addressesToCheck?: string[]) => {
+export const txPreflight = async (requireSigner?: boolean, addressesToCheck?: string[]) => {
     if (!web3Provider) await loadWeb3(window.bl_rpc);
     if(requireSigner){
         const signer = await getSigner();
@@ -74,7 +74,7 @@ export const interactWithContract = async (args: {address: string, abi: any, met
         const { address, abi, methodName, methodParams } = args;
         const value = args.value || '0';
 
-        web3Validations(true, [address]);
+        txPreflight(true, [address]);
 
         // get signer
         const signer = await getSigner() as Signer;
@@ -109,7 +109,7 @@ export const sendTransaction = async (args:{toAddress: string, amount: string}) 
         const toAddress = args.toAddress;
         const amount = args.amount || '0';
 
-        web3Validations(true, [toAddress]);
+        txPreflight(true, [toAddress]);
 
         // get signer
         const signer = await getSigner() as Signer;
@@ -139,12 +139,12 @@ export const sendTransaction = async (args:{toAddress: string, amount: string}) 
 
 
 export const loadContractReadOnly = async (abi: any, address: string) => {
-    web3Validations(false, [address]);
+    txPreflight(false, [address]);
     return new ethers.Contract(address, abi).connect(web3Provider);
 }
 
 export const loadContract = async (abi: any, address: string) => {
-    web3Validations(true, [address]);
+    txPreflight(true, [address]);
 
     // get signer
     const signer = await getSigner() as Signer;
@@ -160,7 +160,7 @@ export const readSmartContract = async (args: {
 }) => {
     let result;
     try {
-        web3Validations(false, [args.address]);
+        txPreflight(false, [args.address]);
         let contract = await loadContractReadOnly(args.abi, args.address);
         result = await contract.functions[args.methodName](...args.methodParams);
     } catch (error) {
@@ -176,7 +176,7 @@ export const getAddressPreview = (address: string) => {
 }
 
 export const getBalance = async (address: string) => {
-    web3Validations(false, [address]);
+    txPreflight(false, [address]);
     let res = await web3Provider.getBalance(address);
     return res;
 }
@@ -205,20 +205,20 @@ export const noOfDecimalsToUnits = (decimals: number = 18) => {
 }
 
 export const getGasPrice = async () => {
-    web3Validations();
+    txPreflight();
     const gas = await web3Provider.getGasPrice();
     return gas;
 }
 
 export const getLatestBlock = async () => {
-    web3Validations();
+    txPreflight();
     const gas = await web3Provider.getBlockNumber();
     return gas;
 }
 
 
 export const estimateGas = async (data: any, from: string, value: string) => {
-    web3Validations();
+    txPreflight();
     const gas = await web3Provider.estimateGas({ data, from, value, gasPrice: await getGasPrice() });
     return await gas.toString();
 }
@@ -226,6 +226,33 @@ export const estimateGas = async (data: any, from: string, value: string) => {
 export const toWei = (amount: string, unit: EtherUnit | null) => {
     try {
         return ethers.utils.parseUnits(amount, unit || 'ether').toString(); // type: string | null
+    } catch (error) {
+        debugError(error);
+        return null;  
+    }
+}
+
+export const fromWei = (amount: string, unit: EtherUnit | null) => {
+    try {
+        return ethers.utils.formatUnits(amount, unit || 'ether'); // type: string | null
+    } catch (error) {
+        debugError(error);
+        return null;
+    }
+}
+
+export const toBigNumber = (amount: string) => {
+    try {
+        return ethers.BigNumber.from(amount);
+    } catch (error) {
+        debugError(error);
+        return null;  
+    }
+}
+
+export const fromBigNumber = (amount: BigNumber) => {
+    try {
+        return ethers.BigNumber.from(amount).toString();
     } catch (error) {
         debugError(error);
         return null;  

@@ -11,7 +11,8 @@
 	import SwapInput from "./swapInput.svelte";
 	import { SyncLoader } from "svelte-loading-spinners";
 	import SwapSettings from "./swapSettings.svelte";
-	import { toWei, web3Provider, getBalance, noOfDecimalsToUnits } from "$lib/core/sdk/web3";
+	import { toWei, web3Provider, getBalance, noOfDecimalsToUnits, toBigNumber, fromWei, fromBigNumber } from "$lib/core/sdk/web3";
+	import { debug, debugError, debugWarn } from "$lib/core/utils/debug";
 
     let mounted: boolean = false;
 
@@ -39,7 +40,7 @@
     let gettingQuote: boolean = false;
     let switching: boolean = false;
 
-    let swapRate: number = 0;
+    let swapRate: number | string = 0;
     let gettingSwapRate: boolean = false;
     let swapRatePath: any[] = [selectedTokenA, selectedTokenB];
     let swapRatePathDecimals: any[] = [selectedTokenADecimals, selectedTokenBDecimals];
@@ -54,7 +55,7 @@
                 callback(data);
             })
             .catch((err) => {
-                console.error(err);
+                debugError(err);
             })
         }
     }
@@ -67,7 +68,7 @@
                 callback(data);
             })
             .catch((err) => {
-                console.error(err);
+                debugError(err);
             })
         }else{
             balanceOf({
@@ -75,10 +76,10 @@
                 tokenAddress: address,
             })
             .then((data) => {
-                callback(data);
+                callback(data.toString());
             })
             .catch((err) => {
-                console.error(err);
+                debugError(err);
             }); 
         }
         refreshCounter = refreshTimer;
@@ -96,7 +97,7 @@
                     }
                     noBalance = false;
                 }catch(err) {
-                    console.error(err);
+                    debugError(err);
                 }finally{
                     gettingData = false;
                 }
@@ -108,7 +109,7 @@
                 try{
                     selectedTokenBBalance = parseFloat(data);
                 }catch(err) {
-                    console.error(err);
+                    debugError(err);
                 }finally{
                     gettingData = false;
                 }
@@ -129,7 +130,7 @@
             tokenAddress: selectedTokenA.address,
         })
         .then((res) => {
-            let balance = parseFloat(res);
+            let balance = res;
             selectedTokenABalance = balance;
             if(res == 0 || res < inputAValue) {
                 noBalance = true;
@@ -148,14 +149,14 @@
                 else tokenNeedsAllowance = true;
             })
             .catch((err) => {
-                console.error(err);
+                debugError(err);
             })
             .finally(() => {
                 gettingData = false;
             })
         })
         .catch((err) => {
-            console.error(err);
+            debugError(err);
         })
         .finally(() => {
             gettingData = false;
@@ -207,19 +208,20 @@
             if(_tokenB == 'native') _tokenB = nativeTokenAddress;
             
 
-            let amountToQuote = await web3Provider.utils.toBN(await window?.web3.utils.toWei(value.toString(), noOfDecimalsToUnits(pathDecimals[0])));
+            let amountToQuote = toWei(value.toString(), noOfDecimalsToUnits(pathDecimals[0]));
             if(!amountToQuote) throw new Error('Something went wrong converting amount');
-            let quote = await getAmountsOut({
+            let bnQuote = await getAmountsOut({
                 amountIn: amountToQuote,
                 tokenAddressA: _tokenA,
                 tokenAddressB: _tokenB
             })
-            
-            let res = await window?.web3.utils.fromWei(quote[1].toString(), noOfDecimalsToUnits(pathDecimals[1]));
-            if(getSwapRate) swapRate = res;
+
+            let quote: any[] = [fromBigNumber(bnQuote[0][0]), fromBigNumber(bnQuote[0][1])];
+            let res = fromWei(quote[1].toString(), noOfDecimalsToUnits(pathDecimals[1]));
+            if(getSwapRate) swapRate = res as string;
             else inputBValue = res;
         }catch(err) {
-            // console.error(err);
+            debugError(err);
         }finally{
             gettingData = false;
             gettingQuote = false;
@@ -234,7 +236,7 @@
             if(inputAValue && typeof inputAValue == 'number') inputAValue = parseFloat(inputAValue.toFixed(selectedTokenADecimals));
             if(inputBValue && typeof inputBValue == 'number') inputBValue = parseFloat(inputBValue.toFixed(selectedTokenBDecimals));
         } catch (error) {
-            console.warn(error);
+            debugWarn(error);
         }
         try{
             if(doCheckAllowance) await checkAllowance();
@@ -243,7 +245,7 @@
             await getQuote();
             getQuote(true);
         }catch(err) {
-            console.error(err);
+            debugError(err);
         }finally{
             gettingData = false;
         }
@@ -271,7 +273,7 @@
         try { 
             fetchTokenInfo();
         } catch (error) {
-            // console.error(error);
+            // debugError(error);
         } finally {
             setTimeout(() => {
                 canUpdateTrashold = true;
@@ -284,7 +286,7 @@
         try {
             let amountToWei: string | null = '0';
             if(selectedTokenA.address == 'native' || selectedTokenB.address == 'native') {
-                amountToWei = await web3Provider.utils.toWei(await inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals));
+                amountToWei = toWei(await inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals));
                 await methodsSwitcher({
                     to: $accounts[0],
                     tokenAddressA: selectedTokenA.address,
@@ -326,7 +328,7 @@
                 showConnenct.set(true);
             }
         } catch (error) {
-            console.error(error);
+            debugError(error);
         } finally {
             gettingData = false;
         }
