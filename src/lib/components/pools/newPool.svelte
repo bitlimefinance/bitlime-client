@@ -13,7 +13,8 @@
 	import { debugWarn } from "$lib/core/utils/debug";
 	import { addLiquidityETH, addLiquidty, ROUTER_ADDRESS } from "$lib/core/sdk/router";
 	import Icon from "../general/icon.svelte";
-	import { web3Provider, noOfDecimalsToUnits } from "$lib/core/sdk/web3";
+	import { web3Provider } from "$lib/core/sdk/web3/provider/lib";
+	import { noOfDecimalsToUnits } from "$lib/core/sdk/web3/utils/units/lib";
 
     let advanced: boolean = false;
     let mounted: boolean = false;

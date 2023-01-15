@@ -11,8 +11,11 @@
 	import SwapInput from "./swapInput.svelte";
 	import { SyncLoader } from "svelte-loading-spinners";
 	import SwapSettings from "./swapSettings.svelte";
-	import { toWei, web3Provider, getBalance, noOfDecimalsToUnits, toBigNumber, fromWei, fromBigNumber } from "$lib/core/sdk/web3";
 	import { debug, debugError, debugWarn } from "$lib/core/utils/debug";
+	import { fromWei, noOfDecimalsToUnits, toWei } from "$lib/core/sdk/web3/utils/units/lib";
+	import { web3Provider } from "$lib/core/sdk/web3/provider/lib";
+	import { getAddressBalance } from "$lib/core/sdk/web3/utils/addresses/lib";
+	import { fromBigNumber, toBigNumber } from "$lib/core/sdk/web3/utils/bigNumber/lib";
 
     let mounted: boolean = false;
 
@@ -63,7 +66,7 @@
     const getTokenBalance = async (address: string, callback: FunctionStringCallback) => {        
         if(!address && $accounts?.length <= 0) return;
         if(address === 'native' && $accounts[0]) {
-            getBalance($accounts[0])
+            getAddressBalance($accounts[0])
             .then((data) => {
                 callback(data);
             })

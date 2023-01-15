@@ -1,5 +1,7 @@
 import { debugError, debug } from "$lib/core/utils/debug";
-import { ethers } from "ethers";
+import { ethers, Signer } from "ethers";
+import { getSigner } from "../signer/lib";
+import { txPreflight } from "./txPreflight";
 
 export const sendTransaction = async (args: { toAddress: string, amount: string }) => {
     try {

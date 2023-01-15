@@ -1,6 +1,8 @@
-import { web3Provider } from "$lib/core/sdk/web3";
+
 import { debugError } from "$lib/core/utils/debug";
 import { ethers } from "ethers";
+import { web3Provider } from "../../provider/lib";
+import { txPreflight } from "../../transactions/txPreflight";
 
 export const getAddressPreview = (address: string) => {
     if (!address) return;

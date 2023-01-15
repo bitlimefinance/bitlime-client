@@ -2,14 +2,14 @@ import { _WALLETS } from "$lib/globals";
 import { setConnected } from "$lib/stores/application";
 import { tick } from "svelte";
 import { metamaskAccounts } from "../eip-1193";
-import { loadWeb3, web3Provider } from "../web3";
+import { setProvider, web3Provider } from "../web3/provider/lib";
 
 // export const metamaskInstalled: boolean = ethereumSupported() && window.ethereum.isMetaMask;
 
 export const connectMetamask = async () => {
     try {
         if(window.ethereum){
-            if(!web3Provider) await loadWeb3();
+            if(!web3Provider) await setProvider();
             await web3Provider.send('eth_requestAccounts', []);
             let connectedAccounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             metamaskAccounts.set(connectedAccounts);
