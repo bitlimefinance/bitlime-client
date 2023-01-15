@@ -43,26 +43,26 @@ export const readSmartContract = async (args: {
     abi: any[],
     address: string,
     methodName: string,
-    methodParams: Array<any>,
+    methodParams: any[],
 }) => {
     let result;
     try {
         txPreflight(false, [args.address]);
-        let contract = await loadContractReadOnly(args.abi, args.address);
+        const contract = await loadContractReadOnly(args.abi, args.address);
+        console.log(args);
         result = await contract.functions[args.methodName](...args.methodParams);
+        return result;
     } catch (error) {
         debugError(error);
-    } finally {
-        return result;
     }
 }
 
-export const loadContractReadOnly = async (abi: any, address: string) => {
+export const loadContractReadOnly = async (abi: any[], address: string) => {
     txPreflight(false, [address]);
     return new ethers.Contract(address, abi).connect(web3Provider);
 }
 
-export const loadContract = async (abi: any, address: string) => {
+export const loadContract = async (abi: any[], address: string) => {
     txPreflight(true, [address]);
 
     // get signer

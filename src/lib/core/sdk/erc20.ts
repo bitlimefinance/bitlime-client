@@ -1,9 +1,10 @@
 
-import { getBalance, interactWithContract, readSmartContract} from "./web3";
 import abi from "./abis/erc20.json" assert {type: 'json'};
 import { debugError } from "../utils/debug";
 import { get } from "svelte/store";
-import { selectNetwork } from "$lib/stores/application";
+import { selectedNetwork } from "$lib/stores/application";
+import { interactWithContract, readSmartContract } from "./web3/contracts/lib";
+import { getAddressBalance } from "./web3/utils/addresses/lib";
 
 export const ERC20_ABI: any[] = abi;
 
@@ -11,9 +12,9 @@ export const decimals = async (args: {
     tokenAddress: string,
 }) => {
     try{
-        if(args.tokenAddress === 'native') return get(selectNetwork)?.decimals || 18;
+        if(args.tokenAddress === 'native') return get(selectedNetwork)?.decimals || 18;
         else {
-            let res = await readSmartContract({
+            const res = await readSmartContract({
                 abi: abi,
                 address: args.tokenAddress,
                 methodName: 'decimals',
@@ -52,10 +53,10 @@ export const balanceOf = async (args: {
 }) => {
     try {
         if(!args.address || !args.tokenAddress) return 0;
-        let res: number = 0;
+        let res = 0;
         switch(args.tokenAddress){
             case 'native' || '':
-                res = await getBalance(args.address);
+                res = await getAddressBalance(args.address);
                 break;
             default:
                 res = await readSmartContract({
@@ -98,9 +99,9 @@ export const totalSupply = async (args: {
     tokenAddress: string,
 }) => {
     try {
-        let tokenAddress = args.tokenAddress;
+        const tokenAddress = args.tokenAddress;
         if(!tokenAddress) return 0;
-        let res: number = await readSmartContract({
+        const res: number = await readSmartContract({
             abi: ERC20_ABI,
             address: tokenAddress,
             methodName: 'totalSupply',
@@ -117,9 +118,9 @@ export const symbol = async (args: {
     tokenAddress: string,
 }) => {
     try {
-        let tokenAddress = args.tokenAddress;
+        const tokenAddress = args.tokenAddress;
         if(!tokenAddress) return '';
-        let res: string = await readSmartContract({
+        const res: string = await readSmartContract({
             abi: ERC20_ABI,
             address: tokenAddress,
             methodName: 'symbol',
@@ -136,9 +137,9 @@ export const name = async (args: {
     tokenAddress: string,
 }) => {
     try {
-        let tokenAddress = args.tokenAddress;
+        const tokenAddress = args.tokenAddress;
         if(!tokenAddress) return '';
-        let res: string = await readSmartContract({
+        const res: string = await readSmartContract({
             abi: ERC20_ABI,
             address: tokenAddress,
             methodName: 'name',
@@ -158,8 +159,8 @@ export const transferTokens = async (args: {
     from: string,
 }) => {
     return await interactWithContract({
-        contractAddress: args.tokenAddress,
-        contractABI: ERC20_ABI,
+        address: args.tokenAddress,
+        abi: ERC20_ABI,
         methodName: 'transfer',
         methodParams: [
             args.to,

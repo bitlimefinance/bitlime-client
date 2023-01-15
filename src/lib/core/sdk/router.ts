@@ -1,10 +1,10 @@
 
 import { accounts, latestBlock } from "$lib/stores/application";
 import { get } from "svelte/store";
-import { ADDRESS_0, interactWithContract, readSmartContract } from "./web3";
 import abi from "./abis/router.json" assert {type: 'json'};
 import { debug, debugError } from "../utils/debug";
-
+import { constants } from "ethers";
+import { interactWithContract, readSmartContract } from "./web3/contracts/lib";
 
 export const ROUTER_ADDRESS: Readonly<string> = '0xAcfA21F4f4148A0EAf0420D972E1a75c17ef9B4b';
 export const ROUTER_ABI: any[] = abi;
@@ -17,6 +17,9 @@ export const getNativeToken = async () => {
         methodName: 'WETH',
         methodParams: [],
     });
+    
+    if(!address || address===constants.AddressZero) throw new Error('No token found');
+    if(address.length) return address[0];    
     return address;
 }
 
@@ -31,7 +34,7 @@ export const getAmountsOut = async (args: {
         address: ROUTER_ADDRESS,
         abi: ROUTER_ABI,
         methodName: 'getAmountsOut',
-        methodParams: [amountIn, [tokenAddressA,tokenAddressB], affiliateAddress || ADDRESS_0]
+        methodParams: [amountIn, [tokenAddressA,tokenAddressB], affiliateAddress || constants.AddressZero]
     })
 }
 
@@ -45,8 +48,8 @@ export const getAmountsIn = async (args: {
     return await readSmartContract({
         address: ROUTER_ADDRESS,
         abi: ROUTER_ABI,
-        methodName: 'getAmountsOut',
-        methodParams: [amountOut, [tokenAddressA,tokenAddressB], affiliateAddress || ADDRESS_0]
+        methodName: 'getAmountsIn',
+        methodParams: [amountOut, [tokenAddressA,tokenAddressB], affiliateAddress || constants.AddressZero]
     })
 }
 
@@ -71,7 +74,7 @@ export const swapExactTokensForTokens = async (args: {
                 [args.tokenAddressA,args.tokenAddressB], // path
                 args.to || get(accounts)[0],// to
                 (args.deadline || get(latestBlock) + 10).toString(), // deadline
-                args.affiliateAddress || ADDRESS_0 // affiliateAddress
+                args.affiliateAddress || constants.AddressZero // affiliateAddress
             ],
         });
 
@@ -105,7 +108,7 @@ export const swapExactETHForTokens = async (args: {
                 [nativeToken,args.tokenAddressB], // path
                 args.to || get(accounts)[0], // to
                 (args.deadline || get(latestBlock) + 10).toString(), // deadline
-                args.affiliateAddress || ADDRESS_0 // affiliateAddress
+                args.affiliateAddress || constants.AddressZero // affiliateAddress
             ],
         });
 
@@ -141,7 +144,7 @@ export const swapExactTokensForETH = async (args: {
                 [args.tokenAddressA,nativeToken], // path
                 args.to || get(accounts)[0],// to
                 (args.deadline || get(latestBlock) + 10).toString(), // deadline
-                args.affiliateAddress || ADDRESS_0 // affiliateAddress
+                args.affiliateAddress || constants.AddressZero // affiliateAddress
             ],
         });
 

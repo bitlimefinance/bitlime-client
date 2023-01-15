@@ -6,7 +6,6 @@
 	import { onMount, tick } from 'svelte';
 	import { accounts, chainsList, connected, init, selectedNetwork, setAccounts, tokensList } from '$lib/stores/application';
 	import Spinner from '$lib/components/general/spinner.svelte';
-	import { loadWeb3 } from '$lib/core/sdk/web3';
 	import { writeLocalStorage } from '$lib/core/utils/localStorage';
 	import FullScreenContainer from '$lib/components/general/fullScreenContainer.svelte';
 	import { _themes, _WALLETS } from '$lib/globals';
@@ -16,6 +15,7 @@
 	import { subscribeToEvent } from '$lib/core/sdk/eip-1193';
 	import Footer from '$lib/components/footer.svelte';
 	import { chains, tokens } from '$lib/core/contents/fallbacks';
+	import { setProvider } from '$lib/core/sdk/web3/provider/lib';
 
 	/** @type {import('./$types').LayoutData} */
 	export let data: any;
@@ -47,7 +47,7 @@
 	selectedNetwork.subscribe(async (value: any) => {
 		if (mounted) {
 			window.bl_rpc = value?.rpc;
-			await loadWeb3(value?.rpc);
+			await setProvider(value?.rpc);
 		};
 	});
 
@@ -92,7 +92,7 @@
 			});
 			
 			if(window) window.bl_rpc = $selectedNetwork?.rpc;
-			await loadWeb3($selectedNetwork?.rpc);
+			await setProvider($selectedNetwork?.rpc);
 			setBodyTheme();
 			await connectMetamask();
 			await tick();

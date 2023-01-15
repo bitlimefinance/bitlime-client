@@ -11,7 +11,7 @@ export const connectMetamask = async () => {
         if(window.ethereum){
             if(!web3Provider) await setProvider();
             await web3Provider.send('eth_requestAccounts', []);
-            let connectedAccounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const connectedAccounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             metamaskAccounts.set(connectedAccounts);
             await tick();
             setConnected(_WALLETS.METAMASK);

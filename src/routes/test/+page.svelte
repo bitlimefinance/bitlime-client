@@ -3,7 +3,6 @@
 	import { transferTokens } from "$lib/core/sdk/erc20";
 	import { getBaseWfEndpoint } from "$lib/core/sdk/internal-api/utils";
 	import { LMC_ADDRESS } from "$lib/core/sdk/lime";
-	import { ADDRESS_0 } from "$lib/core/sdk/web3";
 	import { accounts } from "$lib/stores/application";
 
     let res: any;

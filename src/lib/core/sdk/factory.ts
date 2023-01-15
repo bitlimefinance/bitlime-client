@@ -1,25 +1,27 @@
 
 
 import abi from "./abis/factory.json" assert {type: 'json'};
-import { ADDRESS_0, isAddress, readSmartContract, validateAddresses } from "./web3";
+import { readSmartContract } from "./web3/contracts/lib";
+import { validateAddresses } from "./web3/utils/addresses/lib";
+import { constants } from "ethers";
 
 export const FACTORY_ADDRESS: Readonly<string> = '0x60D1A84F61D63632380f03d246669B55dd00bc4E';
-export const FACTORY_ABI: Array<any> = abi;
+export const FACTORY_ABI: any[] = abi;
 
 export const getPair = async (args: {
-    tokenAddressA: any,
-    tokenAddressB: any,
+    tokenAddressA: string,
+    tokenAddressB: string,
 }) => {
     const { tokenAddressA, tokenAddressB } = args;
     if (!tokenAddressA || !tokenAddressB) return null;
     if (!await validateAddresses([tokenAddressA, tokenAddressB])) return null;
-    let pair =  await readSmartContract({
+    const pair =  await readSmartContract({
         abi: FACTORY_ABI,
         address: FACTORY_ADDRESS,
         methodName: 'getPair',
         methodParams: [tokenAddressA, tokenAddressB],
     });
-    if (pair && pair!==ADDRESS_0) return pair;
+    if (pair && pair!==constants.AddressZero) return pair;
     return null;
 }
 

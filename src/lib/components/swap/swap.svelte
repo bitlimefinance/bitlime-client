@@ -210,9 +210,9 @@
             if(_tokenA == 'native') _tokenA = nativeTokenAddress;
             if(_tokenB == 'native') _tokenB = nativeTokenAddress;
             
-
             let amountToQuote = toWei(value.toString(), noOfDecimalsToUnits(pathDecimals[0]));
             if(!amountToQuote) throw new Error('Something went wrong converting amount');
+            
             let bnQuote = await getAmountsOut({
                 amountIn: amountToQuote,
                 tokenAddressA: _tokenA,
@@ -246,7 +246,7 @@
             else await checkBalance();
             await checkDecimals();
             await getQuote();
-            getQuote(true);
+            await getQuote(true);
         }catch(err) {
             debugError(err);
         }finally{
