@@ -59,7 +59,6 @@
         {/each}
     </div>
     <div class="flex justify-end items-center gap-3">
-      <!-- <ThemeToggle/> -->
       <Button
         label={$selectedNetwork&&$selectedNetwork.name?$selectedNetwork.name:'Select a network'}
         badge={$selectedNetwork&&$selectedNetwork.is_testnet?'TESTNET':''}
