@@ -10,4 +10,5 @@
 }
 .dark *:not(svg):not(path):not(span){
     color: #fff;
+    border-color: rgb(136, 136, 136);
 }

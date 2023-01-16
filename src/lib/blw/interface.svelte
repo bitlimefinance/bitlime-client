@@ -5,11 +5,27 @@
     import { _themes } from "$lib/globals";
     import { theme } from "$lib/stores/ui-theming";
     import { accounts, selectedNetwork, selectNetwork } from "$lib/stores/application";
-	import { getAddressPreview } from "$lib/core/sdk/web3/utils/addresses/lib";
+	import { getAddressBalance, getAddressPreview } from "$lib/core/sdk/web3/utils/addresses/lib";
 	import Icon from "$lib/components/general/icon.svelte";
+	import { onMount } from "svelte";
+	import { fromWei } from "$lib/core/sdk/web3/utils/units/lib";
+	import { formatNumber } from "$lib/core/utils/utilities";
+	import Tooltip from "$lib/components/general/tooltip.svelte";
+
+    let balance: string = '0';
+
+    onMount(async () => {
+        try {
+            if ($accounts && $accounts.length > 0) {
+                balance = fromWei(await getAddressBalance($accounts[0]), 'ether') || '0';
+            }
+        } catch (error) {
+            
+        }
+    });
 </script>
 
-<div id="blw" class="h-32 w-full border">
+<div id="blw" class="pb-5 w-full border">
     <section id="blw-nav" class="w-full flex justify-between items-center px-2.5 py-3.5 border-b">
         <div id="blw-nav-left">
             <img src="/assets/bl-logos/{$theme==_themes.dark?'logo-bold.png':'logo-bold.png'}" alt="logo" class="h-7" />
@@ -32,13 +48,39 @@
             </Button>
         </div>
     </section>
-    <section id="blw-account-info" class="border-b py-2">
-        <div class="flex justify-center items-center gap-2">
-            <div>
-                {getAddressPreview($accounts[0])}
+    <section id="blw-account-info" class="border-b py-2 w-full flex justify-between px-3">
+        <div class="w-10"></div>
+        <div>
+            <div class="font-semibold text-sm w-full text-center">
+                Account
             </div>
-            <Icon icon="clipboard" outline classList="cursor-pointer hover:opacity-70" size={4}/>
+            <div class="flex justify-center items-center gap-2">
+                <div>
+                    {getAddressPreview($accounts[0])}
+                </div>
+                <Icon icon="clipboard" size={4} outline classList="cursor-pointer hover:opacity-80" on:click={()=>{
+                    navigator.clipboard.writeText($accounts[0]);
+                }}/>
+            </div>
         </div>
+        <div class="flex items-center justify-end w-10">
+            <Icon icon="ellipsis-vertical" size={6} classList="cursor-pointer hover:opacity-80"/>
+        </div>
+    </section>
+    <section id="blw-balance" class="py-5">
+        <div class="w-fit mx-auto mb-4">
+            <div class="h-10 w-10 rounded-full border"/>
+        </div>
+        <Tooltip content={balance}>
+        <div class="w-fit flex items-center mx-auto gap-2 text-4xl font-semibold">
+            <div>
+                {formatNumber(balance, 'number', 0, 5)}
+            </div>
+            <div>
+                {$selectedNetwork?.symbol || 'ETH'}
+            </div>
+        </div>
+    </Tooltip>
     </section>
 </div>
 <SelectNetwork />

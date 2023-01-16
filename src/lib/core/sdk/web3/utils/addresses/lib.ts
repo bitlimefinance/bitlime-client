@@ -3,6 +3,7 @@ import { debugError } from "$lib/core/utils/debug";
 import { web3Provider } from "../../provider/lib";
 import { txPreflight } from "../../transactions/txPreflight";
 import { isAddress } from "ethers/lib/utils";
+import { fromBigNumber } from "../bigNumber/lib";
 
 export const getAddressPreview = (address: string) => {
     if (!address) return;
@@ -27,7 +28,13 @@ export const validateAddresses = async (addresses: Array<string>) => {
 }
 
 export const getAddressBalance = async (address: string) => {
-    txPreflight(false, [address]);
-    const res = await web3Provider.getBalance(address);
-    return res;
+    try {
+        txPreflight(false, [address]);
+        let res = await web3Provider.getBalance(address);
+        res = fromBigNumber(res);
+        return res;
+    } catch (error) {
+        debugError(error);
+        return 0;
+    }
 }
