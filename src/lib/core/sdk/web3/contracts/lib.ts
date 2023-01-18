@@ -49,7 +49,6 @@ export const readSmartContract = async (args: {
     try {
         txPreflight(false, [args.address]);
         const contract = await loadContractReadOnly(args.abi, args.address);
-        console.log(args);
         result = await contract.functions[args.methodName](...args.methodParams);
         return result;
     } catch (error) {

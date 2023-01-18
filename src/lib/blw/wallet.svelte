@@ -11,21 +11,29 @@
 	import { fromWei } from "$lib/core/sdk/web3/utils/units/lib";
 	import { formatNumber } from "$lib/core/utils/utilities";
 	import Tooltip from "$lib/components/general/tooltip.svelte";
+	import { SyncLoader } from "svelte-loading-spinners";
+	import Send from "./components/walletSections/send.svelte";
+	import Buy from "./components/walletSections/buy.svelte";
 
     let balance: string = '0';
+    let loading: boolean = true;
 
-    onMount(async () => {
-        try {
-            if ($accounts && $accounts.length > 0) {
-                balance = fromWei(await getAddressBalance($accounts[0]), 'ether') || '0';
-            }
-        } catch (error) {
-            
+    enum Tab {
+        Send,
+        Buy
+    }
+
+    let tabSelected: Tab = Tab.Send;
+
+    accounts.subscribe(async (value) => {
+        if (value && value.length > 0) {
+            balance = fromWei(await getAddressBalance(value[0]), 'ether') || '0';
         }
+        loading = false;
     });
 </script>
 
-<div id="blw" class="pb-5 w-full border">
+<div id="blw" class="w-full border">
     <section id="blw-nav" class="w-full flex justify-between items-center px-2.5 py-3.5 border-b">
         <div id="blw-nav-left">
             <img src="/assets/bl-logos/{$theme==_themes.dark?'logo-bold.png':'logo-bold.png'}" alt="logo" class="h-7" />
@@ -71,16 +79,34 @@
         <div class="w-fit mx-auto mb-4">
             <div class="h-10 w-10 rounded-full border"/>
         </div>
-        <Tooltip content={balance}>
         <div class="w-fit flex items-center mx-auto gap-2 text-4xl font-semibold">
-            <div>
-                {formatNumber(balance, 'number', 0, 5)}
+            <div title={balance}>
+                {#if loading}
+                    <SyncLoader size="40" color="#94949450" unit="px" duration="1s"/>
+                {:else}
+                    {formatNumber(balance, 'number', 0, 5)}
+                {/if}
             </div>
             <div>
                 {$selectedNetwork?.symbol || 'ETH'}
             </div>
         </div>
-    </Tooltip>
+    </section>
+    <section id="blw-tabs">
+        <ul class="w-full border-y flex justify-between items-end">
+            <li id="send-tab" on:click={()=>{tabSelected=Tab.Send}} on:keyup class="{tabSelected==Tab.Send?"bg-zinc-50 border-r dark:bg-zinc-800/[0.5]":""} w-full flex justify-center items-center py-3 px-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/[0.5]">
+                Send
+            </li>
+            <li id="buy-tab" on:click={()=>{tabSelected=Tab.Buy}} on:keyup class="{tabSelected==Tab.Buy?"bg-zinc-50 dark:bg-zinc-800/[0.5]":""} w-full flex justify-center items-center py-3 px-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/[0.5]">
+                Buy
+            </li>
+        </ul>
+    </section>
+    <section id="blw-tabs-content" class="w-full">
+        {#if tabSelected==Tab.Send}
+            <Send />
+        {:else if tabSelected==Tab.Buy}
+            <Buy />
+        {/if}
     </section>
 </div>
-<SelectNetwork />

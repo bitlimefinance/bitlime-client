@@ -408,7 +408,7 @@
                         setTimeout(()=>{switchTimeout=false}, 800);
                     }}
                     on:keyup
-                    class="bg-zinc-50 dark:bg-zinc-800 cursor-pointer p-1.5 mx-auto w-fit border-4 border-zinc-50 dark:border-zinc-900 rounded-full"
+                    class="untheme bg-zinc-50 dark:bg-zinc-800 cursor-pointer p-1.5 mx-auto w-fit border-4 border-zinc-50 dark:border-zinc-900 rounded-full"
                     >
                     <svg class="w-5 h-5 text-zinc-800 dark:text-zinc-500 dark:hover:text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.4" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />

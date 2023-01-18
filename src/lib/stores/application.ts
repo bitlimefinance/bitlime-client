@@ -40,6 +40,7 @@ export const showConnenct = writable(false);
 
 export const selectNetwork = writable(false);
 export const selectedNetwork = writable({});
+export const networkCoin = writable({});
 
 export const tokensList = writable([]);
 export const chainsList = writable([]);

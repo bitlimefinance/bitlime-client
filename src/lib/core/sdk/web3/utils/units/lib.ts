@@ -34,8 +34,9 @@ export const toWei = (amount: string, unit: EtherUnit | null) => {
     }
 }
 
-export const fromWei = (amount: string, unit: EtherUnit | null) => {
+export const fromWei = (amount: string | number, unit: EtherUnit | null) => {
     try {
+        if(typeof amount === 'number') amount = amount.toString();
         return ethers.utils.formatUnits(amount, unit || 'ether'); // type: string | null
     } catch (error) {
         debugError(error);

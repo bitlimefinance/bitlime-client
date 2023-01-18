@@ -21,7 +21,7 @@
 </script>
 
 <FullScreenContainer bind:show={showModal} noPadding>
-    <div class="w-80 max-w-sm bg-transparent dark:border-gray-700">
+    <div class="w-80 max-w-sm bg-transparent border">
         <div class="flex justify-between px-4 pt-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
             <div class="text-lg font-medium">
                 Mainnet

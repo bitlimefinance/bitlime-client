@@ -8,7 +8,7 @@
 * {
     font-family: 'Montserrat', sans-serif;
 }
-.dark *:not(svg):not(path):not(span){
+.dark *:not(.untheme):not(svg):not(path):not(span):not(a){
     color: #fff;
     border-color: rgb(136, 136, 136);
 }

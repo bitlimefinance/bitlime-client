@@ -4,7 +4,7 @@
 	import { connectMetamask } from '$lib/core/sdk/wallets/metamask';
 	import { mainHeight_, showLoading, theme } from '$lib/stores/ui-theming';
 	import { onMount, tick } from 'svelte';
-	import { accounts, chainsList, connected, init, selectedNetwork, setAccounts, tokensList } from '$lib/stores/application';
+	import { accounts, chainsList, connected, init, networkCoin, selectedNetwork, setAccounts, tokensList } from '$lib/stores/application';
 	import Spinner from '$lib/components/general/spinner.svelte';
 	import { writeLocalStorage } from '$lib/core/utils/localStorage';
 	import FullScreenContainer from '$lib/components/general/fullScreenContainer.svelte';
@@ -16,6 +16,8 @@
 	import Footer from '$lib/components/footer.svelte';
 	import { chains, tokens } from '$lib/core/contents/fallbacks';
 	import { setProvider } from '$lib/core/sdk/web3/provider/lib';
+	import { debugError } from '$lib/core/utils/debug';
+	import SelectNetwork from '$lib/components/connect/selectNetwork.svelte';
 
 	/** @type {import('./$types').LayoutData} */
 	export let data: any;
@@ -45,12 +47,28 @@
 	connected.subscribe(setAccounts);
 
 	selectedNetwork.subscribe(async (value: any) => {
-		if (mounted) {
-			window.bl_rpc = value?.rpc;
-			await setProvider(value?.rpc);
-		};
+		try {
+			if (mounted) {
+				window.bl_rpc = value?.rpc;
+				await setProvider(value?.rpc);
+			};
+		} catch (error) {
+			debugError(error);
+		}
+		try {
+			networkCoin.set({
+					"is_native": true,
+					"image": value?.logo,
+					"name": value?.name,
+					"symbol": value?.currency_symbol,
+					"decimals": value?.decimals,
+					"chain_id": value?.id,
+					"address": "native",
+				});
+		} catch (error) {
+			debugError(error);
+		}
 	});
-
 	let clickCount = 0;
 	const botGuard = () => {
 		clickCount++;
@@ -136,3 +154,5 @@
 		<Footer bind:element={footer}/>
 	</span>
 </div>
+
+<SelectNetwork/>

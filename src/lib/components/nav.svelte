@@ -6,7 +6,6 @@
 	import { theme } from "$lib/stores/ui-theming";
 	import { onMount } from "svelte";
 	import ConnectModal from "./connect/connectModal.svelte";
-	import SelectNetwork from "./connect/selectNetwork.svelte";
 	import Button from "./general/button.svelte";
 
   export let element: HTMLElement;
@@ -48,10 +47,10 @@
     ];
 </script>
 
-<nav class="flex justify-between items-center bg-transparent px-5 py-2 border-b dark:border-b-zinc-700" bind:this={element}>
+<nav class="flex justify-between items-center bg-transparent px-5 py-2 border-b" bind:this={element}>
     <div class="flex justify-start items-center">
         <a href="/" class="flex justify-start items-center btn btn-ghost normal-case text-lg">
-            <img src="/assets/bl-logos/{$theme==_themes.dark?'logo-bold.png':'logo-bold.png'}" alt="logo" class="h-7 pr-2 mr-1 border-r dark:border-r-zinc-700" />
+            <img src="/assets/bl-logos/{$theme==_themes.dark?'logo-bold.png':'logo-bold.png'}" alt="logo" class="h-7 pr-2 mr-1 border-r" />
             <span class="font-medium dark:font-normal text-xl dark:text-emerald-500 sr-only">BitLime</span>
         </a>
         {#each LINKS as link}
@@ -98,4 +97,3 @@
 </nav>
 
 <ConnectModal/>
-<SelectNetwork/>

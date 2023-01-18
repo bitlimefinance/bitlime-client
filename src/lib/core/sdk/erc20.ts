@@ -1,10 +1,11 @@
 
 import abi from "./abis/erc20.json" assert {type: 'json'};
-import { debugError } from "../utils/debug";
+import { debug, debugError } from "../utils/debug";
 import { get } from "svelte/store";
 import { selectedNetwork } from "$lib/stores/application";
 import { interactWithContract, readSmartContract } from "./web3/contracts/lib";
 import { getAddressBalance } from "./web3/utils/addresses/lib";
+import { fromBigNumber } from "./web3/utils/bigNumber/lib";
 
 export const ERC20_ABI: any[] = abi;
 
@@ -53,7 +54,7 @@ export const balanceOf = async (args: {
 }) => {
     try {
         if(!args.address || !args.tokenAddress) return 0;
-        let res = 0;
+        let res: any = 0;
         switch(args.tokenAddress){
             case 'native' || '':
                 res = await getAddressBalance(args.address);
@@ -65,9 +66,11 @@ export const balanceOf = async (args: {
                     methodName: 'balanceOf',
                     methodParams: [args.address]
                 });
+                if(res[0]) res = fromBigNumber(res[0]);
+                else return 0;
             break;
         }
-        return res; 
+        return res || 0; 
     } catch (error) {
         debugError(error);
         return 0;
