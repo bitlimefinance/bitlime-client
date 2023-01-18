@@ -33,7 +33,7 @@
     });
 </script>
 
-<div id="blw" class="w-full border">
+<div id="blw" class="w-full border" style="min-width: 300px;">
     <section id="blw-nav" class="w-full flex justify-between items-center px-2.5 py-3.5 border-b">
         <div id="blw-nav-left">
             <img src="/assets/bl-logos/{$theme==_themes.dark?'logo-bold.png':'logo-bold.png'}" alt="logo" class="h-7" />

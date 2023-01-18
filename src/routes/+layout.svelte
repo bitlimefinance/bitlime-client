@@ -18,6 +18,7 @@
 	import { setProvider } from '$lib/core/sdk/web3/provider/lib';
 	import { debugError } from '$lib/core/utils/debug';
 	import SelectNetwork from '$lib/components/connect/selectNetwork.svelte';
+	import WalletModal from '$lib/blw/walletModal.svelte';
 
 	/** @type {import('./$types').LayoutData} */
 	export let data: any;
@@ -156,3 +157,4 @@
 </div>
 
 <SelectNetwork/>
+<WalletModal/>

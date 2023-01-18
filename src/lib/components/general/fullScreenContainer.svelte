@@ -27,7 +27,8 @@
 </script>
 
 {#if show || alwaysShow}
-    <div on:click={onHide} on:keyup id={id} bind:this={element} class="p-0 m-0"
+    <div on:click={onHide} on:keyup id={id} bind:this={element}
+        class="p-0 m-0"
         style="
             z-index: {zIndex};
             position: absolute;

@@ -3,7 +3,15 @@
 	import { _WALLETS, _WALLETS_INFO } from "$lib/globals";
 	import { connected, showConnenct } from "$lib/stores/application";
 
-    $: showModal = $showConnenct && (!$connected && $connected != _WALLETS.DISCONNECTED);
+    let showModal: boolean = false;
+
+    showConnenct.subscribe((value) => {
+        if(value === showModal) return;
+        if(!$connected && $connected != _WALLETS.DISCONNECTED) showModal = false;
+        showModal = value;
+    });
+    
+    $: showModal, showConnenct.set(showModal);
 
 </script>
 
