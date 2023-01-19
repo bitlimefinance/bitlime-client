@@ -9,8 +9,8 @@ import { setProvider, web3Provider } from "../web3/provider/lib";
 export const connectMetamask = async () => {
     try {
         if(window.ethereum){
-            if(!web3Provider) await setProvider();
-            await web3Provider.send('eth_requestAccounts', []);
+            //if(!web3Provider) await setProvider();
+            //await web3Provider.send('eth_requestAccounts', []);
             const connectedAccounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             metamaskAccounts.set(connectedAccounts);
             await tick();

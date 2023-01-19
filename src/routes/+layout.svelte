@@ -4,7 +4,7 @@
 	import { connectMetamask } from '$lib/core/sdk/wallets/metamask';
 	import { mainHeight_, showLoading, theme } from '$lib/stores/ui-theming';
 	import { onMount, tick } from 'svelte';
-	import { accounts, chainsList, connected, init, networkCoin, selectedNetwork, setAccounts, tokensList } from '$lib/stores/application';
+	import { accounts, chainsList, connected, init, networkCoin, selectedNetwork, setAccounts, showConnenct, tokensList } from '$lib/stores/application';
 	import Spinner from '$lib/components/general/spinner.svelte';
 	import { writeLocalStorage } from '$lib/core/utils/localStorage';
 	import FullScreenContainer from '$lib/components/general/fullScreenContainer.svelte';
@@ -113,7 +113,6 @@
 			if(window) window.bl_rpc = $selectedNetwork?.rpc;
 			await setProvider($selectedNetwork?.rpc);
 			setBodyTheme();
-			await connectMetamask();
 			await tick();
 			setInterval(() => {
 				clickCount = 0;

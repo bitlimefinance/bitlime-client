@@ -3,7 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 /* global styles */
 * {
     font-family: 'Montserrat', sans-serif;
@@ -12,3 +11,4 @@
     color: #fff;
     border-color: rgb(136, 136, 136);
 }
+

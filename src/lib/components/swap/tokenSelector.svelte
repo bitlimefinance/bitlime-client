@@ -92,7 +92,7 @@
     });
 </script>
 
-<div class="flex space-x-1 items-center {selectedTokenDisabled?'':'cursor-pointer'} bg-zinc-400 border border-zinc-200 dark:border-transparent bg-opacity-10 min-w-fit rounded-lg p-2" on:click={() => {
+<div class="flex space-x-1 items-center {selectedTokenDisabled?'':'cursor-pointer'} bg-zinc-50 dark:bg-zinc-800 min-w-fit rounded-lg p-2" on:click={() => {
     if(selectedTokenDisabled) return;
     showModal = true;
     }} on:keyup>
