@@ -391,7 +391,7 @@
             id="swap-input-a"
             bind:value={inputAValue}
             />
-        <div class="z-10" bind:clientHeight={switchHeight} style="margin-top: -{(switchWidthHalf/2)}px; margin-bottom: -{(switchWidthHalf/2)}px;">
+        <div class="z-10" bind:clientHeight={switchHeight} style="margin-top: -{(switchWidthHalf)}px; margin-bottom: -{(switchWidthHalf)}px;">
             <div class="rounded-full border border-zinc-400 w-fit mx-auto dark:border-0">
                 <div
                     disabled={gettingData || switchTimeout}

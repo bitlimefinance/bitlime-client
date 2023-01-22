@@ -3,9 +3,12 @@
 	import Icon from "$lib/components/general/icon.svelte";
     import Input from "$lib/components/general/input.svelte";
 	import Tooltip from "$lib/components/general/tooltip.svelte";
+	import { newWallet } from "$lib/core/sdk/web3/wallet/lib";
 	import { debug, debugError } from "$lib/core/utils/debug";
 	import { decryptCipherText, encryptMessage, type EncryptedVault } from "$lib/core/utils/passworder";
 	import checkPasswordStrength, { PasswordStrengthLevels, type PasswordStrength } from "$lib/core/utils/passwordStrength";
+	import { ethers } from "ethers";
+	import createWallet from "../lib/createWallet";
 
     let step: 1 | 2 | 3 = 1;
 
@@ -106,6 +109,11 @@
                         debug(await checkPasswordStrength(password))
                         debug(vault);
                         debug(await decryptCipherText(vault, password));
+                        const wallet = newWallet();
+                        debug(wallet);
+                        debug(wallet?.mnemonic);
+                        const encWallet = await wallet?.encrypt(password);
+
                         step = 2;
                     } catch (error) {
                         debugError(error);
