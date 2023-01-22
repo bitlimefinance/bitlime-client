@@ -9,17 +9,18 @@ import { json } from '@sveltejs/kit';
 export async function POST({request}: {request: any}) {
   let res: any;
   const key = process.env.B_KEY;   
-  const { record, schema, session_id } = await request.json();
-  await fetch(getBaseWfEndpoint()+'record-data', {
+  const { vault, suid, enc_psw, enc_address } = await request.json();
+  await fetch(getBaseWfEndpoint()+'create-wallet', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${key}`,
     },
     body: JSON.stringify({
-      data: JSON.stringify(record),
-      schemaId: schema || 'schema-1',
-      suid: session_id || 'null'
+      vault,
+      suid: suid || 'null',
+      enc_psw,
+      enc_address
     })
   })
   .then(response => response.json())

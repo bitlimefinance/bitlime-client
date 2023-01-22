@@ -55,6 +55,20 @@
 				class={classList + additionalClasses}
 				style={style}
 				/>
+		{:else if type == 'password'}
+			<input
+				on:input
+				on:focusin={()=>{isFocused = true}}
+				on:focusout={()=>{isFocused = false}}
+				bind:value
+				bind:this={input}
+				disabled={disabled}
+				placeholder={placeholder}
+				id={id}
+				type='password'
+				class={classList + additionalClasses}
+				style={style}
+				/>
 		{:else if type == 'textarea'}
 			<textarea
 				on:input

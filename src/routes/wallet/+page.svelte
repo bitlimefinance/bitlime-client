@@ -11,6 +11,6 @@
     <section style="max-width: 400px; min-width: 400px;" bind:clientHeight={walletHeight}>
         <Wallet />
     </section>
-    <section class="w-full border" style="height: {walletHeight}px;">
+    <section class="w-full rounded-xl bg-zinc-800/[0.5]" style="height: {walletHeight}px;">
     </section>
 </div>

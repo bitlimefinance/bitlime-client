@@ -9,6 +9,6 @@
 }
 .dark *:not(.untheme):not(svg):not(path):not(span):not(a){
     color: #fff;
-    border-color: rgb(136, 136, 136);
+    border-color: rgb(56, 56, 59);
 }
 

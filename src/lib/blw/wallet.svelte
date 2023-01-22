@@ -33,8 +33,8 @@
     });
 </script>
 
-<div id="blw" class="w-full border" style="min-width: 300px;">
-    <section id="blw-nav" class="w-full flex justify-between items-center px-2.5 py-3.5 border-b">
+<div id="blw" class="w-full rounded-xl bg-zinc-800/[0.5] p-3" style="min-width: 300px;">
+    <section id="blw-nav" class="w-full flex justify-between items-center py-3.5 border-b">
         <div id="blw-nav-left">
             <img src="/assets/bl-logos/{$theme==_themes.dark?'logo-bold.png':'logo-bold.png'}" alt="logo" class="h-7" />
             <span class="font-medium dark:font-normal text-xl dark:text-emerald-500 sr-only">BitLime</span>
@@ -45,7 +45,7 @@
                 badge={$selectedNetwork&&$selectedNetwork.is_testnet?'TESTNET':''}
                 image={$selectedNetwork&&$selectedNetwork.logo?$selectedNetwork.logo:''}
                 imageRounded
-                classList="text-zinc-100 disabled:opacity-60 border font-medium rounded-full text-sm px-4 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default"
+                classList="text-zinc-100 disabled:opacity-60 border font-medium rounded-full text-sm px-3 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default"
                 on:click={()=>{selectNetwork.set(true)}}
                 >
                 <div class="flex justify-center items-center h-full">
@@ -56,7 +56,7 @@
             </Button>
         </div>
     </section>
-    <section id="blw-account-info" class="border-b py-2 w-full flex justify-between px-3">
+    <section id="blw-account-info" class="border-b py-2 w-full flex justify-between">
         <div class="w-10"></div>
         <div>
             <div class="font-semibold text-sm w-full text-center">
@@ -93,8 +93,8 @@
         </div>
     </section>
     <section id="blw-tabs">
-        <ul class="w-full border-y flex justify-between items-end">
-            <li id="send-tab" on:click={()=>{tabSelected=Tab.Send}} on:keyup class="{tabSelected==Tab.Send?"bg-zinc-50 border-r dark:bg-zinc-800/[0.5]":""} w-full flex justify-center items-center py-3 px-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/[0.5]">
+        <ul class="w-full border rounded-lg flex justify-between items-end">
+            <li id="send-tab" on:click={()=>{tabSelected=Tab.Send}} on:keyup class="{tabSelected==Tab.Send?"bg-zinc-50 dark:bg-zinc-800/[0.5]":""} border-r w-full flex justify-center items-center py-3 px-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/[0.5]">
                 Send
             </li>
             <li id="buy-tab" on:click={()=>{tabSelected=Tab.Buy}} on:keyup class="{tabSelected==Tab.Buy?"bg-zinc-50 dark:bg-zinc-800/[0.5]":""} w-full flex justify-center items-center py-3 px-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/[0.5]">

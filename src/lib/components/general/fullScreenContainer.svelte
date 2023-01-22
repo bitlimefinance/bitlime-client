@@ -16,6 +16,7 @@
 
     let element: HTMLDivElement;
     let container: HTMLDivElement;
+    let elementWrapper: HTMLDivElement;
 
     export const dispatch = createEventDispatcher();
     
@@ -24,8 +25,16 @@
         show = false;
         dispatch('hide');
     }
+
+    onMount(() => {
+        // move the container to the end of the body
+        document.body.appendChild(elementWrapper);
+    });
+
+
 </script>
 
+<div bind:this={elementWrapper}>
 {#if show || alwaysShow}
     <div on:click={onHide} on:keyup id={id} bind:this={element}
         class="p-0 m-0"
@@ -44,3 +53,4 @@
         </div>
     </div>
 {/if}
+</div>
