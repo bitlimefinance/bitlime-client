@@ -1,8 +1,15 @@
 <script lang="ts">
 	import Button from "$lib/components/general/button.svelte";
     import Input from "$lib/components/general/input.svelte";
+    import passworder from "@metamask/browser-passworder";
+	import assert from "assert";
 
     let step: 1 | 2 | 3 = 1;
+
+    let password: string;
+    let confirmPassword: string;
+
+    let cipher: string;
 
 </script>
 
@@ -30,18 +37,25 @@
                 label="Password"
                 type="password"
                 id="blw-password"
+                bind:value={password}
             />
             <Input
                 label="Confirm Password"
                 type="password"
                 id="blw-confirm-password"
+                bind:value={confirmPassword}
             />
             <Button
                 label="Create"
                 on:click={() => {
-                    console.log('create wallet');
+                    passworder
+                    .encrypt(password, { test: "test" })
+                    .then((res) => {
+                        cipher = res;
+                    })
                 }}
             />
+            {cipher}
         </div>
         {:else if step===2}
         <div></div>
