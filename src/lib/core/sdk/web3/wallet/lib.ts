@@ -14,3 +14,34 @@ export const newWallet = (locale?: string) => {
         return null;
     }
 }
+
+export const fromEncryptedJson = async (json: string, password: string) => {
+    try {
+        const wallet = await Wallet.fromEncryptedJson(json, password);
+        return wallet;
+    } catch (error) {
+        debugError(error);
+        return null;
+    }
+}
+
+export const fromEncryptedJsonSync = (json: string, password: string) => {
+    try {
+        const wallet = Wallet.fromEncryptedJsonSync(json, password);
+        return wallet;
+    } catch (error) {
+        debugError(error);
+        return null;
+    }
+}
+
+export const fromMnemonic = (mnemonic: string) => {
+    try {
+        const wallet = Wallet.fromMnemonic(mnemonic);
+        return wallet;
+    } catch (error) {
+        debugError(error);
+        return null;
+    }
+}
+

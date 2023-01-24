@@ -7,14 +7,12 @@
 	import Tooltip from "$lib/components/general/tooltip.svelte";
 	import type { ToastActions } from "$lib/core/descriptors/interfaces";
 	import { newWallet } from "$lib/core/sdk/web3/wallet/lib";
-	import { debug, debugError } from "$lib/core/utils/debug";
+	import { debugError } from "$lib/core/utils/debug";
 	import { writeLocalStorage } from "$lib/core/utils/localStorage";
-	import { decryptCipherText, encryptMessage, type EncryptedVault } from "$lib/core/utils/passworder";
+	import { encryptMessage, type EncryptedVault } from "$lib/core/utils/passworder";
 	import checkPasswordStrength, { PasswordStrengthLevels, type PasswordStrength } from "$lib/core/utils/passwordStrength";
 	import { numberToOrderShort, randomInt, shuffleArray } from "$lib/core/utils/utilities";
 	import { showLoading } from "$lib/stores/ui-theming";
-	import { ethers } from "ethers";
-	import type { Mnemonic } from "ethers/lib/utils";
 	import createWallet from "../lib/createWallet";
 
     let step: 1 | 2 | 3 = 1;
@@ -298,7 +296,6 @@
                             if(vault?.stringified && publicKey) {
                                 showLoading.set(true);
                                 let res = await createWallet(vault.stringified, publicKey);
-                                debug(res);
                                 writeLocalStorage('blw-pk', publicKey);
                             } else throw new Error("Sorry, something went wrong. Please try again.");
                         } catch (error) {

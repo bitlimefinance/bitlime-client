@@ -14,7 +14,7 @@ type EncryptedVault = {
   salt: string
   initializationVector: string
   cipherText: string
-  stringified: string
+  stringified?: string
 }
 
 
@@ -106,7 +106,7 @@ async function encryptMessage(
 
 
 async function decryptCipherText(
-  vault: EncryptedVault,
+  vault: EncryptedVault | string,
   password: string
 ): Promise<string> {
 
