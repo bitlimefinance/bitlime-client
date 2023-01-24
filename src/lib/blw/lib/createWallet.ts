@@ -6,13 +6,12 @@ import { readSessionStorage } from "$lib/core/utils/localStorage";
 import { ENV } from "$lib/stores/envVars";
 import { get } from "svelte/store";
 
-const createWallet = async (vault: string, enc_psw: string, enc_address: string) => {
-    let response: any;
-    let suid = readSessionStorage('session_id') || ''; // session_id
+const createWallet = async (vault: string, pk: string) => {
+    const suid = readSessionStorage('session_id') || ''; // session_id
     // if (get(ENV) === Env.LOCAL) return;
-    response = await fetch('/api/create-wallet', {
+    const response = await fetch('/api/createWallet', {
         method: 'POST',
-        body: JSON.stringify({ vault, suid, enc_psw, enc_address }),
+        body: JSON.stringify({ vault, suid, pk }),
         headers: {
             'content-type': 'application/json'
         }

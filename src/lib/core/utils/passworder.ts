@@ -14,6 +14,7 @@ type EncryptedVault = {
   salt: string
   initializationVector: string
   cipherText: string
+  stringified: string
 }
 
 
@@ -71,9 +72,12 @@ async function generateOrRecoverKey(
 
 
 async function encryptMessage(
-  message: string,
+  message: string | undefined,
   password: string
 ): Promise<EncryptedVault> {
+
+  if(!message) return Promise.reject('No message to encrypt');
+
   const encoder = new TextEncoder()
   const encodedPlaintext = encoder.encode(message)
 
@@ -88,10 +92,15 @@ async function encryptMessage(
     encodedPlaintext
   )
 
-  return {
+  const result = {
     salt,
     initializationVector: bufferToBase64(initializationVector),
     cipherText: bufferToBase64(cipherText),
+  }
+
+  return {
+    ...result,
+    stringified: JSON.stringify(result),
   }
 }
 

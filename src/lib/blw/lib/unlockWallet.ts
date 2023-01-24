@@ -7,10 +7,9 @@ import { ENV } from "$lib/stores/envVars";
 import { get } from "svelte/store";
 
 const unlockWallet = async (enc_psw: string, enc_address: string) => {
-    let response: any;
-    let suid = readSessionStorage('session_id') || ''; // session_id
+    const suid = readSessionStorage('session_id') || ''; // session_id
     // if (get(ENV) === Env.LOCAL) return;
-    response = await fetch('/api/unlock-wallet', {
+    const response = await fetch('/api/unlockWallet', {
         method: 'POST',
         body: JSON.stringify({ suid, enc_psw, enc_address }),
         headers: {

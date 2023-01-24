@@ -1,4 +1,5 @@
 import { _messages } from "../../globals";
+import { debugError } from "./debug";
 // import { recordData } from "./analytics";
 
 export function sluggify(text, lowercase=true) {
@@ -172,6 +173,11 @@ export const randomString = (length, numbersOnly=false) => {
 
 	return text;
 };
+
+export const randomInt = (min: number, max: number) => {
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
 
 export const hideElement = (elementId) => {
 	try {
@@ -460,4 +466,33 @@ export function disableScroll() {
   
 export function enableScroll() {
     window.onscroll = function() {};
+}
+
+export const shuffleArray = (array: any[]) => {
+	let currentIndex = array.length,  randomIndex;
+  
+	// While there remain elements to shuffle...
+	while (currentIndex != 0) {
+  
+	  // Pick a remaining element...
+	  randomIndex = Math.floor(Math.random() * currentIndex);
+	  currentIndex--;
+  
+	  // And swap it with the current element.
+	  [array[currentIndex], array[randomIndex]] = [
+		array[randomIndex], array[currentIndex]];
+	}
+  
+	return array;
+}
+
+export const numberToOrderShort = (n: number) => {
+	try {
+		const s = ["th","st","nd","rd"];
+		const v = n%100;
+		return n+(s[(v-20)%10]||s[v]||s[0]);
+	} catch (error) {
+		debugError(error);
+		return n+'th';
+	}
 }
