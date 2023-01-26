@@ -362,43 +362,6 @@ export const toggleModal = (modalId, action) => { // actions: toggle, open, clos
 // }
 
 
-
-export const workerValidator = () => {
-	try {
-		if (!window.wrkr) {
-			throw 'Worker not found';
-		}
-	} catch (error) {
-		handleError(error);
-	}
-}
-
-export const workerPostMessage = (message) => {
-	workerValidator();
-	if (!message) {
-		console.warn('No message to send');
-		return;
-	}
-	try {
-		window.wrkr.postMessage(message);
-	} catch (error) {
-		console.error(error);
-		handleError(error);
-	}
-}
-
-export const workerListener = (callback) => {
-	workerValidator();
-	try {
-		window.wrkr.addEventListener('message', async ({data}) => {
-			await callback(data);
-		});
-	} catch (error) {
-		handleError(error);
-	}
-}
-
-
 export function isLocalhost() {
 	try {
 		if (!window) return false;

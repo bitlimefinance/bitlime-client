@@ -9,11 +9,13 @@
 	import { newWallet } from "$lib/core/sdk/web3/wallet/lib";
 	import { debugError } from "$lib/core/utils/debug";
 	import { writeLocalStorage } from "$lib/core/utils/localStorage";
-	import { encryptMessage, type EncryptedVault } from "$lib/core/utils/passworder";
+	import { encryptMessage, type EncryptedVault } from "$lib/core/utils/cipher/passworder";
 	import checkPasswordStrength, { PasswordStrengthLevels, type PasswordStrength } from "$lib/core/utils/passwordStrength";
 	import { numberToOrderShort, randomInt, shuffleArray } from "$lib/core/utils/utilities";
 	import { showLoading } from "$lib/stores/ui-theming";
+	import { stringify } from "querystring";
 	import createWallet from "../lib/createWallet";
+	import { toHash } from "$lib/core/utils/cipher/crypto";
 
     let step: 1 | 2 | 3 = 1;
 
@@ -39,7 +41,7 @@
 
     const generateRandomIndexes = () => {
         let indexes: number[] = [];
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 2; i++) {
             let index = randomInt(0, 11);
             while (indexes.includes(index)) {
                 index = randomInt(0, 11);
@@ -51,13 +53,13 @@
     $: mnemonicWords, generateRandomIndexes();
 
     const checkSelectedWords = () => {
-        if (selectedMnemonicWords.length !== 3) {
+        if (selectedMnemonicWords.length !== 2) {
             correctWords = false;
             return;
         }
         let correct = true;
-        let answer = [mnemonicWords[mnemonicIndexesToCheck[0]], mnemonicWords[mnemonicIndexesToCheck[1]], mnemonicWords[mnemonicIndexesToCheck[2]]];
-        for (let i = 0; i < 3; i++) {
+        let answer = [mnemonicWords[mnemonicIndexesToCheck[0]], mnemonicWords[mnemonicIndexesToCheck[1]]];
+        for (let i = 0; i < 2; i++) {
             if (!answer?.includes(selectedMnemonicWords[i])) {
                 correct = false;
                 break;
@@ -172,10 +174,9 @@
                             return;
                         }
                         const wallet = newWallet();
-                        const encWallet = await wallet?.encrypt(password);
                         mnemonic = wallet?.mnemonic?.phrase || '';
                         publicKey = wallet?._signingKey()?.publicKey || '';
-                        vault = await encryptMessage(encWallet || '', password);
+                        vault = await encryptMessage(JSON.stringify({mnemonic, publicKey}) || '', password);
                         step = 2;
                         showLoading.set(false);
                     } catch (error) {
@@ -255,7 +256,7 @@
             <!-- mnemonic verification -->
             <h2 class="text-lg font-medium">Secret phrase</h2>
             <span class="text-sm">
-                Select the {numberToOrderShort(mnemonicIndexesToCheck[0]+1)}, {numberToOrderShort(mnemonicIndexesToCheck[1]+1)} and {numberToOrderShort(mnemonicIndexesToCheck[2]+1)} words from your secret phrase. 
+                Select the {numberToOrderShort(mnemonicIndexesToCheck[0]+1)} and {numberToOrderShort(mnemonicIndexesToCheck[1]+1)} words from your secret phrase. 
             </span>
             <div class="grid grid-cols-4 gap-2">
                 {#if mnemonic}
@@ -266,7 +267,7 @@
                                 if(selectedMnemonicWords.includes(word)) {
                                     selectedMnemonicWords = selectedMnemonicWords.filter((w) => w !== word);
                                 } else {
-                                    if(selectedMnemonicWords.length >= 3) return;
+                                    if(selectedMnemonicWords.length >= 2) return;
                                     selectedMnemonicWords = [...selectedMnemonicWords, word];
                                 }
                             }}
@@ -295,8 +296,11 @@
                         try {
                             if(vault?.stringified && publicKey) {
                                 showLoading.set(true);
-                                let res = await createWallet(vault.stringified, publicKey);
-                                writeLocalStorage('blw-pk', publicKey);
+                                const localPk = await toHash(publicKey);
+                                const pk = await toHash(localPk+password);
+                                if(!pk || !localPk) throw new Error("Sorry, something went wrong. Please try again.");
+                                await createWallet(vault.stringified, pk);
+                                writeLocalStorage('blw-pk', localPk);
                             } else throw new Error("Sorry, something went wrong. Please try again.");
                         } catch (error) {
                             debugError(error);

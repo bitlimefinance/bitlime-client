@@ -16,7 +16,7 @@ export const setAccounts = async () => {
     try {
         if (await isConnectedToWallet()) {
             latestBlock.set(await window.ethereum.request({ method: 'eth_blockNumber' }));
-            let allAccounts: Array<any> = [get(metamaskAccounts)];
+            const allAccounts: Array<any> = [get(metamaskAccounts)];
             let list: any = [];
             for (const iterator of allAccounts) {
                 if(isIterable(iterator)){
@@ -33,6 +33,8 @@ export const setAccounts = async () => {
         console.error(error);
     }
 };
+
+export const encBlw = writable(''); // encrypted blw
 
 export const latestBlock = writable('');
 

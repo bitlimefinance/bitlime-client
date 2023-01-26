@@ -8,8 +8,8 @@
 	import type { ToastActions } from "$lib/core/descriptors/interfaces";
 	import { fromEncryptedJson, newWallet } from "$lib/core/sdk/web3/wallet/lib";
 	import { debug, debugError } from "$lib/core/utils/debug";
-	import { readLocalStorage, writeLocalStorage } from "$lib/core/utils/localStorage";
-	import { decryptCipherText, encryptMessage, type EncryptedVault } from "$lib/core/utils/passworder";
+	import { readLocalStorage, readSessionStorage, writeLocalStorage } from "$lib/core/utils/localStorage";
+	import { decryptCipherText, encryptMessage, type EncryptedVault } from "$lib/core/utils/cipher/passworder";
 	import checkPasswordStrength, { PasswordStrengthLevels, type PasswordStrength } from "$lib/core/utils/passwordStrength";
 	import { numberToOrderShort, randomInt, randomString, shuffleArray } from "$lib/core/utils/utilities";
 	import { showLoading } from "$lib/stores/ui-theming";
@@ -17,13 +17,15 @@
 	import type { Mnemonic } from "ethers/lib/utils";
 	import createWallet from "../lib/createWallet";
 	import unlockWallet from "../lib/unlockWallet";
+	import { Action } from "../lib/worker/types";
+	import { loadWorker, workerPostMessage } from "../lib/worker/workerApi";
+	import { toHash } from "$lib/core/utils/cipher/crypto";
 
     let step: 1 | 2 | 3 = 1;
 
     let password: string;
 
     let publicKey: string = '';
-    let vault: any;
 
     let toastActions: ToastActions;
 
@@ -49,12 +51,19 @@
                 on:click={async () => {
                     try {
                         showLoading.set(true);
-                        let pk = readLocalStorage("blw-pk");
-                        if(!pk) throw new Error("No private key found");
-                        let encVault = JSON.parse(await unlockWallet(pk));
-                        vault = await decryptCipherText(encVault, password);
-                        const wallet = await fromEncryptedJson(vault, password);
-                        debug("Wallet", wallet);
+                        const localPk = readLocalStorage("blw-pk");
+                        const pk = await toHash(localPk+password);
+                        if(!pk || !localPk) throw new Error("Sorry, something went wrong.");
+                        const suid = readSessionStorage('session_id') || ''; // session_id
+                        await loadWorker();
+                        workerPostMessage({
+                            action: Action.INIT,
+                            payload: {
+                                password,
+                                pk,
+                                suid
+                            }
+                        });
                         showLoading.set(false);
                     } catch (error) {
                         debugError(error);
@@ -64,6 +73,11 @@
                 }}
             />
         </div>
+        <button on:click={()=>{
+            workerPostMessage({
+                action: Action.GET_ADDRESS
+            });
+        }}>test</button>
     </section>
 </div>
 

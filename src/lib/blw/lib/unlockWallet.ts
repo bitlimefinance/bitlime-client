@@ -2,14 +2,12 @@
 
 import { debug, debugError } from "$lib/core/utils/debug";
 import { Env } from "$lib/core/utils/env";
-import { readSessionStorage } from "$lib/core/utils/localStorage";
 import { ENV } from "$lib/stores/envVars";
 import { get } from "svelte/store";
 
-const unlockWallet = async (pk: string) => {
+const unlockWallet = async (pk: string, suid: string) => {
     let vault;
     try {
-        const suid = readSessionStorage('session_id') || ''; // session_id
         // if (get(ENV) === Env.LOCAL) return;
         const response = await fetch('/api/unlockWallet', {
             method: 'POST',
