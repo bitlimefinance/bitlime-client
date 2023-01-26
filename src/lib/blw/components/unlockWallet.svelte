@@ -73,11 +73,6 @@
                 }}
             />
         </div>
-        <button on:click={()=>{
-            workerPostMessage({
-                action: Action.GET_ADDRESS
-            });
-        }}>test</button>
     </section>
 </div>
 
