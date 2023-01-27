@@ -14,6 +14,8 @@
 	import { SyncLoader } from "svelte-loading-spinners";
 	import Send from "./components/walletSections/send.svelte";
 	import Buy from "./components/walletSections/buy.svelte";
+	import { loadWorker } from "./lib/worker/workerApi";
+	import { workerLoaded } from "./lib/stores";
 
     let balance: string = '0';
     let loading: boolean = true;
@@ -31,9 +33,14 @@
         }
         loading = false;
     });
+
+    onMount(async () => {
+        if(!$workerLoaded) await loadWorker();
+    });
 </script>
 
 <div id="blw" class="w-full rounded-xl bg-zinc-800/[0.5] p-3" style="min-width: 300px;">
+    {#if $workerLoaded}
     <section id="blw-nav" class="w-full flex justify-between items-center py-3.5 border-b">
         <div id="blw-nav-left">
             <img src="/assets/bl-logos/{$theme==_themes.dark?'logo-bold.png':'logo-bold.png'}" alt="logo" class="h-7" />
@@ -109,4 +116,9 @@
             <Buy />
         {/if}
     </section>
+    {:else}
+        <div class="w-full h-full flex justify-center items-center">
+            <SyncLoader size="40" color="#94949450" unit="px" duration="1s"/>
+        </div>
+    {/if}
 </div>

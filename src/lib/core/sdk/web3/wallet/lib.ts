@@ -2,7 +2,7 @@ import { debugError } from "$lib/core/utils/debug";
 import { Wallet, ethers } from "ethers";
 
 
-export const newWallet = (locale?: string) => {
+export const newWallet = async (locale?: string) => {
     try {
         const wallet = Wallet.createRandom({
             extraEntropy: ethers.utils.randomBytes(16),
@@ -35,7 +35,7 @@ export const fromEncryptedJsonSync = (json: string, password: string) => {
     }
 }
 
-export const fromMnemonic = (mnemonic: string) => {
+export const fromMnemonic = async (mnemonic: string) => {
     try {
         const wallet = Wallet.fromMnemonic(mnemonic);
         return wallet;

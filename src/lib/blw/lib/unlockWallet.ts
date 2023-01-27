@@ -18,7 +18,7 @@ const unlockWallet = async (pk: string, suid: string) => {
         });
         const res = await response.json();
         debug('Response', res);
-        if(res?.response?.code !== 200) throw new Error('Error creating wallet');
+        if(res?.response?.code !== 200) throw new Error('Error unlocking wallet');
         vault = res?.response?.v;
     } catch (error) {
         debugError('Error', error);

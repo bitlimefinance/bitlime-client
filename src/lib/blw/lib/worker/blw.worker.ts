@@ -1,12 +1,13 @@
 import { debug, debugError, debugTime, debugTimeEnd } from "$lib/core/utils/debug";
-import { Wallet } from "ethers";
 import unlockWallet from "../unlockWallet";
-import { Action, type ToWorkerMessage } from "./types";
-import { decryptCipherText } from "$lib/core/utils/cipher/passworder";
+import { Action, type ToWorkerMessage, type FromWorkerMessage } from "./types";
+import { decryptCipherText, encryptMessage } from "$lib/core/utils/cipher/passworder";
+import { fromMnemonic } from "$lib/core/sdk/web3/wallet/lib";
 
 let wallet: any;
 let pk: string;
 let suid: string;
+let response: FromWorkerMessage | null;
 
 onmessage = async function (e) {
         try {  
@@ -15,19 +16,50 @@ onmessage = async function (e) {
                 const data: ToWorkerMessage = JSON.parse(e?.data) as ToWorkerMessage;
                 const { action, payload } = data;
                 if(!action) throw new Error('Could not execute worker: action undefined');
+                suid = payload?.suid || suid;
+                response = null;
                 switch (action) {
-                        case Action.INIT:{
+                        case Action.UNLOCK:{
                                 debugTime('Worker initialization');
                                 pk = payload?.pk;
-                                suid = payload?.suid || '';
                                 let psw = payload?.password;
                                 if(!pk||!psw) throw new Error('Could not initialize worker');
                                 let encVault = JSON.parse(await unlockWallet(pk, suid));
                                 let vault =  JSON.parse(await decryptCipherText(encVault, psw));
                                 if(!vault?.mnemonic) throw new Error('Could not initialize worker');
-                                wallet = Wallet.fromMnemonic(vault.mnemonic);
+                                wallet = await fromMnemonic(vault.mnemonic);
                                 psw = vault = encVault = null;
+                                response = {
+                                        action: Action.UNLOCK,
+                                        error: false,
+                                        payload: {
+                                                address: wallet?.address || '',
+                                        }
+                                };
                                 debugTimeEnd('Worker initialization');
+                                break;
+                        }
+                        case Action.IMPORT:{
+                                debugTime('Import wallet');
+                                pk = payload?.pk;
+                                suid = payload?.suid || '';
+                                let mnemonic = payload?.secretPhrase;
+                                const psw = payload?.password;
+                                if(!mnemonic) throw new Error('Could not import wallet');
+                                wallet = await fromMnemonic(mnemonic);
+                                const vault = await encryptMessage(JSON.stringify({mnemonic, pk}) || '', psw);
+                                const publicKey = wallet?._signingKey()?.publicKey || '';
+                                mnemonic = null;
+                                response = {
+                                        action: Action.IMPORT,
+                                        error: false,
+                                        payload: {
+                                                publicKey,
+                                                vault,
+                                                address: wallet?.address || ''
+                                        }
+                                };
+                                debugTimeEnd('Import wallet');
                                 break;
                         }
                         case Action.GET_ADDRESS:{
@@ -41,9 +73,18 @@ onmessage = async function (e) {
                                 break;
                         }
                 }
-
         } catch (error) {
                 debugError(error);
+                response = {
+                        action: Action.ERROR,
+                        error: true,
+                        payload: {
+                                error: error,
+                        }
+                };
+        } finally {
+                debug('Worker response', response);
+                if(response) postMessage(response);
         }
 };
 

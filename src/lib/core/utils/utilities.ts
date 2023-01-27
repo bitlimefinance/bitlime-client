@@ -314,11 +314,12 @@ export const getTimestamp = (returnSeconds=false) => {
 	return timestamp;
 }
 
-export const toggleModal = (modalId, action) => { // actions: toggle, open, closes
+export const toggleModal = (modalId: string, action?: 'toggle' | 'open' | 'close') => {
 	try{
-		let modal = document.getElementById(modalId);
+		const modal = document.getElementById(modalId);
+		const defaultedAction = action || 'toggle';
 		if (!modal) return;
-		switch (action) {
+		switch (defaultedAction) {
 			case 'toggle':
 				modal.classList.toggle('hidden');
 				modal.style.display = modal.style.display == 'block' ? 'none' : 'block';

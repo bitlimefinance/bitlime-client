@@ -1,21 +1,22 @@
 import { metamaskAccounts } from "$lib/core/sdk/eip-1193";
 import { isIterable } from "$lib/core/utils/utilities";
-import { get, writable } from "svelte/store";
+import { get, writable, type Writable } from "svelte/store";
 import { _WALLETS } from "$lib/globals";
 import { isConnectedToWallet } from "$lib/core/sdk/eip-1193";
+import { getLatestBlock } from "$lib/core/sdk/web3/utils/block/lib";
 
-export const init = writable(false);
+export const init: Writable<boolean> = writable(false);
 
-export const connected = writable();
+export const connected: Writable<_WALLETS> = writable();
 export const setConnected = (wallet: _WALLETS) => {
     connected.set(wallet);
 }
 
-export const accounts = writable([]);
+export const accounts: Writable<string[]> = writable([]);
 export const setAccounts = async () => {
     try {
         if (await isConnectedToWallet()) {
-            latestBlock.set(await window.ethereum.request({ method: 'eth_blockNumber' }));
+            latestBlock.set(await getLatestBlock());
             const allAccounts: Array<any> = [get(metamaskAccounts)];
             let list: any = [];
             for (const iterator of allAccounts) {
@@ -25,7 +26,7 @@ export const setAccounts = async () => {
                     list = [...list, iterator];
                 }
             }
-            accounts.set(list);
+            if(list && list.length > 0) accounts.set(list);
         } else {
             connected.set(_WALLETS.DISCONNECTED);
         }
@@ -34,19 +35,19 @@ export const setAccounts = async () => {
     }
 };
 
-export const encBlw = writable(''); // encrypted blw
+export const encBlw: Writable<string> = writable(''); // encrypted blw
 
-export const latestBlock = writable('');
+export const latestBlock: Writable<string> = writable('');
 
-export const showConnenct = writable(false);
+export const showConnenct: Writable<boolean> = writable(false);
 
-export const selectNetwork = writable(false);
-export const selectedNetwork = writable({});
-export const networkCoin = writable({});
+export const selectNetwork: Writable<boolean> = writable(false);
+export const selectedNetwork: Writable<any> = writable({});
+export const networkCoin: Writable<any> = writable({});
 
-export const tokensList = writable([]);
-export const chainsList = writable([]);
+export const tokensList: Writable<any[]> = writable([]);
+export const chainsList: Writable<any[]> = writable([]);
 
-export const autoSlippage = writable(true);
-export const slippageStore = writable(0.1);
-export const deadlineStore = writable(20);
+export const autoSlippage: Writable<boolean> = writable(true);
+export const slippageStore: Writable<number> = writable(0.1);
+export const deadlineStore: Writable<number> = writable(20);

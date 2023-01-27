@@ -3,6 +3,7 @@ import { Env } from "$lib/core/utils/env";
 import { ENV } from "$lib/stores/envVars";
 import { writable, get } from "svelte/store";
 import type { ToWorkerMessage } from "./types";
+import { workerLoaded } from "../stores";
 
 export const blwWorker = writable();
 
@@ -11,6 +12,7 @@ export const loadWorker = async () => {
 		const SyncWorker = await import('./blw.worker?worker');
 		const syncWorker = new SyncWorker.default();
 		blwWorker.set(syncWorker);
+        workerLoaded.set(true);
 	} catch (error) {
 		debugError(error);
 	}
