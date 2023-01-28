@@ -1,7 +1,7 @@
 <script lang="ts">
 
 	import Connect from "$lib/blw/components/walletSections/connect.svelte";
-import Wallet from "$lib/blw/wallet.svelte";
+    import Wallet from "$lib/blw/wallet.svelte";
 	import { _WALLETS } from "$lib/globals";
 	import { accounts } from "$lib/stores/application";
 	import { mainHeight_ } from "$lib/stores/ui-theming";

@@ -6,7 +6,7 @@
 	import { onMount, tick } from 'svelte';
 	import { accounts, chainsList, connected, init, networkCoin, selectedNetwork, setAccounts, showConnenct, tokensList } from '$lib/stores/application';
 	import Spinner from '$lib/components/general/spinner.svelte';
-	import { writeLocalStorage } from '$lib/core/utils/localStorage';
+	import { readLocalStorage, writeLocalStorage } from '$lib/core/utils/localStorage';
 	import FullScreenContainer from '$lib/components/general/fullScreenContainer.svelte';
 	import { _themes, _WALLETS } from '$lib/globals';
 	import { recordData } from '$lib/core/utils/analytics';
@@ -19,6 +19,7 @@
 	import { debugError } from '$lib/core/utils/debug';
 	import SelectNetwork from '$lib/components/connect/selectNetwork.svelte';
 	import WalletModal from '$lib/blw/walletModal.svelte';
+	import { generateSalt } from '$lib/core/utils/cipher/passworder';
 
 	/** @type {import('./$types').LayoutData} */
 	export let data: any;
@@ -100,6 +101,8 @@
 			else tokensList.set(tokens);
 			mainHeight = window.innerHeight - nav.offsetHeight - footer.offsetHeight;
 			mainHeight_.set(mainHeight);
+			const blSlt = readLocalStorage('bl-slt');
+			if(!blSlt) writeLocalStorage('bl-slt', await generateSalt());
 			mounted = true;
 			subscribeToEvent('disconnect', () => {
 				window.alert('You have been disconnected from your wallet. The page will reload after dismissing this alert.');

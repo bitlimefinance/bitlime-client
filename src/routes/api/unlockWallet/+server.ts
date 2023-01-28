@@ -9,7 +9,7 @@ import { json } from '@sveltejs/kit';
 export async function POST({ request }: { request: any }) {
   try {
     const key = process.env.B_KEY;   
-    const { suid, pk } = await request.json();
+    const { suid, accessToken } = await request.json();
     const res = await fetch(getBaseWfEndpoint() + 'unlock-wallet', {
       method: 'POST',
       headers: {
@@ -18,7 +18,7 @@ export async function POST({ request }: { request: any }) {
       },
       body: JSON.stringify({
         suid: suid || 'null',
-        pk
+        accessToken
       })
     });
 

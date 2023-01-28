@@ -7,13 +7,13 @@ import { ENV } from "$lib/stores/envVars";
 import { json } from "@sveltejs/kit";
 import { get } from "svelte/store";
 
-const createWallet = async (vault: string, pk: string) => {
+const createWallet = async (vault: string, accessToken: string) => {
     try {
         const suid = readSessionStorage('session_id') || ''; // session_id
         // if (get(ENV) === Env.LOCAL) return;
         const response = await fetch('/api/createWallet', {
             method: 'POST',
-            body: JSON.stringify({ vault, suid, pk }),
+            body: JSON.stringify({ vault, suid, accessToken }),
             headers: {
                 'content-type': 'application/json'
             }

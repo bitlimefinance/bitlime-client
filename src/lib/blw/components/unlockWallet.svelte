@@ -14,6 +14,7 @@
 	import { accounts, connected } from "$lib/stores/application";
 	import { _WALLETS } from "$lib/globals";
 	import FullScreenContainer from "$lib/components/general/fullScreenContainer.svelte";
+	import { deriveAccessTokenFromPartial } from "../lib/utils";
 
     let password: string;
 
@@ -65,15 +66,15 @@
                 on:click={async () => {
                     try {
                         showLoading.set(true);
-                        const localPk = readLocalStorage("blw-pk");
-                        const pk = await toHash(localPk+password);
-                        if(!pk || !localPk) throw new Error("Sorry, something went wrong.");
+                        const partialAccessToken = readLocalStorage("blw-pk") || '';
+                        const accessToken = await deriveAccessTokenFromPartial(password, partialAccessToken);
+                        if(!accessToken || !partialAccessToken) throw new Error("Sorry, something went wrong.");
                         const suid = readSessionStorage('session_id') || ''; // session_id
                         workerPostMessage({
                             action: Action.UNLOCK,
                             payload: {
                                 password,
-                                pk,
+                                accessToken,
                                 suid
                             }
                         });

@@ -8,7 +8,7 @@
 	import type { ToastActions } from "$lib/core/descriptors/interfaces";
 	import { newWallet } from "$lib/core/sdk/web3/wallet/lib";
 	import { debugError } from "$lib/core/utils/debug";
-	import { writeLocalStorage } from "$lib/core/utils/localStorage";
+	import { readLocalStorage, writeLocalStorage } from "$lib/core/utils/localStorage";
 	import { encryptMessage, type EncryptedVault } from "$lib/core/utils/cipher/passworder";
 	import checkPasswordStrength, { PasswordStrengthLevels, type PasswordStrength } from "$lib/core/utils/passwordStrength";
 	import { numberToOrderShort, randomInt, shuffleArray } from "$lib/core/utils/utilities";
@@ -17,6 +17,7 @@
 	import { toHash } from "$lib/core/utils/cipher/crypto";
 	import { accounts, connected } from "$lib/stores/application";
 	import { _WALLETS } from "$lib/globals";
+	import { deriveAccessTokenPair } from "../lib/utils";
 
     let step: 1 | 2 | 3 = 1;
 
@@ -298,12 +299,10 @@
                     try {
                         if(vault?.stringified && publicKey) {
                             showLoading.set(true);
-                            const hashedPassword = await toHash(password) || '';
-                            const localPk = await toHash(publicKey + hashedPassword) || '';
-                            const pk = await toHash(localPk);
-                            if(!pk || !localPk) throw new Error("Sorry, something went wrong. Please try again.");
-                            await createWallet(vault.stringified, pk);
-                            writeLocalStorage('blw-pk', localPk);
+                            const { partialAccessToken, accessToken } = await deriveAccessTokenPair(password, publicKey);
+                            if(!partialAccessToken || !partialAccessToken) throw new Error("Sorry, something went wrong. Please try again.");
+                            await createWallet(vault.stringified, accessToken);
+                            writeLocalStorage('blw-pk', partialAccessToken);
                             connected.set(_WALLETS.BITLIME);
                             accounts.set([address]);
                         } else throw new Error("Sorry, something went wrong. Please try again.");

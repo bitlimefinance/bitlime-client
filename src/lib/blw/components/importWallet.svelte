@@ -24,6 +24,7 @@
 	import { workerLoaded } from "../lib/stores";
 	import { accounts, connected } from "$lib/stores/application";
 	import { _WALLETS } from "$lib/globals";
+	import { deriveAccessTokenPair } from "../lib/utils";
 
     let step: 1 | 2 | 3 = 1;
 
@@ -64,12 +65,10 @@
                             throw new Error('Error importing wallet.');
                         } else {
                             const vault = payload?.vault;
-                            const hashedPassword = await toHash(password) || '';
-                            const localPk = await toHash(payload?.publicKey + hashedPassword) || '';
-                            const pk = await toHash(localPk);
-                            if(!pk || !localPk || !vault) throw new Error("Sorry, something went wrong. Please try again.");
-                            await createWallet(vault.stringified, pk);
-                            writeLocalStorage('blw-pk', localPk);
+                            const { partialAccessToken, accessToken } = await deriveAccessTokenPair(password, payload?.publicKey);
+                            if(!accessToken || !partialAccessToken || !vault) throw new Error("Sorry, something went wrong. Please try again.");
+                            await createWallet(vault.stringified, accessToken);
+                            writeLocalStorage('blw-pk', partialAccessToken);
                             connected.set(_WALLETS.BITLIME);
                             accounts.set([payload?.address]);
                         }
@@ -138,12 +137,15 @@
             on:click={async () => {
                 try {
                     showLoading.set(true);
+                    const slt = readSessionStorage('salt');
+                    if(!slt) throw new Error("Invalid session.");
                     const suid = readSessionStorage('session_id') || ''; // session_id
                     workerPostMessage({
                         action: Action.IMPORT,
                         payload: {
                             password,
                             secretPhrase,
+                            slt,
                             suid
                         }
                     });

@@ -5,7 +5,7 @@ import { decryptCipherText, encryptMessage } from "$lib/core/utils/cipher/passwo
 import { fromMnemonic } from "$lib/core/sdk/web3/wallet/lib";
 
 let wallet: any;
-let pk: string;
+let accessToken: string;
 let suid: string;
 let response: FromWorkerMessage | null;
 
@@ -21,10 +21,10 @@ onmessage = async function (e) {
                 switch (action) {
                         case Action.UNLOCK:{
                                 debugTime('Worker initialization');
-                                pk = payload?.pk;
+                                accessToken = payload?.accessToken;
                                 let psw = payload?.password;
-                                if(!pk||!psw) throw new Error('Could not initialize worker');
-                                let encVault = JSON.parse(await unlockWallet(pk, suid));
+                                if(!accessToken||!psw) throw new Error('Could not initialize worker');
+                                let encVault = JSON.parse(await unlockWallet(accessToken, suid));
                                 let vault =  JSON.parse(await decryptCipherText(encVault, psw));
                                 if(!vault?.mnemonic) throw new Error('Could not initialize worker');
                                 wallet = await fromMnemonic(vault.mnemonic);
@@ -41,14 +41,14 @@ onmessage = async function (e) {
                         }
                         case Action.IMPORT:{
                                 debugTime('Import wallet');
-                                pk = payload?.pk;
+                                accessToken = payload?.accessToken;
                                 suid = payload?.suid || '';
                                 let mnemonic = payload?.secretPhrase;
                                 const psw = payload?.password;
                                 if(!mnemonic) throw new Error('Could not import wallet');
                                 wallet = await fromMnemonic(mnemonic);
-                                const vault = await encryptMessage(JSON.stringify({mnemonic, pk}) || '', psw);
                                 const publicKey = wallet?._signingKey()?.publicKey || '';
+                                const vault = await encryptMessage(JSON.stringify({mnemonic, publicKey}) || '', psw);
                                 mnemonic = null;
                                 response = {
                                         action: Action.IMPORT,
