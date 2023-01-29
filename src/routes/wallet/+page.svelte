@@ -5,12 +5,13 @@
 	import { _WALLETS } from "$lib/globals";
 	import { accounts } from "$lib/stores/application";
 	import { mainHeight_ } from "$lib/stores/ui-theming";
+	import { onMount } from "svelte";
 
     let walletHeight: number = 0;
-    
+
 </script>
 
-<div class="flex justify-center items-center gap-5 p-0" style="min-height: {$mainHeight_}px;">
+<div class="flex justify-center items-center gap-5 px-0 py-5" style="min-height: {$mainHeight_}px;">
     <section style="max-width: 400px; min-width: 400px;" bind:clientHeight={walletHeight}>
         {#if $accounts.length > 0}
             <Wallet />
@@ -18,8 +19,8 @@
             <Connect />
         {/if}
     </section>
-    {#if $accounts.length > 0}
-        <section class="w-full rounded-xl bg-zinc-800/[0.5]" style="height: {walletHeight}px;">
+    <!-- {#if $accounts.length > 0}
+        <section class="w-full rounded-xl bg-zinc-800/[0.5] overflow-y-auto" style="height: {walletHeight}px;">
         </section>
-    {/if}
+    {/if} -->
 </div>

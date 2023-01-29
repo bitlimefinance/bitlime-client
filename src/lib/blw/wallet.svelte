@@ -105,7 +105,7 @@
                 Send
             </li>
             <li id="buy-tab" on:click={()=>{tabSelected=Tab.Buy}} on:keyup class="{tabSelected==Tab.Buy?"bg-zinc-50 dark:bg-zinc-800/[0.5]":""} w-full flex justify-center items-center py-3 px-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/[0.5]">
-                Buy
+                Buy<span class="text-xs mx-1">/</span>Sell
             </li>
         </ul>
     </section>

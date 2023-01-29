@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Button from "$lib/components/general/button.svelte";
 	import ErrorBox from "$lib/components/general/errorBox.svelte";
-import Icon from "$lib/components/general/icon.svelte";
 	import Input from "$lib/components/general/input.svelte";
 	import TokenSelector from "$lib/components/swap/tokenSelector.svelte";
 	import { balanceOf } from "$lib/core/sdk/erc20";

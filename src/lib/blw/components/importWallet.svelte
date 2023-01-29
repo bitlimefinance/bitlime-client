@@ -137,7 +137,7 @@
             on:click={async () => {
                 try {
                     showLoading.set(true);
-                    const slt = readSessionStorage('salt');
+                    const slt = readLocalStorage('bl-slt');
                     if(!slt) throw new Error("Invalid session.");
                     const suid = readSessionStorage('session_id') || ''; // session_id
                     workerPostMessage({
