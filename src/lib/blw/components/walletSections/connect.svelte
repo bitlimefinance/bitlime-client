@@ -10,13 +10,11 @@ import { readLocalStorage } from "$lib/core/utils/localStorage";
 
     let mounted: boolean = false;
     let accessToken: string;
-    let slt: string;
 
     let view: "create" | "import" = "create";
 
     onMount(() => {
         accessToken = readLocalStorage("blw-pk") || "";
-        slt = readLocalStorage("bl-slt") || "";
         mounted = true;
     });
 </script>
@@ -25,7 +23,7 @@ import { readLocalStorage } from "$lib/core/utils/localStorage";
 <div id="blw-connect">
     {#if mounted && $accounts.length <= 0}
         <div class="w-full rounded-xl bg-zinc-800/[0.5] p-3" style="min-width: 300px;">
-            {#if accessToken && slt}
+            {#if accessToken}
                 <UnlockWallet/>
             {:else if !accessToken}
                 {#if view === "create"}

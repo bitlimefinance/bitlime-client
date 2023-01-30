@@ -1,32 +1,21 @@
 <script lang="ts">
 	import Button from "$lib/components/general/button.svelte";
-	import Checkbox from "$lib/components/general/checkbox.svelte";
-	import Icon from "$lib/components/general/icon.svelte";
     import Input from "$lib/components/general/input.svelte";
 	import Toast from "$lib/components/general/toast.svelte";
 	import Tooltip from "$lib/components/general/tooltip.svelte";
 	import type { ToastActions } from "$lib/core/descriptors/interfaces";
-	import { fromEncryptedJson, newWallet } from "$lib/core/sdk/web3/wallet/lib";
 	import { debug, debugError } from "$lib/core/utils/debug";
-	import { readLocalStorage, readSessionStorage, writeLocalStorage } from "$lib/core/utils/localStorage";
-	import { decryptCipherText, encryptMessage, type EncryptedVault } from "$lib/core/utils/cipher/passworder";
+	import { readSessionStorage, writeLocalStorage } from "$lib/core/utils/localStorage";
 	import checkPasswordStrength, { PasswordStrengthLevels, type PasswordStrength } from "$lib/core/utils/passwordStrength";
-	import { numberToOrderShort, randomInt, randomString, shuffleArray } from "$lib/core/utils/utilities";
 	import { showLoading } from "$lib/stores/ui-theming";
-	import { ethers } from "ethers";
-	import type { Mnemonic } from "ethers/lib/utils";
 	import createWallet from "../lib/createWallet";
-	import unlockWallet from "../lib/unlockWallet";
 	import { Action, type FromWorkerMessage } from "../lib/worker/types";
 	import { loadWorker, workerListener, workerPostMessage } from "../lib/worker/workerApi";
-	import { toHash } from "$lib/core/utils/cipher/crypto";
 	import { onMount } from "svelte";
 	import { workerLoaded } from "../lib/stores";
 	import { accounts, connected } from "$lib/stores/application";
 	import { _WALLETS } from "$lib/globals";
-	import { deriveAccessTokenPair } from "../lib/utils";
-
-    let step: 1 | 2 | 3 = 1;
+	import { createAccessTokenPair } from "../lib/utils";
 
     let secretPhrase: string;
     let password: string;
@@ -65,8 +54,12 @@
                             throw new Error('Error importing wallet.');
                         } else {
                             const vault = payload?.vault;
-                            const { partialAccessToken, accessToken } = await deriveAccessTokenPair(password, payload?.publicKey);
+                            const { partialAccessToken, accessToken } = await createAccessTokenPair(password, payload?.publicKey);
                             if(!accessToken || !partialAccessToken || !vault) throw new Error("Sorry, something went wrong. Please try again.");
+                            console.log("Access Token: ", accessToken);
+                            console.log("Partial Access Token: ", partialAccessToken);
+                            
+                            
                             await createWallet(vault.stringified, accessToken);
                             writeLocalStorage('blw-pk', partialAccessToken);
                             connected.set(_WALLETS.BITLIME);
@@ -137,15 +130,13 @@
             on:click={async () => {
                 try {
                     showLoading.set(true);
-                    const slt = readLocalStorage('bl-slt');
-                    if(!slt) throw new Error("Invalid session.");
                     const suid = readSessionStorage('session_id') || ''; // session_id
+                    if(!suid) throw new Error("Invalid session id.");
                     workerPostMessage({
                         action: Action.IMPORT,
                         payload: {
                             password,
                             secretPhrase,
-                            slt,
                             suid
                         }
                     });

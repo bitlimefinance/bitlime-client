@@ -41,7 +41,6 @@ onmessage = async function (e) {
                         }
                         case Action.IMPORT:{
                                 debugTime('Import wallet');
-                                accessToken = payload?.accessToken;
                                 suid = payload?.suid || '';
                                 let mnemonic = payload?.secretPhrase;
                                 const psw = payload?.password;

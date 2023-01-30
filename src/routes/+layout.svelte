@@ -101,8 +101,6 @@
 			else tokensList.set(tokens);
 			mainHeight = window.innerHeight - nav.offsetHeight - footer.offsetHeight;
 			mainHeight_.set(mainHeight);
-			const blSlt = readLocalStorage('bl-slt');
-			if(!blSlt) writeLocalStorage('bl-slt', await generateSalt());
 			mounted = true;
 			subscribeToEvent('disconnect', () => {
 				window.alert('You have been disconnected from your wallet. The page will reload after dismissing this alert.');

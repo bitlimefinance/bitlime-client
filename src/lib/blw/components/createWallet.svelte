@@ -17,7 +17,7 @@
 	import { toHash } from "$lib/core/utils/cipher/crypto";
 	import { accounts, connected } from "$lib/stores/application";
 	import { _WALLETS } from "$lib/globals";
-	import { deriveAccessTokenPair } from "../lib/utils";
+	import { createAccessTokenPair } from "../lib/utils";
 
     let step: 1 | 2 | 3 = 1;
 
@@ -299,7 +299,7 @@
                     try {
                         if(vault?.stringified && publicKey) {
                             showLoading.set(true);
-                            const { partialAccessToken, accessToken } = await deriveAccessTokenPair(password, publicKey);
+                            const { partialAccessToken, accessToken } = await createAccessTokenPair(password, publicKey);
                             if(!partialAccessToken || !partialAccessToken) throw new Error("Sorry, something went wrong. Please try again.");
                             await createWallet(vault.stringified, accessToken);
                             writeLocalStorage('blw-pk', partialAccessToken);

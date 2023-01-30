@@ -1,8 +1,8 @@
 <script lang="ts">
 	import FullScreenContainer from "$lib/components/general/fullScreenContainer.svelte";
-	import { showBlw } from "$lib/globals";
-	import { showConnenct } from "$lib/stores/application";
-	import Wallet from "./wallet.svelte";
+	import { showBlw, _WALLETS } from "$lib/globals";
+	import { connected, showConnenct } from "$lib/stores/application";
+	import Connect from "./components/walletSections/connect.svelte";
 
     let showModal: boolean = false;
 
@@ -12,9 +12,15 @@
         showModal = value;
     });
     $: showModal, showBlw.set(showModal);
+
+    connected.subscribe((value) => {
+        if(value===_WALLETS.BITLIME) showBlw.set(false);
+    });
 </script>
 
 
 <FullScreenContainer noPadding bind:show={showModal}>
-    <Wallet />
+    <div class="max-w-sm">
+        <Connect />
+    </div>
 </FullScreenContainer>

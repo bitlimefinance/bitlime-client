@@ -36,7 +36,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@metamask/browser-passworder": "^4.0.2",
 		"@sveltejs/adapter-netlify": "^1.0.0-next.85",
 		"@types/node": "*",
 		"buffer": "^6.0.3",
