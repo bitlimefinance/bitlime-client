@@ -3,6 +3,7 @@ import unlockWallet from "../unlockWallet";
 import { Action, type ToWorkerMessage, type FromWorkerMessage } from "./types";
 import { decryptCipherText, encryptMessage } from "$lib/core/utils/cipher/passworder";
 import { fromMnemonic } from "$lib/core/sdk/web3/wallet/lib";
+import { sendTransaction } from "$lib/core/sdk/web3/transactions/lib";
 
 let wallet: any;
 let accessToken: string;
@@ -63,8 +64,27 @@ onmessage = async function (e) {
                         }
                         case Action.GET_ADDRESS:{
                                 debugTime('Get address');
-                                debug('Address', await wallet.address);
+                                response = {
+                                        action: Action.GET_ADDRESS,
+                                        error: false,
+                                        payload: {
+                                                address: await wallet.address,
+                                        }
+                                };
                                 debugTimeEnd('Get address');
+                                break;
+                        }
+                        case Action.SEND_TRANSACTION:{
+                                debugTime('Send transaction');
+                                // TODO: implement
+                                const toAddress = payload?.toAddress;
+                                const amount = payload?.amount;
+                                await sendTransaction({toAddress, amount});
+                                debugTimeEnd('Send transaction');
+                                break;
+                        }
+                        case Action.SMART_CONTRACT_INTERACT:{
+                                // TODO: implement
                                 break;
                         }
                         default:{

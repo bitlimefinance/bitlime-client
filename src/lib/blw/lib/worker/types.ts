@@ -4,8 +4,9 @@ export enum Action {
     CREATE = 'create',
     UNLOCK = 'unlock',
     IMPORT = 'import',
-    SEND = 'send',
     ERROR = 'error',
+    SEND_TRANSACTION = 'send',
+    SMART_CONTRACT_INTERACT = 'interact',
     GET_ADDRESS = 'getAddress',
 }
 
