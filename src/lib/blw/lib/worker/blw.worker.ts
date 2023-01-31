@@ -6,7 +6,6 @@ import { fromMnemonic } from "$lib/core/sdk/web3/wallet/lib";
 import { sendTransaction } from "$lib/core/sdk/web3/transactions/lib";
 
 let wallet: any;
-let accessToken: string;
 let suid: string;
 let response: FromWorkerMessage | null;
 
@@ -22,7 +21,7 @@ onmessage = async function (e) {
                 switch (action) {
                         case Action.UNLOCK:{
                                 debugTime('Worker initialization');
-                                accessToken = payload?.accessToken;
+                                let accessToken = payload?.accessToken;
                                 let psw = payload?.password;
                                 if(!accessToken||!psw) throw new Error('Could not initialize worker');
                                 let encVault = JSON.parse(await unlockWallet(accessToken, suid));

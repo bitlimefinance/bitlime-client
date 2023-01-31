@@ -56,10 +56,6 @@
                             const vault = payload?.vault;
                             const { partialAccessToken, accessToken } = await createAccessTokenPair(password, payload?.publicKey);
                             if(!accessToken || !partialAccessToken || !vault) throw new Error("Sorry, something went wrong. Please try again.");
-                            console.log("Access Token: ", accessToken);
-                            console.log("Partial Access Token: ", partialAccessToken);
-                            
-                            
                             await createWallet(vault.stringified, accessToken);
                             writeLocalStorage('blw-pk', partialAccessToken);
                             connected.set(_WALLETS.BITLIME);

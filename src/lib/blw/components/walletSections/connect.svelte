@@ -1,6 +1,6 @@
 <script lang="ts">
+	import { getPartialAccessToken } from "$lib/blw/lib/utils";
 	import Button from "$lib/components/general/button.svelte";
-import { readLocalStorage } from "$lib/core/utils/localStorage";
     import { _WALLETS } from "$lib/globals";
 	import { accounts, connected } from "$lib/stores/application";
 	import { onMount } from "svelte";
@@ -13,8 +13,8 @@ import { readLocalStorage } from "$lib/core/utils/localStorage";
 
     let view: "create" | "import" = "create";
 
-    onMount(() => {
-        accessToken = readLocalStorage("blw-pk") || "";
+    onMount(async () => {
+        accessToken = await getPartialAccessToken();
         mounted = true;
     });
 </script>

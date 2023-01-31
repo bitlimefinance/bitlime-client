@@ -1,7 +1,7 @@
 import { toHash } from "$lib/core/utils/cipher/crypto";
 import { bufferToBase64 } from "$lib/core/utils/cipher/passworder";
 import { debugError } from "$lib/core/utils/debug";
-import { readLocalStorage } from "$lib/core/utils/localStorage";
+import { readLocalStorage, writeLocalStorage } from "$lib/core/utils/localStorage";
 import { randomBytes } from "ethers/lib/utils";
 
 
@@ -15,6 +15,9 @@ export const getPartialAccessToken = async (): Promise<string> => {
         return '';
     }
 }
+
+export const writePartialAccessToken = async (value: string): Promise<string> => {writeLocalStorage('blw-pk', value)};
+
 
 export const createAccessTokenPair = async (password: string, pk: string): Promise<{
     partialAccessToken: string;
