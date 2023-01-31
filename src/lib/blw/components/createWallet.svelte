@@ -18,6 +18,8 @@
 	import { accounts, connected } from "$lib/stores/application";
 	import { _WALLETS } from "$lib/globals";
 	import { createAccessTokenPair } from "../lib/utils";
+	import { Wallet } from "ethers";
+	import { web3Provider } from "$lib/core/sdk/web3/provider/lib";
 
     let step: 1 | 2 | 3 = 1;
 
@@ -175,7 +177,9 @@
                         showLoading.set(false);
                         return;
                     }
-                    const wallet = await newWallet();
+                    let w = await newWallet();
+                    if(!w) throw new Error("Failed to create wallet");
+                    const wallet = new Wallet(w, web3Provider);
                     mnemonic = wallet?.mnemonic?.phrase || '';
                     publicKey = wallet?._signingKey()?.publicKey || '';
                     address = wallet?.address || '';

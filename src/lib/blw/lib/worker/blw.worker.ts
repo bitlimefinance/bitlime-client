@@ -4,6 +4,9 @@ import { Action, type ToWorkerMessage, type FromWorkerMessage } from "./types";
 import { decryptCipherText, encryptMessage } from "$lib/core/utils/cipher/passworder";
 import { fromMnemonic } from "$lib/core/sdk/web3/wallet/lib";
 import { sendTransaction } from "$lib/core/sdk/web3/transactions/lib";
+import { interactWithContract, readSmartContract } from "$lib/core/sdk/web3/contracts/lib";
+import { Wallet } from "ethers";
+import { web3Provider } from "$lib/core/sdk/web3/provider/lib";
 
 let wallet: any;
 let suid: string;
@@ -27,7 +30,9 @@ onmessage = async function (e) {
                                 let encVault = JSON.parse(await unlockWallet(accessToken, suid));
                                 let vault =  JSON.parse(await decryptCipherText(encVault, psw));
                                 if(!vault?.mnemonic) throw new Error('Could not initialize worker');
-                                wallet = await fromMnemonic(vault.mnemonic);
+                                let w = await fromMnemonic(vault.mnemonic);
+                                if(!w) throw new Error('Could not initialize worker');
+                                wallet = new Wallet(w, web3Provider);
                                 psw = vault = encVault = null;
                                 response = {
                                         action: Action.UNLOCK,
@@ -45,7 +50,9 @@ onmessage = async function (e) {
                                 let mnemonic = payload?.secretPhrase;
                                 const psw = payload?.password;
                                 if(!mnemonic) throw new Error('Could not import wallet');
-                                wallet = await fromMnemonic(mnemonic);
+                                let w = await fromMnemonic(mnemonic);
+                                if(!w) throw new Error('Could not import wallet');
+                                wallet = new Wallet(w, web3Provider);
                                 const publicKey = wallet?._signingKey()?.publicKey || '';
                                 const vault = await encryptMessage(JSON.stringify({mnemonic, publicKey}) || '', psw);
                                 mnemonic = null;
@@ -73,19 +80,60 @@ onmessage = async function (e) {
                                 debugTimeEnd('Get address');
                                 break;
                         }
-                        case Action.SEND_TRANSACTION:{
-                                debugTime('Send transaction');
-                                // TODO: implement
-                                const toAddress = payload?.toAddress;
-                                const amount = payload?.amount;
-                                await sendTransaction({toAddress, amount});
-                                debugTimeEnd('Send transaction');
-                                break;
-                        }
-                        case Action.SMART_CONTRACT_INTERACT:{
-                                // TODO: implement
-                                break;
-                        }
+                        // case Action.SEND_TRANSACTION:{
+                        //         debugTime('Send transaction');
+                        //         // TODO: implement
+                        //         const toAddress = payload?.toAddress;
+                        //         const amount = payload?.amount;
+                        //         await sendTransaction({toAddress, amount});
+                        //         debugTimeEnd('Send transaction');
+                        //         break;
+                        // }
+                        // case Action.SM_READ:{
+                        //         debugTime('Read smart contract');
+                        //         const { abi, address, methodName, methodParams } = payload as {[key: string]: any};
+                        //         if(!abi||!address||!methodName||!methodParams) throw new Error('Could not read smart contract');
+                        //         const tx = await readSmartContract({
+                        //                 abi,
+                        //                 address,
+                        //                 methodName,
+                        //                 methodParams,
+                        //         });
+                        //         response = {
+                        //                 action: Action.SM_INTERACT,
+                        //                 error: false,
+                        //                 payload: {
+                        //                         tx,
+                        //                 }
+                        //         };
+                        //         debugTimeEnd('Read smart contract');
+                        //         break;
+                        // }
+                        // case Action.SM_WRITE:{
+                        //         debugTime('Write smart contract');
+                        //         const { abi, address, methodName, methodParams, value } = payload as {[key: string]: any};
+                        //         if(!abi||!address||!methodName||!methodParams) throw new Error('Could not write smart contract');
+                        //         const tx = await interactWithContract({
+                        //                 abi,
+                        //                 address,
+                        //                 methodName,
+                        //                 methodParams,
+                        //                 value,
+                        //         });
+                        //         response = {
+                        //                 action: Action.SM_INTERACT,
+                        //                 error: false,
+                        //                 payload: {
+                        //                         tx,
+                        //                 }
+                        //         };
+                        //         debugTimeEnd('Write smart contract');
+                        //         break;
+                        // }
+                        // case Action.SM_INTERACT:{
+                                
+                        //         break;
+                        // }
                         default:{
                                 // do nothing
                                 break;

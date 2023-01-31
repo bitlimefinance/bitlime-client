@@ -6,7 +6,9 @@ export enum Action {
     IMPORT = 'import',
     ERROR = 'error',
     SEND_TRANSACTION = 'send',
-    SMART_CONTRACT_INTERACT = 'interact',
+    SM_READ = 'read',
+    SM_WRITE = 'write',
+    SM_INTERACT = 'interact',
     GET_ADDRESS = 'getAddress',
 }
 
