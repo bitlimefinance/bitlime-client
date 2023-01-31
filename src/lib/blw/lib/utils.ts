@@ -16,7 +16,7 @@ export const getPartialAccessToken = async (): Promise<string> => {
     }
 }
 
-export const writePartialAccessToken = async (value: string): Promise<string> => {writeLocalStorage('blw-pk', value)};
+export const writePartialAccessToken = async (value: string): Promise<void> => {writeLocalStorage('blw-pk', value)};
 
 
 export const createAccessTokenPair = async (password: string, pk: string): Promise<{
