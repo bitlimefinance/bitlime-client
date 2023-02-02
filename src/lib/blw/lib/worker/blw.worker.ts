@@ -3,10 +3,10 @@ import unlockWallet from "../unlockWallet";
 import { Action, type ToWorkerMessage, type FromWorkerMessage } from "./types";
 import { decryptCipherText, encryptMessage } from "$lib/core/utils/cipher/passworder";
 import { fromMnemonic } from "$lib/core/sdk/web3/wallet/lib";
-import { sendTransaction } from "$lib/core/sdk/web3/transactions/lib";
-import { interactWithContract, readSmartContract } from "$lib/core/sdk/web3/contracts/lib";
 import { Wallet } from "ethers";
-import { web3Provider } from "$lib/core/sdk/web3/provider/lib";
+import { web3Provider, setProvider } from "$lib/core/sdk/web3/provider/lib";
+import { selectedNetwork } from "$lib/stores/application";
+import { get } from "svelte/store";
 
 let wallet: any;
 let suid: string;
@@ -24,13 +24,16 @@ onmessage = async function (e) {
                 switch (action) {
                         case Action.UNLOCK:{
                                 debugTime('Worker initialization');
-                                let accessToken = payload?.accessToken;
+                                console.log("Network:\n",get(selectedNetwork));
+                                
+                                await setProvider(get(selectedNetwork).rpc);
+                                const accessToken = payload?.accessToken;
                                 let psw = payload?.password;
                                 if(!accessToken||!psw) throw new Error('Could not initialize worker');
                                 let encVault = JSON.parse(await unlockWallet(accessToken, suid));
                                 let vault =  JSON.parse(await decryptCipherText(encVault, psw));
                                 if(!vault?.mnemonic) throw new Error('Could not initialize worker');
-                                let w = await fromMnemonic(vault.mnemonic);
+                                const w = await fromMnemonic(vault.mnemonic);
                                 if(!w) throw new Error('Could not initialize worker');
                                 wallet = new Wallet(w, web3Provider);
                                 psw = vault = encVault = null;
@@ -46,11 +49,12 @@ onmessage = async function (e) {
                         }
                         case Action.IMPORT:{
                                 debugTime('Import wallet');
+                                await setProvider(get(selectedNetwork).rpc);
                                 suid = payload?.suid || '';
                                 let mnemonic = payload?.secretPhrase;
                                 const psw = payload?.password;
                                 if(!mnemonic) throw new Error('Could not import wallet');
-                                let w = await fromMnemonic(mnemonic);
+                                const w = await fromMnemonic(mnemonic);
                                 if(!w) throw new Error('Could not import wallet');
                                 wallet = new Wallet(w, web3Provider);
                                 const publicKey = wallet?._signingKey()?.publicKey || '';

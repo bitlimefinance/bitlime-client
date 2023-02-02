@@ -3,6 +3,7 @@
 	import { chainsList, selectedNetwork, selectNetwork } from "$lib/stores/application";
 	import { writeLocalStorage } from "$lib/core/utils/localStorage";
 	import { showLoading } from "$lib/stores/ui-theming";
+	import { debugError } from "$lib/core/utils/debug";
 
     const setChain = (chain: any) => {
         try {
@@ -10,7 +11,7 @@
             selectedNetwork.set(chain);
             writeLocalStorage('last-selected-chain', JSON.stringify(chain));
         } catch (error) {
-            console.error(error);
+            debugError(error);
         } finally {
             selectNetwork.set(false);
             showLoading.set(false);

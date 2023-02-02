@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getAddressPreview } from "$lib/core/sdk/web3/utils/addresses/lib";
+	import { debugError } from "$lib/core/utils/debug";
 	import { readLocalStorage } from "$lib/core/utils/localStorage";
 	import { _themes, _WALLETS, _WALLETS_INFO } from "$lib/globals";
 	import { accounts, chainsList, connected, selectedNetwork, selectNetwork, showConnenct } from "$lib/stores/application";
@@ -18,7 +19,7 @@
             if (parsedChain?.id) selectedNetwork.set(parsedChain);
           }
         } catch (error) {
-          /* do nothing */
+          debugError(error);
         }
     });
 

@@ -42,11 +42,36 @@ export const latestBlock: Writable<string> = writable('');
 export const showConnenct: Writable<boolean> = writable(false);
 
 export const selectNetwork: Writable<boolean> = writable(false);
-export const selectedNetwork: Writable<any> = writable({});
+export const selectedNetwork: Writable<{
+    [key: string]: any;
+    currency_symbol: string;
+    name: string;
+    decimals: number;
+    enabled: boolean;
+    explorer_url?: string;
+    logo?: string;
+    id: number;
+    rpc: string;
+    is_testnet: boolean;
+    tags?: string[];
+}> = writable();
+
 export const networkCoin: Writable<any> = writable({});
 
 export const tokensList: Writable<any[]> = writable([]);
-export const chainsList: Writable<any[]> = writable([]);
+export const chainsList: Writable<{
+    [key: string]: any;
+    currency_symbol: string;
+    name: string;
+    decimals: number;
+    enabled: boolean;
+    explorer_url?: string;
+    logo?: string;
+    id: number;
+    rpc: string;
+    is_testnet: boolean;
+    tags?: string[];
+}[]> = writable([]);
 
 export const autoSlippage: Writable<boolean> = writable(true);
 export const slippageStore: Writable<number> = writable(0.1);

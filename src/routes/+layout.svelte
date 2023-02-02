@@ -16,7 +16,7 @@
 	import Footer from '$lib/components/footer.svelte';
 	import { chains, tokens } from '$lib/core/contents/fallbacks';
 	import { setProvider } from '$lib/core/sdk/web3/provider/lib';
-	import { debugError } from '$lib/core/utils/debug';
+	import { debug, debugError } from '$lib/core/utils/debug';
 	import SelectNetwork from '$lib/components/connect/selectNetwork.svelte';
 	import WalletModal from '$lib/blw/walletModal.svelte';
 	import { generateSalt } from '$lib/core/utils/cipher/passworder';
@@ -93,11 +93,11 @@
 	let mainHeight: number = 0;
 	onMount(async () => {
 		try{
-			console.log(data);
+			debug(data);
 			ENV.set(data?.env);
-			if (data?.chainsList && data?.chainsList?.length && data?.chainsList.length > 0) chainsList.set(data?.chainsList);
+			if (data?.chainsList?.response?.results && data?.chainsList?.response?.results?.length > 0) chainsList.set(data?.chainsList?.response?.results);
 			else chainsList.set(chains);
-			if (data?.tokensList && data?.tokensList?.length && data?.tokensList.length > 0) tokensList.set(data?.tokensList);
+			if (data?.tokensList?.response?.results && data?.tokensList?.response?.results?.length > 0) tokensList.set(data?.tokensList?.response?.results);
 			else tokensList.set(tokens);
 			mainHeight = window.innerHeight - nav.offsetHeight - footer.offsetHeight;
 			mainHeight_.set(mainHeight);
@@ -126,7 +126,6 @@
 		}
 	});
 </script>
-
 
 <div id="global-container" class="min-h-screen bg-white bg-opacity-70 dark:bg-opacity-100 dark:bg-zinc-900">
 	{#if $showLoading}

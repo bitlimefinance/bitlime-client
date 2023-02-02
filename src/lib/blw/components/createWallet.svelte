@@ -15,13 +15,15 @@
 	import { showLoading } from "$lib/stores/ui-theming";
 	import createWallet from "../lib/createWallet";
 	import { toHash } from "$lib/core/utils/cipher/crypto";
-	import { accounts, connected } from "$lib/stores/application";
+	import { accounts, connected, selectedNetwork } from "$lib/stores/application";
 	import { _WALLETS } from "$lib/globals";
 	import { createAccessTokenPair } from "../lib/utils";
 	import { Wallet } from "ethers";
-	import { web3Provider } from "$lib/core/sdk/web3/provider/lib";
+	import { setProvider, web3Provider } from "$lib/core/sdk/web3/provider/lib";
 
     let step: 1 | 2 | 3 = 1;
+
+    let wallet: Wallet;
 
     let password: string;
     let confirmPassword: string;
@@ -177,9 +179,8 @@
                         showLoading.set(false);
                         return;
                     }
-                    let w = await newWallet();
-                    if(!w) throw new Error("Failed to create wallet");
-                    const wallet = new Wallet(w, web3Provider);
+                    let wallet = await newWallet();
+                    if(!wallet) throw new Error("Failed to create wallet");
                     mnemonic = wallet?.mnemonic?.phrase || '';
                     publicKey = wallet?._signingKey()?.publicKey || '';
                     address = wallet?.address || '';
@@ -307,6 +308,8 @@
                             if(!partialAccessToken || !partialAccessToken) throw new Error("Sorry, something went wrong. Please try again.");
                             await createWallet(vault.stringified, accessToken);
                             writeLocalStorage('blw-pk', partialAccessToken);
+                            await setProvider($selectedNetwork.rpc);
+                            new Wallet(wallet, web3Provider);
                             connected.set(_WALLETS.BITLIME);
                             accounts.set([address]);
                         } else throw new Error("Sorry, something went wrong. Please try again.");
