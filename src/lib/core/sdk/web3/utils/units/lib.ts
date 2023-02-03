@@ -2,9 +2,9 @@ import type { EtherUnit } from "$lib/core/descriptors/types";
 import { debugError } from "$lib/core/utils/debug";
 import { ethers } from "ethers";
 
-export const noOfDecimalsToUnits = (decimals: number = 18) => {
-    let decimalsString = decimals.toString();
-    let unitMap: {
+export const noOfDecimalsToUnits = (decimals = 18) => {
+    const decimalsString = decimals.toString();
+    const unitMap: {
         [key: string]: Array<EtherUnit>
     } = {
         '0': ['noether'],

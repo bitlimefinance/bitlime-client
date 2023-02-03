@@ -8,7 +8,8 @@ export const interactWithContract = async (args: { address: string, abi: any, me
     try {
         const { address, abi, methodName, methodParams } = args;
         const value = args.value || '0';
-        debugBreakpoint(`Interacting with contract ${address} with method ${methodName} and params ${methodParams}`);
+        debugBreakpoint(`Interacting with contract ${address} with method ${methodName} and params:`);
+        debug(args);
         txPreflight(true, [address]);
 
         debugBreakpoint('Get signer');
@@ -51,6 +52,7 @@ export const readSmartContract = async (args: {
 }) => {
     let result;
     try {
+        debug(args.methodName,args);
         txPreflight(false, [args.address]);
         const contract = await loadContractReadOnly(args.abi, args.address);
         result = await contract.functions[args.methodName](...args.methodParams);
@@ -62,7 +64,7 @@ export const readSmartContract = async (args: {
 
 export const loadContractReadOnly = async (abi: any[], address: string) => {
     txPreflight(false, [address]);
-    return new ethers.Contract(address, abi).connect(web3Provider);
+    return new ethers.Contract(address, abi, web3Provider);
 }
 
 export const loadContract = async (abi: any[], address: string) => {

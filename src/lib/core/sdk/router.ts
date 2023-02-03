@@ -94,7 +94,7 @@ export const swapExactETHForTokens = async (args: {
     deadline?: any,
     affiliateAddress?: string,
     slippage?: any,
-    callBack?: Function
+    callBack?: any
 }) => {
     try{
         const nativeToken =  await getNativeToken();

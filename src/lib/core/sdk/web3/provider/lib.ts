@@ -1,8 +1,8 @@
 import { debugError } from "$lib/core/utils/debug";
 import { ethers } from "ethers";
-import { writable } from "svelte/store";
+import { writable, type Writable } from "svelte/store";
 
-export const web3Ready_ = writable(false);
+export const web3Ready_: Writable<boolean> = writable(false);
 
 export let web3Provider: any;
 

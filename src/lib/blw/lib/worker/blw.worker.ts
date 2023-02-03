@@ -7,6 +7,7 @@ import { Wallet } from "ethers";
 import { web3Provider, setProvider } from "$lib/core/sdk/web3/provider/lib";
 import { selectedNetwork } from "$lib/stores/application";
 import { get } from "svelte/store";
+import { tick } from "svelte";
 
 let wallet: any;
 let suid: string;
@@ -19,14 +20,13 @@ onmessage = async function (e) {
                 const data: ToWorkerMessage = JSON.parse(e?.data) as ToWorkerMessage;
                 const { action, payload } = data;
                 if(!action) throw new Error('Could not execute worker: action undefined');
+                const net = payload?.network;
+                if(net) await setProvider(net);
                 suid = payload?.suid || suid;
                 response = null;
                 switch (action) {
                         case Action.UNLOCK:{
                                 debugTime('Worker initialization');
-                                console.log("Network:\n",get(selectedNetwork));
-                                
-                                await setProvider(get(selectedNetwork).rpc);
                                 const accessToken = payload?.accessToken;
                                 let psw = payload?.password;
                                 if(!accessToken||!psw) throw new Error('Could not initialize worker');
@@ -49,7 +49,6 @@ onmessage = async function (e) {
                         }
                         case Action.IMPORT:{
                                 debugTime('Import wallet');
-                                await setProvider(get(selectedNetwork).rpc);
                                 suid = payload?.suid || '';
                                 let mnemonic = payload?.secretPhrase;
                                 const psw = payload?.password;

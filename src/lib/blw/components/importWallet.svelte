@@ -13,7 +13,7 @@
 	import { loadWorker, workerListener, workerPostMessage } from "../lib/worker/workerApi";
 	import { onMount } from "svelte";
 	import { workerLoaded } from "../lib/stores";
-	import { accounts, connected } from "$lib/stores/application";
+	import { accounts, connected, selectedNetwork } from "$lib/stores/application";
 	import { _WALLETS } from "$lib/globals";
 	import { createAccessTokenPair } from "../lib/utils";
 
@@ -133,7 +133,8 @@
                         payload: {
                             password,
                             secretPhrase,
-                            suid
+                            suid,
+                            network: $selectedNetwork
                         }
                     });
                 } catch (error) {

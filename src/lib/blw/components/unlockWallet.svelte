@@ -11,7 +11,7 @@
 	import { toHash } from "$lib/core/utils/cipher/crypto";
 	import { onMount } from "svelte";
 	import { workerLoaded } from "../lib/stores";
-	import { accounts, connected } from "$lib/stores/application";
+	import { accounts, connected, selectedNetwork } from "$lib/stores/application";
 	import { _WALLETS } from "$lib/globals";
 	import FullScreenContainer from "$lib/components/general/fullScreenContainer.svelte";
 	import { deriveAccessTokenFromPartial } from "../lib/utils";
@@ -75,7 +75,8 @@
                             payload: {
                                 password,
                                 accessToken,
-                                suid
+                                suid,
+                                network: $selectedNetwork
                             }
                         });
                         showLoading.set(false);

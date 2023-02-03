@@ -217,7 +217,9 @@
                 amountIn: amountToQuote,
                 tokenAddressA: _tokenA,
                 tokenAddressB: _tokenB
-            })
+            });
+
+            if(!bnQuote) throw new Error('Something went wrong getting quote');
 
             let quote: any[] = [fromBigNumber(bnQuote[0][0]), fromBigNumber(bnQuote[0][1])];
             let res = fromWei(quote[1].toString(), noOfDecimalsToUnits(pathDecimals[1]));
@@ -311,7 +313,7 @@
                     await approve({
                         tokenAddress: selectedTokenA.address,
                         spenderAddress: ROUTER_ADDRESS,
-                        amount: await web3Provider.utils.toWei(await selectedTokenABalance.toString(), noOfDecimalsToUnits(selectedTokenADecimals))+'000000000',
+                        amount: toWei(await selectedTokenABalance.toString(), noOfDecimalsToUnits(selectedTokenADecimals))+'000000000',
                         ownerAddress: $accounts[0]
                     });
                 }else {
