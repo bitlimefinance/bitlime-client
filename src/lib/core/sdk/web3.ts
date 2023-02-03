@@ -50,9 +50,9 @@ export const getTransactionObject = async (args: GetTransactionObject) => {
         if (!window.web3) await loadWeb3(window.bl_rpc);
         let contract = await loadContract(args.abi, args.address);
         txObj = contract.methods[args.methodName](...args.methodParams);
+        return txObj;
     } catch (error) {
         debugError(error);
-    } finally {
         return txObj;
     }
 }
@@ -68,9 +68,9 @@ export const readSmartContract = async (args: {
         if (!window.web3) await loadWeb3(window.bl_rpc);
         let contract = await loadContract(args.abi, args.address);
         result = await contract.methods[args.methodName](...args.methodParams).call();
+        return result;
     } catch (error) {
         debugError(error);
-    } finally {
         return result;
     }
 }
@@ -91,9 +91,9 @@ export const getBalance = async (address: string) => {
     });
 }
 
-export const noOfDecimalsToUnits = (decimals: number = 18) => {
-    let decimalsString = decimals.toString();
-    let unitMap: {
+export const noOfDecimalsToUnits = (decimals = 18) => {
+    const decimalsString = decimals.toString();
+    const unitMap: {
         [key: string]: Array<EtherUnit>
     } = {
         '0': ['noether'],
