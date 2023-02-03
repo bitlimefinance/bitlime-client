@@ -1,4 +1,4 @@
-import { debug, debugError } from "$lib/core/utils/debug";
+import { debug, debugBreakpoint, debugError } from "$lib/core/utils/debug";
 import { ethers, Signer } from "ethers";
 import { web3Provider } from "../provider/lib";
 import { getSigner } from "../signer/lib";
@@ -8,24 +8,28 @@ export const interactWithContract = async (args: { address: string, abi: any, me
     try {
         const { address, abi, methodName, methodParams } = args;
         const value = args.value || '0';
-
+        debugBreakpoint(`Interacting with contract ${address} with method ${methodName} and params ${methodParams}`);
         txPreflight(true, [address]);
 
+        debugBreakpoint('Get signer');
         // get signer
         const signer = await getSigner() as Signer;
 
+        debugBreakpoint('Connect to contract');
         // Connect to the contract
         const contract = new ethers.Contract(address, abi, signer);
 
+        debugBreakpoint('Estimate gas');
         // Estimate the gas needed for the transaction
         const gasEstimate = await contract.estimateGas[methodName](...methodParams);
-        debug(`Gas estimate: ${gasEstimate.toString()}`);
+        debugBreakpoint('Gas estimated: ' + gasEstimate.toString());
 
         // Prepare the contract function call
         const tx = await contract.functions[methodName](...methodParams, {
             value,
             gasLimit: gasEstimate
         });
+        debugBreakpoint('Tx sent');
 
         // Wait for the transaction to be mined
         const receipt = await tx.wait();

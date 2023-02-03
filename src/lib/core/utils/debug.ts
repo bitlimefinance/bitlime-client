@@ -34,3 +34,13 @@ export const debugTimeEnd = (log: string) => {
 		console.timeEnd(log);
 	}
 }
+
+let br: number = 1;
+export const debugBreakpoint = (log?: string) => {
+	if (browser && get(ENV)===Env.LOCAL) {
+		if (log) console.warn('BREAKPOINT ' + br + '\n' + log);
+		else console.warn('BREAKPOINT ' + br);
+		br++;
+	}
+}
+export const debugBreakpointReset = () => br = 1;

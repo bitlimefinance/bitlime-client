@@ -2,7 +2,7 @@
 import { accounts, latestBlock } from "$lib/stores/application";
 import { get } from "svelte/store";
 import abi from "./abis/router.json" assert {type: 'json'};
-import { debug, debugError } from "../utils/debug";
+import { debug, debugBreakpoint, debugError } from "../utils/debug";
 import { constants } from "ethers";
 import { interactWithContract, readSmartContract } from "./web3/contracts/lib";
 
@@ -98,7 +98,7 @@ export const swapExactETHForTokens = async (args: {
 }) => {
     try{
         const nativeToken =  await getNativeToken();
-            
+        debugBreakpoint('Swap exact ETH for tokens');
         const tx = await interactWithContract({
             abi: ROUTER_ABI,
             address: ROUTER_ADDRESS,
@@ -111,7 +111,7 @@ export const swapExactETHForTokens = async (args: {
                 args.affiliateAddress || constants.AddressZero // affiliateAddress
             ],
         });
-
+        debugBreakpoint('Swap exact ETH for tokens - tx sent');
         if (args.callBack) await args.callBack(tx);
 
         return tx;
@@ -174,6 +174,7 @@ export const methodsSwitcher = async (args: {
     if (expressedMethod) {
         expressedMethod();
     } else if (tokenAddressA == 'native'){
+        debugBreakpoint();
         await swapExactETHForTokens({
             to,
             tokenAddressB,
