@@ -460,3 +460,27 @@ export const numberToOrderShort = (n: number) => {
 		return n+'th';
 	}
 }
+
+export const snakeToTitleCase = (str: string): string => {
+	try {
+		const words = str.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1));
+		words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1);
+		return words.join(" ");
+	} catch (error) {
+		debugError(error);
+		return str;
+	}
+  };
+  
+export const camelToTitleCase = (str: string): string => {
+	try {
+		const words = str.replace(/([a-z])([A-Z])/g, "$1 $2").split(" ");
+		words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1);
+		return words.join(" ");
+	} catch (error) {
+		debugError(error);
+		return str;
+	}
+  };
+  
+

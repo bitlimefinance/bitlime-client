@@ -11,7 +11,7 @@
 	import SwapInput from "./swapInput.svelte";
 	import { SyncLoader } from "svelte-loading-spinners";
 	import SwapSettings from "./swapSettings.svelte";
-	import { debug, debugBreakpoint, debugBreakpointReset, debugError, debugWarn } from "$lib/core/utils/debug";
+	import { debug, debugBreakpointReset, debugError, debugWarn } from "$lib/core/utils/debug";
 	import { fromWei, noOfDecimalsToUnits, toWei } from "$lib/core/sdk/web3/utils/units/lib";
 	import { web3Provider } from "$lib/core/sdk/web3/provider/lib";
 	import { getAddressBalance } from "$lib/core/sdk/web3/utils/addresses/lib";
@@ -290,11 +290,10 @@
         if(!(selectedTokenA?.address && selectedTokenB?.address && !noBalance && selectedTokenA?.address!=selectedTokenB?.address)) return;
         try {
             debugBreakpointReset();
-            debugBreakpoint();
             let amountToWei: string | null = '0';
             if(selectedTokenA.address == 'native' || selectedTokenB.address == 'native') {
                 amountToWei = toWei(await inputAValue.toString() || '0', noOfDecimalsToUnits(selectedTokenADecimals));
-                debugBreakpoint();
+                
                 await methodsSwitcher({
                     to: $accounts[0],
                     tokenAddressA: selectedTokenA.address,
@@ -303,10 +302,10 @@
                 });
                 return;
             };
-            debugBreakpoint();
+            
             await fetchTokenInfo(true);
             await sleep(1000);
-            debugBreakpoint();
+            
             if(gettingData || !selectedTokenADecimals || !selectedTokenBDecimals) return;
             if ($connected && $connected != _WALLETS.DISCONNECTED) {
                 if(tokenNeedsAllowance){

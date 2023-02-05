@@ -35,7 +35,7 @@ export const debugTimeEnd = (log: string) => {
 	}
 }
 
-let br: number = 1;
+let br = 1;
 export const debugBreakpoint = (log?: string) => {
 	if (browser && get(ENV)===Env.LOCAL) {
 		if (log) console.warn('BREAKPOINT ' + br + '\n' + log);

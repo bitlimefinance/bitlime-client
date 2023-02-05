@@ -1,36 +1,36 @@
-import { debug, debugBreakpoint, debugError } from "$lib/core/utils/debug";
+import { debug, debugError } from "$lib/core/utils/debug";
 import { ethers, Signer } from "ethers";
 import { web3Provider } from "../provider/lib";
 import { getSigner } from "../signer/lib";
 import { txPreflight } from "../transactions/txPreflight";
+import { connected } from "$lib/stores/application";
+import { get } from "svelte/store";
+import { _WALLETS } from "$lib/globals";
 
 export const interactWithContract = async (args: { address: string, abi: any, methodName: string, methodParams: any[], value?: string }) => {
     try {
         const { address, abi, methodName, methodParams } = args;
         const value = args.value || '0';
-        debugBreakpoint(`Interacting with contract ${address} with method ${methodName} and params:`);
         debug(args);
         txPreflight(true, [address]);
 
-        debugBreakpoint('Get signer');
         // get signer
         const signer = await getSigner() as Signer;
 
-        debugBreakpoint('Connect to contract');
         // Connect to the contract
         const contract = new ethers.Contract(address, abi, signer);
 
-        debugBreakpoint('Estimate gas');
         // Estimate the gas needed for the transaction
         const gasEstimate = await contract.estimateGas[methodName](...methodParams);
-        debugBreakpoint('Gas estimated: ' + gasEstimate.toString());
 
+        if(get(connected)===_WALLETS.BITLIME){
+            return;
+        }
         // Prepare the contract function call
         const tx = await contract.functions[methodName](...methodParams, {
             value,
             gasLimit: gasEstimate
         });
-        debugBreakpoint('Tx sent');
 
         // Wait for the transaction to be mined
         const receipt = await tx.wait();

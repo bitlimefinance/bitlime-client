@@ -2,7 +2,7 @@
 import { accounts, latestBlock } from "$lib/stores/application";
 import { get } from "svelte/store";
 import abi from "./abis/router.json" assert {type: 'json'};
-import { debug, debugBreakpoint, debugError } from "../utils/debug";
+import { debug, debugError } from "../utils/debug";
 import { constants } from "ethers";
 import { interactWithContract, readSmartContract } from "./web3/contracts/lib";
 
@@ -61,7 +61,7 @@ export const swapExactTokensForTokens = async (args: {
     tokenAddressB: any,
     slippage?: any,
     affiliateAddress?: string,
-    callBack?: Function
+    callBack?: any
 }) => {
     try{
         const tx = await interactWithContract({
@@ -73,7 +73,7 @@ export const swapExactTokensForTokens = async (args: {
                 0, // amountOutMin
                 [args.tokenAddressA,args.tokenAddressB], // path
                 args.to || get(accounts)[0],// to
-                (args.deadline || get(latestBlock) + 10).toString(), // deadline
+                (Date.now() + (args.deadline || 1200)).toString(), // deadline
                 args.affiliateAddress || constants.AddressZero // affiliateAddress
             ],
         });
@@ -91,14 +91,13 @@ export const swapExactETHForTokens = async (args: {
     to: any,
     tokenAddressB: any,
     amountIn: any,
-    deadline?: any,
+    deadline?: number,
     affiliateAddress?: string,
     slippage?: any,
     callBack?: any
 }) => {
     try{
         const nativeToken =  await getNativeToken();
-        debugBreakpoint('Swap exact ETH for tokens');
         const tx = await interactWithContract({
             abi: ROUTER_ABI,
             address: ROUTER_ADDRESS,
@@ -107,11 +106,10 @@ export const swapExactETHForTokens = async (args: {
                 0, // amountOutMin
                 [nativeToken,args.tokenAddressB], // path
                 args.to || get(accounts)[0], // to
-                (args.deadline || get(latestBlock) + 10).toString(), // deadline
+                (Date.now() + (args.deadline || 1200)).toString(), // deadline
                 args.affiliateAddress || constants.AddressZero // affiliateAddress
             ],
         });
-        debugBreakpoint('Swap exact ETH for tokens - tx sent');
         if (args.callBack) await args.callBack(tx);
 
         return tx;
@@ -129,7 +127,7 @@ export const swapExactTokensForETH = async (args: {
     deadline?: any,
     affiliateAddress?: string,
     slippage?: any,
-    callBack?: Function
+    callBack?: any
 }) => {
     try{
         const nativeToken =  await getNativeToken();
@@ -143,7 +141,7 @@ export const swapExactTokensForETH = async (args: {
                 0, // amountOutMin
                 [args.tokenAddressA,nativeToken], // path
                 args.to || get(accounts)[0],// to
-                (args.deadline || get(latestBlock) + 10).toString(), // deadline
+                (Date.now() + (args.deadline || 1200)).toString(), // deadline
                 args.affiliateAddress || constants.AddressZero // affiliateAddress
             ],
         });
@@ -168,13 +166,13 @@ export const methodsSwitcher = async (args: {
     deadline?: any,
     affiliateAddress?: string,
     slippage?: any,
-    callBack?: Function
+    callBack?: any
 }) => {
     const { to, tokenAddressA, tokenAddressB, amountIn, expressedMethod, amountOutMin, deadline, affiliateAddress, slippage, callBack } = args;
     if (expressedMethod) {
         expressedMethod();
     } else if (tokenAddressA == 'native'){
-        debugBreakpoint();
+        
         await swapExactETHForTokens({
             to,
             tokenAddressB,
@@ -217,7 +215,7 @@ export const addLiquidty = async (args: {
     amountBMin: string,
     to: string,
     deadline?: string,
-    callBack?: Function
+    callBack?: any
 }) => {
     try{
         debug('addLiquidty', args);
@@ -234,7 +232,7 @@ export const addLiquidty = async (args: {
                 args.amountAMin, // amountAMin
                 args.amountBMin, // amountBMin
                 args.to, // to
-                (args.deadline || get(latestBlock) + 10).toString(), // deadline
+                (Date.now() + (args.deadline || 1200)).toString(), // deadline
             ],
         });
 
@@ -254,7 +252,7 @@ export const addLiquidityETH = async (args: {
     amountETHMin: string,
     to: string,
     deadline?: string,
-    callBack?: Function
+    callBack?: any
 }) => {
     try{
         const tx = await interactWithContract({
@@ -267,7 +265,7 @@ export const addLiquidityETH = async (args: {
                 args.amountTokenMin, // amountTokenMin
                 args.amountETHMin, // amountETHMin
                 args.to, // to
-                (args.deadline || get(latestBlock) + 10).toString(), // deadline
+                (Date.now() + (args.deadline || 1200)).toString(), // deadline
             ],
         });
 
@@ -287,7 +285,7 @@ export const removeLiquidity = async (args: {
     amountBMin: string,
     to: string,
     deadline?: string,
-    callBack?: Function
+    callBack?: any
 }) => {
     try{
         const tx = await interactWithContract({
@@ -301,7 +299,7 @@ export const removeLiquidity = async (args: {
                 args.amountAMin, // amountAMin
                 args.amountBMin, // amountBMin
                 args.to, // to
-                (args.deadline || get(latestBlock) + 10).toString(), // deadline
+                (Date.now() + (args.deadline || 1200)).toString(), // deadline
             ],
         });
 
@@ -320,7 +318,7 @@ export const removeLiquidityETH = async (args: {
     amountETHMin: string,
     to: string,
     deadline?: string,
-    callBack?: Function
+    callBack?: any
 }) => {
     try{
         const tx = await interactWithContract({
@@ -333,7 +331,7 @@ export const removeLiquidityETH = async (args: {
                 args.amountTokenMin, // amountTokenMin
                 args.amountETHMin, // amountETHMin
                 args.to, // to
-                (args.deadline || get(latestBlock) + 10).toString(), // deadline
+                (Date.now() + (args.deadline || 1200)).toString(), // deadline
             ],
         });
 

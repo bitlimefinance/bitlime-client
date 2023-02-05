@@ -16,6 +16,7 @@
 	import Buy from "./components/walletSections/buy.svelte";
 	import { loadWorker } from "./lib/worker/workerApi";
 	import { workerLoaded } from "./lib/stores";
+	import TxConfirmation from "./components/txConfirmation.svelte";
 
     let balance: string = '0';
     let loading: boolean = true;
