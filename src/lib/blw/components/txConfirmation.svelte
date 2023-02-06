@@ -4,16 +4,21 @@
 	import Button from "$lib/components/general/button.svelte";
 	import FullScreenContainer from "$lib/components/general/fullScreenContainer.svelte";
 	import Icon from "$lib/components/general/icon.svelte";
+	import Input from "$lib/components/general/input.svelte";
+	import Toggle from "$lib/components/general/toggle.svelte";
 	import { getAddressPreview } from "$lib/core/sdk/web3/utils/addresses/lib";
 	import { ADDRESS_0 } from "$lib/core/sdk/web3/utils/constants/lib";
 	import { camelToTitleCase } from "$lib/core/utils/utilities";
 	import { _themes } from "$lib/globals";
-	import { accounts } from "$lib/stores/application";
+	import { accounts, selectedNetwork } from "$lib/stores/application";
 	import { theme } from "$lib/stores/ui-theming";
+	import { onMount } from "svelte";
 	import { txConfirmation, txInfo } from "../lib/stores";
 
     let id = "blw-tx-confirmation";
     let show: boolean = true;
+    let origin: string;
+    let advanced: boolean = false;
 
     // txConfirmation.subscribe((value) => {
     //     if(show === value) return;
@@ -21,6 +26,9 @@
     // });
 
     // $: show, txConfirmation.set(show);
+
+
+    onMount(() => origin = window?.location?.origin);
 
 </script>
 
@@ -30,7 +38,7 @@
     id={id}
     >
     <div id="{id}-container" class="w-full" style="min-width: 300px; max-width: 500px;">
-        <section id="{id}-nav" class="w-full flex justify-between items-center pb-3.5 pt-2 border-b">
+        <section id="{id}-nav" class="w-full flex justify-between items-center mb-3 pb-3.5 pt-2 border-b">
             <div id="{id}-nav-left">
                 <img src="/assets/bl-logos/{$theme==_themes.dark?'logo-bold.png':'logo-bold.png'}" alt="logo" class="h-7" />
                 <span class="font-medium dark:font-normal text-xl dark:text-emerald-500 sr-only">BitLime</span>
@@ -40,14 +48,19 @@
             </div>
         </section>
         <section class="w-full">
-            <div class="py-1 px-2 border rounded-md mt-3 text-sm">
+            <Toggle
+                label="Advanced"
+                bind:value={advanced}
+                />
+            <div class="mt-3 pt-3 border-t text-sm">
                 <div class="opacity-60">
-                    {window?.location?.origin}
+                    {origin}
                 </div>
-                {camelToTitleCase('swapExactTokensForTokens')}
+                {camelToTitleCase($txInfo?.methodName || 'Unknown Method').toUpperCase()}
             </div>
-            <div class="flex justify-center items-center gap-3 mt-3 w-full">
-                <div class="py-1 px-2 border rounded-md">
+            {#if advanced}
+            <div class="flex justify-center items-center gap-3 mt-3 pt-3 border-t w-full">
+                <div class="w-full">
                     <div class="text-xs opacity-70">
                         From:
                     </div>
@@ -56,9 +69,9 @@
                     </div>
                 </div>
                 <div>
-                    <Icon icon="arrow-right" />
+                    <Icon icon="arrow-right" size={4} />
                 </div>
-                <div class="py-1 px-2 border rounded-md w-full">
+                <div class="w-full">
                     <div class="text-xs opacity-70">
                         To:
                     </div>
@@ -66,6 +79,62 @@
                         {getAddressPreview($txInfo?.to || ADDRESS_0)}
                     </div>
                 </div>
+            </div>
+            {/if}
+            {#if advanced}
+            <div class="w-full mt-3 pt-3 border-t flex justify-between items-center">
+                <div class="text-xs opacity-70">
+                    AMOUNT
+                </div>
+                <div class="flex justify-end items-center gap-2">
+                    <img src={$selectedNetwork.logo} alt="logo" class="h-5 rounded-full" />
+                    <div class="text-2xl opacity-80 font-light">0.00</div>
+                </div>
+            </div>
+            <div class="w-full mt-3 flex justify-between items-center">
+                <div class="text-xs opacity-70">
+                    GAS FEE
+                </div>
+                <div class="flex justify-end items-center gap-2">
+                    <img src={$selectedNetwork.logo} alt="logo" class="h-5 rounded-full" />
+                    <div class="text-2xl opacity-80 font-light">0.00</div>
+                </div>
+            </div>
+            {/if}
+            <div class="w-full mt-3 pt-3 border-t flex justify-between items-center">
+                <div>
+                    <div class="text-sm opacity-70">
+                        TOTAL
+                    </div>
+                </div>
+                <div>
+                    <div class="text-xs opacity-70">
+                        Amount + Gas Fee
+                    </div>
+                    <div class="flex justify-end items-center gap-2">
+                        <img src={$selectedNetwork.logo} alt="logo" class="h-6 rounded-full" />
+                        <div class="text-3xl font">0.00</div>
+                    </div>
+                </div>
+            </div>
+            {#if advanced}
+            <div class="w-full mt-3 pt-3 border-t flex justify-between items-center">
+                <div class="text-xs opacity-70">
+                    CUSTOM NONCE
+                </div>
+                <Input placeholder={"74"} additionalClasses="text-right" style="max-width: 120px;"/>
+            </div>
+            {/if}
+            <div class="w-full mt-3 pt-3 border-t flex justify-start gap-3 items-center">
+                <Button
+                    label="Cancel"
+                    theme="secondary"
+                    on:click={() => txConfirmation.set(false)}
+                    />
+                <Button
+                    label="Confirm"
+                    on:click={() => txConfirmation.set(false)}
+                    />
             </div>
         </section>
     </div>

@@ -6,6 +6,7 @@ export const txConfirmation: Writable<boolean> = writable(false);
 
 export const txInfo: Writable<{
     to: string;
+    methodName: string;
     from?: string;
     value?: string;
     gasLimit: string;
