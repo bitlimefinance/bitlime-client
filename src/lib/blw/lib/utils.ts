@@ -5,7 +5,7 @@ import { readLocalStorage, writeLocalStorage } from "$lib/core/utils/localStorag
 import { randomBytes } from "ethers/lib/utils";
 
 
-export const getPartialAccessToken = async (): Promise<string> => {
+export const getEncPartialAccessToken = async (): Promise<string> => {
     try {
         const partialAccessToken = readLocalStorage('blw-pk');
         if(!partialAccessToken) throw new Error('Could not get partial access token');
@@ -41,7 +41,7 @@ export const createAccessTokenPair = async (password: string, pk: string): Promi
 
 export const deriveAccessTokenFromPartial = async (password: string, partialAccessToken?: string): Promise<string | undefined> => {
     try {
-        const pat = partialAccessToken || await getPartialAccessToken();
+        const pat = partialAccessToken || await getEncPartialAccessToken();
         const hasedPassword = await toHash(password);
         if(!hasedPassword || !pat || !password) throw new Error('Could not derive access token');
         const accessToken = await toHash(pat + hasedPassword);

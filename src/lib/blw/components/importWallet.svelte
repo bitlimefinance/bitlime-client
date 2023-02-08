@@ -16,6 +16,7 @@
 	import { accounts, connected, selectedNetwork } from "$lib/stores/application";
 	import { _WALLETS } from "$lib/globals";
 	import { createAccessTokenPair } from "../lib/utils";
+	import { encryptMessage } from "$lib/core/utils/cipher/passworder";
 
     let secretPhrase: string;
     let password: string;
@@ -57,7 +58,7 @@
                             const { partialAccessToken, accessToken } = await createAccessTokenPair(password, payload?.publicKey);
                             if(!accessToken || !partialAccessToken || !vault) throw new Error("Sorry, something went wrong. Please try again.");
                             await createWallet(vault.stringified, accessToken);
-                            writeLocalStorage('blw-pk', partialAccessToken);
+                            writeLocalStorage('blw-pk', JSON.stringify(await encryptMessage(partialAccessToken, password)));
                             connected.set(_WALLETS.BITLIME);
                             accounts.set([payload?.address]);
                         }

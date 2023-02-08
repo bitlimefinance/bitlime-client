@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getPartialAccessToken } from "$lib/blw/lib/utils";
+	import { getEncPartialAccessToken } from "$lib/blw/lib/utils";
 	import Button from "$lib/components/general/button.svelte";
     import { _WALLETS } from "$lib/globals";
 	import { accounts, connected } from "$lib/stores/application";
@@ -14,7 +14,7 @@
     let view: "create" | "import" = "create";
 
     onMount(async () => {
-        accessToken = await getPartialAccessToken();
+        accessToken = await getEncPartialAccessToken();
         mounted = true;
     });
 </script>

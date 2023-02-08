@@ -3,15 +3,16 @@ import { ethers, Signer } from "ethers";
 import { web3Provider } from "../provider/lib";
 import { getSigner } from "../signer/lib";
 import { txPreflight } from "../transactions/txPreflight";
-import { connected } from "$lib/stores/application";
+import { connected, selectedNetwork } from "$lib/stores/application";
 import { get } from "svelte/store";
 import { _WALLETS } from "$lib/globals";
+import { txConfirmation, txInfo } from "$lib/blw/lib/stores";
+import { fromBigNumber } from "../utils/bigNumber/lib";
 
 export const interactWithContract = async (args: { address: string, abi: any, methodName: string, methodParams: any[], value?: string }) => {
     try {
         const { address, abi, methodName, methodParams } = args;
         const value = args.value || '0';
-        debug(args);
         txPreflight(true, [address]);
 
         // get signer
@@ -23,21 +24,37 @@ export const interactWithContract = async (args: { address: string, abi: any, me
         // Estimate the gas needed for the transaction
         const gasEstimate = await contract.estimateGas[methodName](...methodParams);
 
+        // Prepare the contract function call
+        const callback = async () => {
+            /* call */
+        }
+
         if(get(connected)===_WALLETS.BITLIME){
+            debug('connected to bitlime');
+            
+            txInfo.set({
+                to: address,
+                methodName,
+                value,
+                estimatedGas: fromBigNumber(gasEstimate) || '0',
+                chainId: (get(selectedNetwork)?.id || '1').toString(),
+                callback
+            });
+            txConfirmation.set(true);
             return;
         }
-        // Prepare the contract function call
+        
         const tx = await contract.functions[methodName](...methodParams, {
             value,
             gasLimit: gasEstimate
         });
-
         // Wait for the transaction to be mined
         const receipt = await tx.wait();
 
         debug(`Transaction mined: ${tx.hash}`);
         debug(`Gas used: ${receipt.gasUsed.toString()}`);
         return { tx, receipt };
+        
     } catch (error) {
         debugError(error);
         return null;
@@ -52,7 +69,6 @@ export const readSmartContract = async (args: {
 }) => {
     let result;
     try {
-        debug(args.methodName,args);
         txPreflight(false, [args.address]);
         const contract = await loadContractReadOnly(args.abi, args.address);
         result = await contract.functions[args.methodName](...args.methodParams);

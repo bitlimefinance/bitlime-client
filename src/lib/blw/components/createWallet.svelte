@@ -7,7 +7,7 @@
 	import Tooltip from "$lib/components/general/tooltip.svelte";
 	import type { ToastActions } from "$lib/core/descriptors/interfaces";
 	import { newWallet } from "$lib/core/sdk/web3/wallet/lib";
-	import { debugError } from "$lib/core/utils/debug";
+	import { debug, debugError } from "$lib/core/utils/debug";
 	import { readLocalStorage, writeLocalStorage } from "$lib/core/utils/localStorage";
 	import { encryptMessage, type EncryptedVault } from "$lib/core/utils/cipher/passworder";
 	import checkPasswordStrength, { PasswordStrengthLevels, type PasswordStrength } from "$lib/core/utils/passwordStrength";
@@ -23,7 +23,7 @@
 
     let step: 1 | 2 | 3 = 1;
 
-    let wallet: Wallet;
+    let wallet: Wallet | null;
 
     let password: string;
     let confirmPassword: string;
@@ -179,7 +179,7 @@
                         showLoading.set(false);
                         return;
                     }
-                    let wallet = await newWallet();
+                    wallet = await newWallet();
                     if(!wallet) throw new Error("Failed to create wallet");
                     mnemonic = wallet?.mnemonic?.phrase || '';
                     publicKey = wallet?._signingKey()?.publicKey || '';
@@ -307,7 +307,7 @@
                             const { partialAccessToken, accessToken } = await createAccessTokenPair(password, publicKey);
                             if(!partialAccessToken || !partialAccessToken) throw new Error("Sorry, something went wrong. Please try again.");
                             await createWallet(vault.stringified, accessToken);
-                            writeLocalStorage('blw-pk', partialAccessToken);
+                            writeLocalStorage('blw-pk', JSON.stringify(await encryptMessage(partialAccessToken, password)));
                             await setProvider($selectedNetwork.rpc);
                             new Wallet(wallet, web3Provider);
                             connected.set(_WALLETS.BITLIME);

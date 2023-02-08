@@ -20,6 +20,7 @@
 	import SelectNetwork from '$lib/components/connect/selectNetwork.svelte';
 	import WalletModal from '$lib/blw/walletModal.svelte';
 	import { generateSalt } from '$lib/core/utils/cipher/passworder';
+	import TxConfirmation from '$lib/blw/components/txConfirmation.svelte';
 
 	/** @type {import('./$types').LayoutData} */
 	export let data: any;
@@ -157,3 +158,4 @@
 
 <SelectNetwork/>
 <WalletModal/>
+<TxConfirmation />

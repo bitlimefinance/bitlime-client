@@ -7,18 +7,26 @@
 	import Input from "$lib/components/general/input.svelte";
 	import Toggle from "$lib/components/general/toggle.svelte";
 	import { getAddressPreview } from "$lib/core/sdk/web3/utils/addresses/lib";
+	import { fromBigNumber } from "$lib/core/sdk/web3/utils/bigNumber/lib";
 	import { ADDRESS_0 } from "$lib/core/sdk/web3/utils/constants/lib";
-	import { camelToTitleCase } from "$lib/core/utils/utilities";
+	import { fromWei } from "$lib/core/sdk/web3/utils/units/lib";
+	import { debug, debugError } from "$lib/core/utils/debug";
+	import { camelToTitleCase, formatNumber } from "$lib/core/utils/utilities";
 	import { _themes } from "$lib/globals";
 	import { accounts, selectedNetwork } from "$lib/stores/application";
-	import { theme } from "$lib/stores/ui-theming";
+	import { showLoading, theme } from "$lib/stores/ui-theming";
+	import type { BigNumber } from "ethers";
 	import { onMount } from "svelte";
 	import { txConfirmation, txInfo } from "../lib/stores";
 
     let id = "blw-tx-confirmation";
-    let show: boolean = true;
+    let show: boolean;
     let origin: string;
     let advanced: boolean = false;
+
+    let amount: number, gas: number;
+
+    $: total = amount + gas;
 
     // txConfirmation.subscribe((value) => {
     //     if(show === value) return;
@@ -30,11 +38,22 @@
 
     onMount(() => origin = window?.location?.origin);
 
+    txConfirmation.subscribe((value) => {
+        if(show === value) return;
+        show = value;
+    });
+
+    txInfo.subscribe((obj) => {
+        if(!obj) return;
+        const { value, estimatedGas } = obj;
+        amount = parseFloat(value || "0");
+        gas = parseFloat(estimatedGas || "0");
+    });
+
 </script>
 
 <FullScreenContainer
     bind:show={show}
-    alwaysShow
     id={id}
     >
     <div id="{id}-container" class="w-full" style="min-width: 300px; max-width: 500px;">
@@ -87,8 +106,8 @@
                     AMOUNT
                 </div>
                 <div class="flex justify-end items-center gap-2">
-                    <img src={$selectedNetwork.logo} alt="logo" class="h-5 rounded-full" />
-                    <div class="text-2xl opacity-80 font-light">0.00</div>
+                    <img src={$selectedNetwork?.logo || ''} alt="logo" class="h-4 rounded-full" />
+                    <div class="text-sm opacity-80 font-light">{formatNumber(fromWei(amount || "0", 'ether') || 0, 'number', 2, 18)}</div>
                 </div>
             </div>
             <div class="w-full mt-3 flex justify-between items-center">
@@ -96,24 +115,24 @@
                     GAS FEE
                 </div>
                 <div class="flex justify-end items-center gap-2">
-                    <img src={$selectedNetwork.logo} alt="logo" class="h-5 rounded-full" />
-                    <div class="text-2xl opacity-80 font-light">0.00</div>
+                    <img src={$selectedNetwork?.logo || ''} alt="logo" class="h-4 rounded-full" />
+                    <div class="text-sm opacity-80 font-light">{formatNumber(fromWei(gas || "0", 'ether') || 0, 'number', 2, 18)}</div>
                 </div>
             </div>
             {/if}
             <div class="w-full mt-3 pt-3 border-t flex justify-between items-center">
-                <div>
-                    <div class="text-sm opacity-70">
-                        TOTAL
-                    </div>
-                </div>
-                <div>
-                    <div class="text-xs opacity-70">
-                        Amount + Gas Fee
+                <div class="w-full">
+                    <div class="flex justify-between items-start w-full">
+                        <div class="text-sm opacity-70">
+                            TOTAL
+                        </div>
+                        <div class="text-xs opacity-70">
+                            Amount + Gas Fee
+                        </div>
                     </div>
                     <div class="flex justify-end items-center gap-2">
-                        <img src={$selectedNetwork.logo} alt="logo" class="h-6 rounded-full" />
-                        <div class="text-3xl font">0.00</div>
+                        <img src={$selectedNetwork?.logo || ''} alt="logo" class="h-4 rounded-full" />
+                        <div class="text font">{formatNumber(fromWei(total || "0", 'ether') || 0, 'number', 2, 18)}</div>
                     </div>
                 </div>
             </div>
@@ -133,7 +152,17 @@
                     />
                 <Button
                     label="Confirm"
-                    on:click={() => txConfirmation.set(false)}
+                    on:click={() => {
+                        try {
+                            showLoading.set(true);
+                            $txInfo?.callback?.();
+                        } catch (error) {
+                            debugError(error);
+                        } finally {
+                            txConfirmation.set(false);
+                            showLoading.set(false);
+                        }
+                    }}
                     />
             </div>
         </section>

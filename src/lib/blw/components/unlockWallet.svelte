@@ -14,7 +14,8 @@
 	import { accounts, connected, selectedNetwork } from "$lib/stores/application";
 	import { _WALLETS } from "$lib/globals";
 	import FullScreenContainer from "$lib/components/general/fullScreenContainer.svelte";
-	import { deriveAccessTokenFromPartial } from "../lib/utils";
+	import { deriveAccessTokenFromPartial, getEncPartialAccessToken } from "../lib/utils";
+	import { decryptCipherText } from "$lib/core/utils/cipher/passworder";
 
     let password: string;
 
@@ -66,7 +67,7 @@
                 on:click={async () => {
                     try {
                         showLoading.set(true);
-                        const partialAccessToken = readLocalStorage("blw-pk") || '';
+                        const partialAccessToken = await decryptCipherText(JSON.parse(await getEncPartialAccessToken()), password);
                         const accessToken = await deriveAccessTokenFromPartial(password, partialAccessToken);
                         if(!accessToken || !partialAccessToken) throw new Error("Sorry, something went wrong.");
                         const suid = readSessionStorage('session_id') || ''; // session_id
