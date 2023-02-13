@@ -1,5 +1,5 @@
 import { debug, debugError } from "$lib/core/utils/debug";
-import { ethers, Signer } from "ethers";
+import { ethers, Signer, type UnsignedTransaction } from "ethers";
 import { web3Provider } from "../provider/lib";
 import { getSigner } from "../signer/lib";
 import { txPreflight } from "../transactions/txPreflight";
@@ -27,6 +27,11 @@ export const interactWithContract = async (args: { address: string, abi: any, me
         // Prepare the contract function call
         const callback = async () => {
             /* call */
+            const unsignedTx: UnsignedTransaction = await contract.populateTransaction[methodName](...methodParams, {
+                value,
+                gasLimit: gasEstimate
+            });
+            debug('unsignedTx', unsignedTx);
         }
 
         if(get(connected)===_WALLETS.BITLIME){
