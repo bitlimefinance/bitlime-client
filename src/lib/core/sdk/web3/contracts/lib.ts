@@ -1,4 +1,4 @@
-import { debug, debugError } from "$lib/core/utils/debug";
+import { debug, debugBreakpoint, debugError } from "$lib/core/utils/debug";
 import { ethers, Signer, type UnsignedTransaction } from "ethers";
 import { web3Provider } from "../provider/lib";
 import { getSigner } from "../signer/lib";
@@ -11,18 +11,26 @@ import { fromBigNumber } from "../utils/bigNumber/lib";
 
 export const interactWithContract = async (args: { address: string, abi: any, methodName: string, methodParams: any[], value?: string }) => {
     try {
+        debug('Connected with '+get(connected)+' wallet');
+
         const { address, abi, methodName, methodParams } = args;
         const value = args.value || '0';
+
+        debugBreakpoint('1');
         txPreflight(true, [address]);
 
+        debugBreakpoint('2');
         // get signer
         const signer = await getSigner() as Signer;
 
+        debugBreakpoint('3');
         // Connect to the contract
         const contract = new ethers.Contract(address, abi, signer);
+        debugBreakpoint('4');
 
         // Estimate the gas needed for the transaction
         const gasEstimate = await contract.estimateGas[methodName](...methodParams);
+        debugBreakpoint('5');
 
         // Prepare the contract function call
         const callback = async () => {
@@ -33,10 +41,10 @@ export const interactWithContract = async (args: { address: string, abi: any, me
             });
             debug('unsignedTx', unsignedTx);
         }
+        debugBreakpoint('6');
 
         if(get(connected)===_WALLETS.BITLIME){
-            debug('connected to bitlime');
-            
+            debug('to', address);
             txInfo.set({
                 to: address,
                 methodName,
