@@ -8,6 +8,8 @@ import { get } from "svelte/store";
 import { _WALLETS } from "$lib/globals";
 import { txConfirmation, txInfo } from "$lib/blw/lib/stores";
 import { fromBigNumber } from "../utils/bigNumber/lib";
+import { workerPostMessage, workerResolveMessage } from "$lib/blw/lib/worker/workerApi";
+import { Action } from "$lib/blw/lib/worker/types";
 
 export const interactWithContract = async (args: { address: string, abi: any, methodName: string, methodParams: any[], value?: string }) => {
     try {
@@ -16,46 +18,47 @@ export const interactWithContract = async (args: { address: string, abi: any, me
         const { address, abi, methodName, methodParams } = args;
         const value = args.value || '0';
 
-        debugBreakpoint('1');
         txPreflight(true, [address]);
 
-        debugBreakpoint('2');
-        // get signer
-        const signer = await getSigner() as Signer;
-
-        debugBreakpoint('3');
-        // Connect to the contract
-        const contract = new ethers.Contract(address, abi, signer);
-        debugBreakpoint('4');
-
-        // Estimate the gas needed for the transaction
-        const gasEstimate = await contract.estimateGas[methodName](...methodParams);
-        debugBreakpoint('5');
-
         // Prepare the contract function call
-        const callback = async () => {
-            /* call */
-            const unsignedTx: UnsignedTransaction = await contract.populateTransaction[methodName](...methodParams, {
-                value,
-                gasLimit: gasEstimate
-            });
-            debug('unsignedTx', unsignedTx);
-        }
-        debugBreakpoint('6');
+
+        // const callback = async () => {
+        //     /* call */
+        //     const unsignedTx: UnsignedTransaction = await contract.populateTransaction[methodName](...methodParams, {
+        //         value,
+        //         gasLimit: gasEstimate
+        //     });
+        //     debug('unsignedTx', unsignedTx);
+        // }
 
         if(get(connected)===_WALLETS.BITLIME){
-            debug('to', address);
-            txInfo.set({
-                to: address,
-                methodName,
-                value,
-                estimatedGas: fromBigNumber(gasEstimate) || '0',
-                chainId: (get(selectedNetwork)?.id || '1').toString(),
-                callback
-            });
+            debug('Initiating Bitlime transaction');
+            const wrkwrMsg = {
+                action: Action.TX_PREVIEW,
+                payload: {
+                    network: get(selectedNetwork),
+                    address,
+                    abi,
+                    methodName,
+                    methodParams,
+                    value,
+                }
+            }
+            const txInfoFromWrkr = await workerResolveMessage(wrkwrMsg);
+            txInfo.set(txInfoFromWrkr?.payload);
             txConfirmation.set(true);
             return;
         }
+
+
+        // get signer
+        const signer = await getSigner() as Signer;
+
+        // Connect to the contract
+        const contract = new ethers.Contract(address, abi, signer);
+
+        // Estimate the gas needed for the transaction
+        const gasEstimate = await contract.estimateGas[methodName](...methodParams);
         
         const tx = await contract.functions[methodName](...methodParams, {
             value,

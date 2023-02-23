@@ -4,6 +4,7 @@ import { get, writable, type Writable } from "svelte/store";
 import { _WALLETS } from "$lib/globals";
 import { isConnectedToWallet } from "$lib/core/sdk/eip-1193";
 import { getLatestBlock } from "$lib/core/sdk/web3/utils/block/lib";
+import type { providers } from "ethers";
 
 export const init: Writable<boolean> = writable(false);
 

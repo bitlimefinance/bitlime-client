@@ -28,17 +28,13 @@
 
     $: total = amount + gas;
 
-    // txConfirmation.subscribe((value) => {
-    //     if(show === value) return;
-    //     show = value;
-    // });
-
     // $: show, txConfirmation.set(show);
 
 
     onMount(() => origin = window?.location?.origin);
 
     txConfirmation.subscribe((value) => {
+        debug("txConfirmation", value);
         if(show === value) return;
         show = value;
     });

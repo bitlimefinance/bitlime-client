@@ -3,6 +3,10 @@ import { bufferToBase64 } from "$lib/core/utils/cipher/passworder";
 import { debugError } from "$lib/core/utils/debug";
 import { readLocalStorage, writeLocalStorage } from "$lib/core/utils/localStorage";
 import { randomBytes } from "ethers/lib/utils";
+import { workerPostMessage, workerResolveMessage } from "./worker/workerApi";
+import { Action } from "./worker/types";
+import { blwWorker } from "./worker/workerApi";
+import { get } from "svelte/store";
 
 
 export const getEncPartialAccessToken = async (): Promise<string> => {

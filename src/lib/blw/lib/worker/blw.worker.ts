@@ -1,13 +1,12 @@
-import { debug, debugError, debugTime, debugTimeEnd } from "$lib/core/utils/debug";
+import { debug, debugBreakpoint, debugError, debugTime, debugTimeEnd } from "$lib/core/utils/debug";
 import unlockWallet from "../unlockWallet";
 import { Action, type ToWorkerMessage, type FromWorkerMessage } from "./types";
 import { decryptCipherText, encryptMessage } from "$lib/core/utils/cipher/passworder";
 import { fromMnemonic } from "$lib/core/sdk/web3/wallet/lib";
-import { Wallet } from "ethers";
+import { Signer, Wallet, ethers } from "ethers";
 import { web3Provider, setProvider } from "$lib/core/sdk/web3/provider/lib";
-import { selectedNetwork } from "$lib/stores/application";
-import { get } from "svelte/store";
-import { tick } from "svelte";
+import { txConfirmation, txInfo } from "../stores";
+import { fromBigNumber } from "$lib/core/sdk/web3/utils/bigNumber/lib";
 
 let wallet: any;
 let suid: string;
@@ -21,7 +20,7 @@ onmessage = async function (e) {
                 const { action, payload } = data;
                 if(!action) throw new Error('Could not execute worker: action undefined');
                 const net = payload?.network;
-                if(net) await setProvider(net);
+                if(net) await setProvider(net?.rpc, true);
                 suid = payload?.suid || suid;
                 response = null;
                 switch (action) {
@@ -83,6 +82,40 @@ onmessage = async function (e) {
                                 debugTimeEnd('Get address');
                                 break;
                         }
+                        case Action.TX_PREVIEW:{
+                                debugTime('Transaction preview');
+                                const { address, value, methodName, abi, methodParams } = payload as {[key: string]: any};
+                                // const contract = new ethers.Contract(address, abi, wallet);
+                                // const blwGasEstimate = await contract.estimateGas[methodName](...methodParams);
+                                response = {
+                                        action: Action.TX_PREVIEW,
+                                        error: false,
+                                        payload: {
+                                                to: address,
+                                                methodName,
+                                                value,
+                                                estimatedGas: '0',
+                                                chainId: (net?.id || '1').toString(),
+                                        }
+                                };
+                                debugTimeEnd('Transaction preview');
+                                break;
+                        }
+                        case Action.GET_SIGNER:{
+                                if(!Signer.isSigner(wallet)) throw new Error('Could not get signer');
+                                response = {
+                                        action: Action.GET_SIGNER,
+                                        error: false,
+                                        payload: {
+                                                signer: JSON.stringify(wallet)
+                                        }
+                                };
+                                break;
+                        }
+                        default:{
+                                // do nothing
+                                break;
+                        }
                         // case Action.SEND_TRANSACTION:{
                         //         debugTime('Send transaction');
                         //         // TODO: implement
@@ -133,14 +166,6 @@ onmessage = async function (e) {
                         //         debugTimeEnd('Write smart contract');
                         //         break;
                         // }
-                        // case Action.SM_INTERACT:{
-                                
-                        //         break;
-                        // }
-                        default:{
-                                // do nothing
-                                break;
-                        }
                 }
         } catch (error) {
                 debugError(error);

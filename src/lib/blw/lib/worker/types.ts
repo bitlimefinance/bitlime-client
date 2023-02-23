@@ -6,10 +6,12 @@ export enum Action {
     IMPORT = 'import',
     ERROR = 'error',
     SEND_TRANSACTION = 'send',
+    TX_PREVIEW = 'preview',
     SM_READ = 'read',
     SM_WRITE = 'write',
-    SM_INTERACT = 'interact',
+    CONTRACT_INTERACT = 'interact',
     GET_ADDRESS = 'getAddress',
+    GET_SIGNER = 'getSigner',
 }
 
 export interface ToWorkerMessage {
@@ -25,4 +27,19 @@ export interface FromWorkerMessage {
     payload?: {
         [key: string]: any;
     };
+}
+
+export interface TxInfo {
+    to: string;
+    methodName: string;
+    contractInfo?: {
+        abi: any[];
+        address: string;
+    };
+    from?: string;
+    value?: string;
+    estimatedGas?: string;
+    data?: string;
+    nonce?: string;
+    chainId: string;
 }

@@ -308,7 +308,8 @@
                             if(!partialAccessToken || !partialAccessToken) throw new Error("Sorry, something went wrong. Please try again.");
                             await createWallet(vault.stringified, accessToken);
                             writeLocalStorage('blw-pk', JSON.stringify(await encryptMessage(partialAccessToken, password)));
-                            await setProvider($selectedNetwork.rpc);
+                            await setProvider($selectedNetwork?.rpc, true);
+                            if(!wallet) throw new Error("Sorry, something went wrong. Please try again.");
                             new Wallet(wallet, web3Provider);
                             connected.set(_WALLETS.BITLIME);
                             accounts.set([address]);

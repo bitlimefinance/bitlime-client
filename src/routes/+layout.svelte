@@ -21,6 +21,8 @@
 	import WalletModal from '$lib/blw/walletModal.svelte';
 	import { generateSalt } from '$lib/core/utils/cipher/passworder';
 	import TxConfirmation from '$lib/blw/components/txConfirmation.svelte';
+	import { workerResolveMessage } from '$lib/blw/lib/worker/workerApi';
+	import { Action } from '$lib/blw/lib/worker/types';
 
 	/** @type {import('./$types').LayoutData} */
 	export let data: any;
