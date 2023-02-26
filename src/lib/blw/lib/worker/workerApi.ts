@@ -32,14 +32,11 @@ export const workerPostMessage = (message: ToWorkerMessage) => {
 		if (!message) throw new Error('Message not found');
 		const wrkr = get(blwWorker) as Worker;
 		if (!wrkr) throw new Error('Worker not found');
-		debugBreakpoint();
 		const enrichedMessage = {
 			...message,
 			env: get(ENV) || Env.PROD,
 		};
-		debugBreakpoint();
 		wrkr?.postMessage(JSON.stringify(enrichedMessage));
-		debugBreakpoint();
 	} catch (error) {
 		debugError(error);
 	}

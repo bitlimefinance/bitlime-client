@@ -34,19 +34,41 @@ export const interactWithContract = async (args: { address: string, abi: any, me
         if(get(connected)===_WALLETS.BITLIME){
             debug('Initiating Bitlime transaction');
             const wrkwrMsg = {
-                action: Action.TX_PREVIEW,
+                action: Action.ESTIMATE_GAS,
                 payload: {
-                    network: get(selectedNetwork),
                     address,
                     abi,
                     methodName,
-                    methodParams,
                     value,
+                    methodParams
                 }
             }
-            const txInfoFromWrkr = await workerResolveMessage(wrkwrMsg);
-            txInfo.set(txInfoFromWrkr?.payload);
-            txConfirmation.set(true);
+            const res = await workerResolveMessage(wrkwrMsg);
+
+            if (res?.error && res?.payload?.error?.message?.includes("transaction may fail")) {
+                txInfo.set({
+                    to: address,
+                    methodName,
+                    methodParams,
+                    errorMessage: "Cannot estimate gas, transaction may fail",
+                    chainId: get(selectedNetwork)?.id?.toString()
+                });
+                txConfirmation.set(true);
+            } else if(!(res.error)){
+                txInfo.set({
+                    to: address,
+                    methodName,
+                    methodParams,
+                    contractInfo: {
+                        address,
+                        abi
+                    },
+                    estimatedGas: fromBigNumber(res.payload.gasEstimate)?.toString() || '0',
+                    chainId: get(selectedNetwork)?.id?.toString()
+                });
+                txConfirmation.set(true);
+            }
+
             return;
         }
 

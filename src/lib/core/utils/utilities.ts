@@ -26,8 +26,10 @@ export function camelCase(text='') {
 	}
 }
 
-export const navigate = (destination) => {
-	window.location = destination;
+export const navigate = (destination, blank = false) => {
+	if(!blank) window.location = destination;
+	else window.open(destination, '_blank');
+	
 };
 
 export function removeAllChildNodes(parent) {

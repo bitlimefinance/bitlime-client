@@ -1,3 +1,4 @@
+import type { BigNumber, BigNumberish } from "ethers";
 
 
 export enum Action {
@@ -5,13 +6,14 @@ export enum Action {
     UNLOCK = 'unlock',
     IMPORT = 'import',
     ERROR = 'error',
-    SEND_TRANSACTION = 'send',
-    TX_PREVIEW = 'preview',
+    TX_SEND = 'sendTx',
+    TX_PREVIEW = 'previewTx',
     SM_READ = 'read',
     SM_WRITE = 'write',
     CONTRACT_INTERACT = 'interact',
     GET_ADDRESS = 'getAddress',
     GET_SIGNER = 'getSigner',
+    ESTIMATE_GAS = 'gasEstimate'
 }
 
 export interface ToWorkerMessage {
@@ -32,14 +34,16 @@ export interface FromWorkerMessage {
 export interface TxInfo {
     to: string;
     methodName: string;
+    methodParams: any[];
     contractInfo?: {
         abi: any[];
         address: string;
     };
     from?: string;
     value?: string;
-    estimatedGas?: string;
+    estimatedGas?: BigNumber | BigNumberish;
     data?: string;
     nonce?: string;
+    errorMessage?: string;
     chainId: string;
 }

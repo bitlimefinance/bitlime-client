@@ -23,6 +23,7 @@
 	import TxConfirmation from '$lib/blw/components/txConfirmation.svelte';
 	import { workerResolveMessage } from '$lib/blw/lib/worker/workerApi';
 	import { Action } from '$lib/blw/lib/worker/types';
+	import { askNotificationPermission } from '$lib/core/utils/browserNotifications';
 
 	/** @type {import('./$types').LayoutData} */
 	export let data: any;
@@ -118,12 +119,13 @@
 			await setProvider($selectedNetwork?.rpc);
 			setBodyTheme();
 			await tick();
-			setInterval(() => {
-				clickCount = 0;
-			}, 1000);
-			document.addEventListener('click', botGuard);
+			askNotificationPermission();
+			// setInterval(() => {
+			// 	clickCount = 0;
+			// }, 1000);
+			// document.addEventListener('click', botGuard);
 		}catch(e){
-			console.error(e);
+			debugError(e);
 		}finally{
 			init.set(true);
 		}

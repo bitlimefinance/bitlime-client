@@ -10,14 +10,17 @@
 	import { fromBigNumber } from "$lib/core/sdk/web3/utils/bigNumber/lib";
 	import { ADDRESS_0 } from "$lib/core/sdk/web3/utils/constants/lib";
 	import { fromWei } from "$lib/core/sdk/web3/utils/units/lib";
+	import { showNotification } from "$lib/core/utils/browserNotifications";
 	import { debug, debugError } from "$lib/core/utils/debug";
-	import { camelToTitleCase, formatNumber } from "$lib/core/utils/utilities";
+	import { camelToTitleCase, changeRoute, formatNumber, navigate } from "$lib/core/utils/utilities";
 	import { _themes } from "$lib/globals";
 	import { accounts, selectedNetwork } from "$lib/stores/application";
 	import { showLoading, theme } from "$lib/stores/ui-theming";
-	import type { BigNumber } from "ethers";
+	import type { BigNumber, Contract } from "ethers";
 	import { onMount } from "svelte";
 	import { txConfirmation, txInfo } from "../lib/stores";
+	import { Action } from "../lib/worker/types";
+	import { workerResolveMessage } from "../lib/worker/workerApi";
 
     let id = "blw-tx-confirmation";
     let show: boolean;
@@ -43,7 +46,7 @@
         if(!obj) return;
         const { value, estimatedGas } = obj;
         amount = parseFloat(value || "0");
-        gas = parseFloat(estimatedGas || "0");
+        gas = parseFloat(fromBigNumber(estimatedGas || 0) || "0");
     });
 
 </script>
@@ -73,6 +76,11 @@
                 </div>
                 {camelToTitleCase($txInfo?.methodName || 'Unknown Method').toUpperCase()}
             </div>
+            {#if $txInfo.errorMessage}
+            <div class="flex justify-center items-center px-3 py-2 mt-2 rounded-lg w-full bg-red-600/[0.1]">
+                <span class="text-sm text-red-500">{$txInfo.errorMessage}</span>
+            </div>
+            {/if}
             {#if advanced}
             <div class="flex justify-center items-center gap-3 mt-3 pt-3 border-t w-full">
                 <div class="w-full">
@@ -148,10 +156,24 @@
                     />
                 <Button
                     label="Confirm"
-                    on:click={() => {
+                    on:click={async () => {
                         try {
                             showLoading.set(true);
-                            $txInfo?.callback?.();
+                            const wrkrMessage = {
+                                action: Action.TX_SEND,
+                                payload: $txInfo
+                            }
+                            workerResolveMessage(wrkrMessage)
+                            .then((res) => {
+                                if(!(res?.error) && res?.payload?.txHash) {
+                                    const notification = showNotification("Transaction sent", {body: "Click here to see transactions history"});
+                                    notification?.addEventListener('click', (event) => {
+                                        navigate("/wallet");
+                                    });
+                                }
+                                else if(res?.error || !(res?.payload?.txHash)) showNotification("Error sending transaction", {body: "Sorry, there was an error sending your transaction", tag: Action.TX_SEND});
+                            });
+                            showLoading.set(false);
                         } catch (error) {
                             debugError(error);
                         } finally {
