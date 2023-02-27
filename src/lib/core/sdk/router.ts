@@ -1,11 +1,10 @@
 
 import { accounts, latestBlock } from "$lib/stores/application";
 import { get } from "svelte/store";
-import { ADDRESS_0, getTransactionObject, readSmartContract } from "./web3";
 import abi from "./abis/router.json" assert {type: 'json'};
-import { sendTransaction } from "./eip-1193";
-import { debugError } from "../utils/debug";
-
+import { debug, debugError } from "../utils/debug";
+import { constants } from "ethers";
+import { interactWithContract, readSmartContract } from "./web3/contracts/lib";
 
 export const ROUTER_ADDRESS: Readonly<string> = '0xAcfA21F4f4148A0EAf0420D972E1a75c17ef9B4b';
 export const ROUTER_ABI: any[] = abi;
@@ -18,6 +17,9 @@ export const getNativeToken = async () => {
         methodName: 'WETH',
         methodParams: [],
     });
+    
+    if(!address || address===constants.AddressZero) throw new Error('No token found');
+    if(address.length) return address[0];    
     return address;
 }
 
@@ -32,7 +34,7 @@ export const getAmountsOut = async (args: {
         address: ROUTER_ADDRESS,
         abi: ROUTER_ABI,
         methodName: 'getAmountsOut',
-        methodParams: [amountIn, [tokenAddressA,tokenAddressB], affiliateAddress || ADDRESS_0]
+        methodParams: [amountIn, [tokenAddressA,tokenAddressB], affiliateAddress || constants.AddressZero]
     })
 }
 
@@ -46,8 +48,8 @@ export const getAmountsIn = async (args: {
     return await readSmartContract({
         address: ROUTER_ADDRESS,
         abi: ROUTER_ABI,
-        methodName: 'getAmountsOut',
-        methodParams: [amountOut, [tokenAddressA,tokenAddressB], affiliateAddress || ADDRESS_0]
+        methodName: 'getAmountsIn',
+        methodParams: [amountOut, [tokenAddressA,tokenAddressB], affiliateAddress || constants.AddressZero]
     })
 }
 
@@ -59,31 +61,25 @@ export const swapExactTokensForTokens = async (args: {
     tokenAddressB: any,
     slippage?: any,
     affiliateAddress?: string,
-    callBack?: Function
+    callBack?: any
 }) => {
     try{
-        const txObj = await getTransactionObject({
+        const tx = await interactWithContract({
             abi: ROUTER_ABI,
             address: ROUTER_ADDRESS,
-            methodName: 'swapExactTokensForTokens', //0x05a1450d
+            methodName: 'swapExactTokensForTokens',
             methodParams: [
                 args.amountIn.toString(), // amountIn
                 0, // amountOutMin
                 [args.tokenAddressA,args.tokenAddressB], // path
                 args.to || get(accounts)[0],// to
-                (args.deadline || get(latestBlock) + 10).toString(), // deadline
-                args.affiliateAddress || ADDRESS_0 // affiliateAddress
+                (Date.now() + (args.deadline || 1200)).toString(), // deadline
+                args.affiliateAddress || constants.AddressZero // affiliateAddress
             ],
-        })
-
-        const tx = await sendTransaction({
-            to: ROUTER_ADDRESS,
-            from: args.to || get(accounts)[0],
-            value: '0x0',
-            data: txObj?.encodeABI()
         });
 
-        if(args.callBack) await args.callBack(txObj);
+
+        if(args.callBack) await args.callBack(tx);
 
         return tx;
     }catch(err){
@@ -95,34 +91,26 @@ export const swapExactETHForTokens = async (args: {
     to: any,
     tokenAddressB: any,
     amountIn: any,
-    deadline?: any,
+    deadline?: number,
     affiliateAddress?: string,
     slippage?: any,
-    callBack?: Function
+    callBack?: any
 }) => {
     try{
         const nativeToken =  await getNativeToken();
-        const txObj = await getTransactionObject({
-                abi: ROUTER_ABI,
-                address: ROUTER_ADDRESS,
-                methodName: 'swapExactETHForTokens', //0x344933be
-                methodParams: [
-                    0, // amountOutMin
-                    [nativeToken,args.tokenAddressB], // path
-                    args.to || get(accounts)[0], // to
-                    (args.deadline || get(latestBlock) + 10).toString(), // deadline
-                    args.affiliateAddress || ADDRESS_0 // affiliateAddress
-                ],
-            });
-            
-        const tx = await sendTransaction({
-            to: ROUTER_ADDRESS,
-            from: args.to || get(accounts)[0],
-            value: await window?.web3.utils.toHex(args.amountIn),
-            data: txObj?.encodeABI()
+        const tx = await interactWithContract({
+            abi: ROUTER_ABI,
+            address: ROUTER_ADDRESS,
+            methodName: 'swapExactETHForTokens',
+            methodParams: [
+                0, // amountOutMin
+                [nativeToken,args.tokenAddressB], // path
+                args.to || get(accounts)[0], // to
+                (Date.now() + (args.deadline || 1200)).toString(), // deadline
+                args.affiliateAddress || constants.AddressZero // affiliateAddress
+            ],
         });
-
-        if(args.callBack) await args.callBack(txObj);
+        if (args.callBack) await args.callBack(tx);
 
         return tx;
     }catch(err){
@@ -139,32 +127,26 @@ export const swapExactTokensForETH = async (args: {
     deadline?: any,
     affiliateAddress?: string,
     slippage?: any,
-    callBack?: Function
+    callBack?: any
 }) => {
     try{
         const nativeToken =  await getNativeToken();
-        const txObj = await getTransactionObject({
-                abi: ROUTER_ABI,
-                address: ROUTER_ADDRESS,
-                methodName: 'swapExactTokensForETH', //0x2232ea43
-                methodParams: [
-                    args.amountIn.toString(), // amountIn
-                    0, // amountOutMin
-                    [args.tokenAddressA,nativeToken], // path
-                    args.to || get(accounts)[0],// to
-                    (args.deadline || get(latestBlock) + 10).toString(), // deadline
-                    args.affiliateAddress || ADDRESS_0 // affiliateAddress
-                ],
-            });
             
-        const tx = await sendTransaction({
-            to: ROUTER_ADDRESS,
-            from: args.to || get(accounts)[0],
-            value: '0x0',
-            data: txObj?.encodeABI()
+        const tx = await interactWithContract({
+            abi: ROUTER_ABI,
+            address: ROUTER_ADDRESS,
+            methodName: 'swapExactTokensForETH',
+            methodParams: [
+                args.amountIn.toString(), // amountIn
+                0, // amountOutMin
+                [args.tokenAddressA,nativeToken], // path
+                args.to || get(accounts)[0],// to
+                (Date.now() + (args.deadline || 1200)).toString(), // deadline
+                args.affiliateAddress || constants.AddressZero // affiliateAddress
+            ],
         });
 
-        if(args.callBack) await args.callBack(txObj);
+        if(args.callBack) await args.callBack(tx);
 
         return tx;
     }catch(err){
@@ -184,12 +166,13 @@ export const methodsSwitcher = async (args: {
     deadline?: any,
     affiliateAddress?: string,
     slippage?: any,
-    callBack?: Function
+    callBack?: any
 }) => {
     const { to, tokenAddressA, tokenAddressB, amountIn, expressedMethod, amountOutMin, deadline, affiliateAddress, slippage, callBack } = args;
     if (expressedMethod) {
         expressedMethod();
     } else if (tokenAddressA == 'native'){
+        
         await swapExactETHForTokens({
             to,
             tokenAddressB,
@@ -232,15 +215,15 @@ export const addLiquidty = async (args: {
     amountBMin: string,
     to: string,
     deadline?: string,
-    callBack?: Function
+    callBack?: any
 }) => {
     try{
-        console.log('addLiquidty', args);
-        
-        const txObj = await getTransactionObject({
+        debug('addLiquidty', args);
+
+        const tx = await interactWithContract({
             abi: ROUTER_ABI,
             address: ROUTER_ADDRESS,
-            methodName: 'addLiquidity', //0x0e11c53e
+            methodName: 'addLiquidity',
             methodParams: [
                 args.tokenAddressA, // tokenA
                 args.tokenAddressB, // tokenB
@@ -249,18 +232,11 @@ export const addLiquidty = async (args: {
                 args.amountAMin, // amountAMin
                 args.amountBMin, // amountBMin
                 args.to, // to
-                (args.deadline || get(latestBlock) + 10).toString(), // deadline
+                (Date.now() + (args.deadline || 1200)).toString(), // deadline
             ],
         });
 
-        const tx = await sendTransaction({
-            to: ROUTER_ADDRESS,
-            from: args.to,
-            value: '0x0',
-            data: txObj?.encodeABI()
-        });
-
-        if(args.callBack) await args.callBack(txObj);
+        if(args.callBack) await args.callBack(tx);
 
         return tx;
     }catch(err){
@@ -276,31 +252,24 @@ export const addLiquidityETH = async (args: {
     amountETHMin: string,
     to: string,
     deadline?: string,
-    callBack?: Function
+    callBack?: any
 }) => {
     try{
-        const txObj = await getTransactionObject({
+        const tx = await interactWithContract({
             abi: ROUTER_ABI,
             address: ROUTER_ADDRESS,
-            methodName: 'addLiquidityETH', //0xf3dcbc6d
+            methodName: 'addLiquidityETH',
             methodParams: [
                 args.tokenAddress, // token
                 args.amountTokenDesired, // amountTokenDesired
                 args.amountTokenMin, // amountTokenMin
                 args.amountETHMin, // amountETHMin
                 args.to, // to
-                (args.deadline || get(latestBlock) + 10).toString(), // deadline
+                (Date.now() + (args.deadline || 1200)).toString(), // deadline
             ],
         });
 
-        const tx = await sendTransaction({
-            to: ROUTER_ADDRESS,
-            from: args.to,
-            value: await window?.web3.utils.toHex(args.amountETHDesired),
-            data: txObj?.encodeABI()
-        });
-
-        if(args.callBack) await args.callBack(txObj);
+        if(args.callBack) await args.callBack(tx);
 
         return tx;
     }catch(err){
@@ -316,10 +285,10 @@ export const removeLiquidity = async (args: {
     amountBMin: string,
     to: string,
     deadline?: string,
-    callBack?: Function
+    callBack?: any
 }) => {
     try{
-        const txObj = await getTransactionObject({
+        const tx = await interactWithContract({
             abi: ROUTER_ABI,
             address: ROUTER_ADDRESS,
             methodName: 'removeLiquidity', //0x2f9e608e
@@ -330,18 +299,11 @@ export const removeLiquidity = async (args: {
                 args.amountAMin, // amountAMin
                 args.amountBMin, // amountBMin
                 args.to, // to
-                (args.deadline || get(latestBlock) + 10).toString(), // deadline
+                (Date.now() + (args.deadline || 1200)).toString(), // deadline
             ],
         });
 
-        const tx = await sendTransaction({
-            to: ROUTER_ADDRESS,
-            from: args.to,
-            value: '0x0',
-            data: txObj?.encodeABI()
-        });
-
-        if(args.callBack) await args.callBack(txObj);
+        if(args.callBack) await args.callBack(tx);
 
         return tx;
     }catch(err){
@@ -356,10 +318,10 @@ export const removeLiquidityETH = async (args: {
     amountETHMin: string,
     to: string,
     deadline?: string,
-    callBack?: Function
+    callBack?: any
 }) => {
     try{
-        const txObj = await getTransactionObject({
+        const tx = await interactWithContract({
             abi: ROUTER_ABI,
             address: ROUTER_ADDRESS,
             methodName: 'removeLiquidityETH', //0x9e67ed8e
@@ -369,18 +331,11 @@ export const removeLiquidityETH = async (args: {
                 args.amountTokenMin, // amountTokenMin
                 args.amountETHMin, // amountETHMin
                 args.to, // to
-                (args.deadline || get(latestBlock) + 10).toString(), // deadline
+                (Date.now() + (args.deadline || 1200)).toString(), // deadline
             ],
         });
 
-        const tx = await sendTransaction({
-            to: ROUTER_ADDRESS,
-            from: args.to,
-            value: '0x0',
-            data: txObj?.encodeABI()
-        });
-
-        if(args.callBack) await args.callBack(txObj);
+        if(args.callBack) await args.callBack(tx);
 
         return tx;
     }catch(err){

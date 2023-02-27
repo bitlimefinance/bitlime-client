@@ -4,10 +4,9 @@
 	import { connectMetamask } from '$lib/core/sdk/wallets/metamask';
 	import { mainHeight_, showLoading, theme } from '$lib/stores/ui-theming';
 	import { onMount, tick } from 'svelte';
-	import { accounts, chainsList, connected, init, selectedNetwork, setAccounts, tokensList } from '$lib/stores/application';
+	import { accounts, chainsList, connected, init, networkCoin, selectedNetwork, setAccounts, showConnenct, tokensList } from '$lib/stores/application';
 	import Spinner from '$lib/components/general/spinner.svelte';
-	import { loadWeb3 } from '$lib/core/sdk/web3';
-	import { writeLocalStorage } from '$lib/core/utils/localStorage';
+	import { readLocalStorage, writeLocalStorage } from '$lib/core/utils/localStorage';
 	import FullScreenContainer from '$lib/components/general/fullScreenContainer.svelte';
 	import { _themes, _WALLETS } from '$lib/globals';
 	import { recordData } from '$lib/core/utils/analytics';
@@ -16,6 +15,15 @@
 	import { subscribeToEvent } from '$lib/core/sdk/eip-1193';
 	import Footer from '$lib/components/footer.svelte';
 	import { chains, tokens } from '$lib/core/contents/fallbacks';
+	import { setProvider } from '$lib/core/sdk/web3/provider/lib';
+	import { debug, debugError } from '$lib/core/utils/debug';
+	import SelectNetwork from '$lib/components/connect/selectNetwork.svelte';
+	import WalletModal from '$lib/blw/walletModal.svelte';
+	import { generateSalt } from '$lib/core/utils/cipher/passworder';
+	import TxConfirmation from '$lib/blw/components/txConfirmation.svelte';
+	import { workerResolveMessage } from '$lib/blw/lib/worker/workerApi';
+	import { Action } from '$lib/blw/lib/worker/types';
+	import { askNotificationPermission } from '$lib/core/utils/browserNotifications';
 
 	/** @type {import('./$types').LayoutData} */
 	export let data: any;
@@ -45,17 +53,32 @@
 	connected.subscribe(setAccounts);
 
 	selectedNetwork.subscribe(async (value: any) => {
-		if (mounted) {
-			window.bl_rpc = value?.rpc;
-			await loadWeb3(value?.rpc);
-		};
+		try {
+			if (mounted) {
+				window.bl_rpc = value?.rpc;
+				await setProvider(value?.rpc);
+			};
+		} catch (error) {
+			debugError(error);
+		}
+		try {
+			networkCoin.set({
+					"is_native": true,
+					"image": value?.logo,
+					"name": value?.name,
+					"symbol": value?.currency_symbol,
+					"decimals": value?.decimals,
+					"chain_id": value?.id,
+					"address": "native",
+				});
+		} catch (error) {
+			debugError(error);
+		}
 	});
-
 	let clickCount = 0;
 	const botGuard = () => {
 		clickCount++;
 		if (clickCount > 15) {
-			window.web3 = null;
 			mounted = false;
 			window.alert('Wait, you might be a bot. The page will reload after dismissing this alert.');
 			window.location.reload();
@@ -74,11 +97,11 @@
 	let mainHeight: number = 0;
 	onMount(async () => {
 		try{
-			console.log(data);
+			debug(data);
 			ENV.set(data?.env);
-			if (data?.chainsList && data?.chainsList?.length && data?.chainsList.length > 0) chainsList.set(data?.chainsList);
+			if (data?.chainsList?.response?.results && data?.chainsList?.response?.results?.length > 0) chainsList.set(data?.chainsList?.response?.results);
 			else chainsList.set(chains);
-			if (data?.tokensList && data?.tokensList?.length && data?.tokensList.length > 0) tokensList.set(data?.tokensList);
+			if (data?.tokensList?.response?.results && data?.tokensList?.response?.results?.length > 0) tokensList.set(data?.tokensList?.response?.results);
 			else tokensList.set(tokens);
 			mainHeight = window.innerHeight - nav.offsetHeight - footer.offsetHeight;
 			mainHeight_.set(mainHeight);
@@ -93,22 +116,21 @@
 			});
 			
 			if(window) window.bl_rpc = $selectedNetwork?.rpc;
-			await loadWeb3($selectedNetwork?.rpc);
+			await setProvider($selectedNetwork?.rpc);
 			setBodyTheme();
-			await connectMetamask();
 			await tick();
-			setInterval(() => {
-				clickCount = 0;
-			}, 1000);
-			document.addEventListener('click', botGuard);
+			askNotificationPermission();
+			// setInterval(() => {
+			// 	clickCount = 0;
+			// }, 1000);
+			// document.addEventListener('click', botGuard);
 		}catch(e){
-			console.error(e);
+			debugError(e);
 		}finally{
 			init.set(true);
 		}
 	});
 </script>
-
 
 <div id="global-container" class="min-h-screen bg-white bg-opacity-70 dark:bg-opacity-100 dark:bg-zinc-900">
 	{#if $showLoading}
@@ -137,3 +159,7 @@
 		<Footer bind:element={footer}/>
 	</span>
 </div>
+
+<SelectNetwork/>
+<WalletModal/>
+<TxConfirmation />

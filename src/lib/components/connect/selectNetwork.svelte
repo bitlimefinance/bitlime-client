@@ -3,6 +3,7 @@
 	import { chainsList, selectedNetwork, selectNetwork } from "$lib/stores/application";
 	import { writeLocalStorage } from "$lib/core/utils/localStorage";
 	import { showLoading } from "$lib/stores/ui-theming";
+	import { debugError } from "$lib/core/utils/debug";
 
     const setChain = (chain: any) => {
         try {
@@ -10,7 +11,7 @@
             selectedNetwork.set(chain);
             writeLocalStorage('last-selected-chain', JSON.stringify(chain));
         } catch (error) {
-            console.error(error);
+            debugError(error);
         } finally {
             selectNetwork.set(false);
             showLoading.set(false);
@@ -21,7 +22,7 @@
 </script>
 
 <FullScreenContainer bind:show={showModal} noPadding>
-    <div class="w-80 max-w-sm bg-transparent dark:border-gray-700">
+    <div class="w-80 max-w-sm bg-transparent rounded-xl">
         <div class="flex justify-between px-4 pt-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
             <div class="text-lg font-medium">
                 Mainnet

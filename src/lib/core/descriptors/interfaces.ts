@@ -1,11 +1,5 @@
+import type { Heroicon } from "$lib/icons/icons";
 import type { _WALLETS } from "../../globals";
-
-export interface GetTransactionObject {
-    abi: Array<any>,
-    address: string,
-    methodName: string,
-    methodParams: Array<any>
-}
 
 export interface TransactionParameters {
     to: string, // Required except during contract publications.
@@ -39,4 +33,26 @@ export interface Token {
     "symbol": string;
     "chain_id": string;
     "_id": string;
+}
+
+/*
+actions = {
+        open: open,
+        dismiss: dismiss,
+        stopTimeout: stopTimeout,
+        startTimeout: startTimeout
+    }
+*/
+export interface ToastActions {
+    show: (message: string, options:{
+        type?: 'info' | 'success' | 'warning' | 'error';
+        icon?: Heroicon;
+        iconOutline?: boolean;
+        timeout?: number;
+        positionY?: 'top' | 'bottom';
+        positionX?: 'left' | 'right';
+    }) => void;
+    dismiss: () => void;
+    stopTimeout: () => void;
+    startTimeout: () => void;
 }

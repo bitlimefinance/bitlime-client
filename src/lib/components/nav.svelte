@@ -1,12 +1,12 @@
 <script lang="ts">
+	import { getAddressPreview } from "$lib/core/sdk/web3/utils/addresses/lib";
+	import { debugError } from "$lib/core/utils/debug";
 	import { readLocalStorage } from "$lib/core/utils/localStorage";
-	import { getAddressPreview } from "$lib/core/sdk/web3";
 	import { _themes, _WALLETS, _WALLETS_INFO } from "$lib/globals";
 	import { accounts, chainsList, connected, selectedNetwork, selectNetwork, showConnenct } from "$lib/stores/application";
 	import { theme } from "$lib/stores/ui-theming";
 	import { onMount } from "svelte";
 	import ConnectModal from "./connect/connectModal.svelte";
-	import SelectNetwork from "./connect/selectNetwork.svelte";
 	import Button from "./general/button.svelte";
 
   export let element: HTMLElement;
@@ -19,7 +19,7 @@
             if (parsedChain?.id) selectedNetwork.set(parsedChain);
           }
         } catch (error) {
-          /* do nothing */
+          debugError(error);
         }
     });
 
@@ -48,10 +48,10 @@
     ];
 </script>
 
-<nav class="flex justify-between items-center bg-transparent px-5 py-2 border-b dark:border-b-zinc-700" bind:this={element}>
+<nav class="flex justify-between items-center bg-transparent px-5 py-2 border-b" bind:this={element}>
     <div class="flex justify-start items-center">
         <a href="/" class="flex justify-start items-center btn btn-ghost normal-case text-lg">
-            <img src="/assets/bl-logos/{$theme==_themes.dark?'logo-bold.png':'logo-bold.png'}" alt="logo" class="h-7 pr-2 mr-1 border-r dark:border-r-zinc-700" />
+            <img src="/assets/bl-logos/{$theme==_themes.dark?'logo-bold.png':'logo-bold.png'}" alt="logo" class="h-7 pr-2 mr-1 border-r" />
             <span class="font-medium dark:font-normal text-xl dark:text-emerald-500 sr-only">BitLime</span>
         </a>
         {#each LINKS as link}
@@ -59,7 +59,6 @@
         {/each}
     </div>
     <div class="flex justify-end items-center gap-3">
-      <!-- <ThemeToggle/> -->
       <Button
         label={$selectedNetwork&&$selectedNetwork.name?$selectedNetwork.name:'Select a network'}
         badge={$selectedNetwork&&$selectedNetwork.is_testnet?'TESTNET':''}
@@ -99,4 +98,3 @@
 </nav>
 
 <ConnectModal/>
-<SelectNetwork/>

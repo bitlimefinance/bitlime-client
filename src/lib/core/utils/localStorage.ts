@@ -17,13 +17,14 @@ export const readLocalStorage = (key: string, defaultValue?: string) => {
 				localStorage.setItem(key, defaultValue);
 			}
 		} catch (_e) {
+			debugError(_e);
 			// OOM or localStorage disabled
 		} finally {
 			value = defaultValue || null;
 		}
 	}
 
-	return value;
+	return value as string;
 };
 
 export const writeLocalStorage = (key: string, value: string) => {
@@ -32,6 +33,19 @@ export const writeLocalStorage = (key: string, value: string) => {
 	try {
 		localStorage.setItem(key, value);
 	} catch (e) {
+		debugError(e);
+		// OOM or localStorage disabled
+		// Do nothing
+	}
+};
+
+export const deleteLocalStorage = (key: string) => {
+	if (!browser) return;
+
+	try {
+		localStorage.removeItem(key);
+	} catch (e) {
+		debugError(e);
 		// OOM or localStorage disabled
 		// Do nothing
 	}
@@ -63,6 +77,7 @@ export const writeSessionStorage = (key: string, value: string) => {
 	try {
 		sessionStorage.setItem(key, value);
 	} catch (e) {
+		debugError(e);
 		// OOM or localStorage disabled
 		// Do nothing
 	}

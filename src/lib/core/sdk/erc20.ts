@@ -1,10 +1,11 @@
 
-import { getBalance, getTransactionObject, noOfDecimalsToUnits, readSmartContract } from "./web3";
 import abi from "./abis/erc20.json" assert {type: 'json'};
-import { sendTransaction } from "./eip-1193";
-import { debugError } from "../utils/debug";
+import { debug, debugError } from "../utils/debug";
 import { get } from "svelte/store";
-import { selectNetwork } from "$lib/stores/application";
+import { selectedNetwork } from "$lib/stores/application";
+import { interactWithContract, readSmartContract } from "./web3/contracts/lib";
+import { getAddressBalance } from "./web3/utils/addresses/lib";
+import { fromBigNumber } from "./web3/utils/bigNumber/lib";
 
 export const ERC20_ABI: any[] = abi;
 
@@ -12,9 +13,9 @@ export const decimals = async (args: {
     tokenAddress: string,
 }) => {
     try{
-        if(args.tokenAddress === 'native') return get(selectNetwork)?.decimals || 18;
+        if(args.tokenAddress === 'native') return get(selectedNetwork)?.decimals || 18;
         else {
-            let res = await readSmartContract({
+            const res = await readSmartContract({
                 abi: abi,
                 address: args.tokenAddress,
                 methodName: 'decimals',
@@ -43,7 +44,7 @@ export const allowance = async (args: {
         return data;
     })
     .catch((err) => {
-        // console.error(err);
+        debugError(err);
     });
 };
 
@@ -53,23 +54,25 @@ export const balanceOf = async (args: {
 }) => {
     try {
         if(!args.address || !args.tokenAddress) return 0;
-        let res: number = 0;
+        let res: any = 0;
         switch(args.tokenAddress){
             case 'native' || '':
-                res = await getBalance(args.address);
+                res = await getAddressBalance(args.address);
                 break;
             default:
                 res = await readSmartContract({
-                    abi: abi,
+                    abi: ERC20_ABI,
                     address: args.tokenAddress,
                     methodName: 'balanceOf',
                     methodParams: [args.address]
                 });
+                if(res[0]) res = fromBigNumber(res[0]);
+                else return 0;
             break;
         }
-        return res; 
+        return res || 0; 
     } catch (error) {
-        console.error(error);
+        debugError(error);
         return 0;
     }
 };
@@ -80,39 +83,28 @@ export const approve = async (args: {
     tokenAddress: string,
     ownerAddress: string,
 }) => {
-    getTransactionObject({
-        abi: ERC20_ABI,
-        address: args.tokenAddress,
-        methodName: 'approve',
-        methodParams: [
-            args.spenderAddress, // spender
-            args.amount, // amount
-        ],
-    })
-    .then(async (data)=>{
-        await sendTransaction({
-            to: args.tokenAddress,
-            from: args.ownerAddress,
-            value: null,
-            data: data?.encodeABI(),
-            chainId: null,
-            gasPrice: null,
-            gas: null,
-            nonce: null
+    try {
+        await interactWithContract({
+            abi: ERC20_ABI,
+            address: args.tokenAddress,
+            methodName: 'approve',
+            methodParams: [
+                args.spenderAddress, // spender
+                args.amount, // amount
+            ]
         });
-    })
-    .catch((err)=>{
-        console.log(err);
-    });
+    } catch (error) {
+        debugError(error);
+    }
 }
 
 export const totalSupply = async (args: {
     tokenAddress: string,
 }) => {
     try {
-        let tokenAddress = args.tokenAddress;
+        const tokenAddress = args.tokenAddress;
         if(!tokenAddress) return 0;
-        let res: number = await readSmartContract({
+        const res: number = await readSmartContract({
             abi: ERC20_ABI,
             address: tokenAddress,
             methodName: 'totalSupply',
@@ -124,3 +116,60 @@ export const totalSupply = async (args: {
         return 0;
     }
 }
+
+export const symbol = async (args: {
+    tokenAddress: string,
+}) => {
+    try {
+        const tokenAddress = args.tokenAddress;
+        if(!tokenAddress) return '';
+        const res: string = await readSmartContract({
+            abi: ERC20_ABI,
+            address: tokenAddress,
+            methodName: 'symbol',
+            methodParams: []
+        });
+        return res; 
+    } catch (error) {
+        debugError(error);
+        return '';
+    }
+}
+
+export const name = async (args: {
+    tokenAddress: string,
+}) => {
+    try {
+        const tokenAddress = args.tokenAddress;
+        if(!tokenAddress) return '';
+        const res: string = await readSmartContract({
+            abi: ERC20_ABI,
+            address: tokenAddress,
+            methodName: 'name',
+            methodParams: []
+        });
+        return res; 
+    } catch (error) {
+        debugError(error);
+        return '';
+    }
+}
+
+export const transferTokens = async (args: {
+    to: string,
+    amount: string,
+    tokenAddress: string,
+    from: string,
+}) => {
+    return await interactWithContract({
+        address: args.tokenAddress,
+        abi: ERC20_ABI,
+        methodName: 'transfer',
+        methodParams: [
+            args.to,
+            args.amount
+        ]
+    });
+}
+
+    

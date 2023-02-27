@@ -24,7 +24,7 @@
 	}
 </script>
 
-<div on:mouseover={mouseOver} on:mouseleave={mouseLeave} on:mousemove={mouseMove}>
+<div on:mouseover={mouseOver} on:mouseleave={mouseLeave} on:mousemove={mouseMove} on:focus>
 	<slot />
 </div>
 
@@ -35,7 +35,7 @@
 			class={classList + ' ' + additionalClassList}
 		>
 			{#if title&&title!=''}
-				<div class="font-medium">{title}</div>
+				<div class="font-semibold">{@html title}</div>
 			{/if}
 			<span class="text-sm font-normal">
 				{@html content}

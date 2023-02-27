@@ -19,7 +19,7 @@ export async function POST({request}: {request: any}) {
     body: JSON.stringify({
       data: JSON.stringify(record),
       schemaId: schema || 'schema-1',
-      suid: session_id
+      suid: session_id || 'null'
     })
   })
   .then(response => response.json())

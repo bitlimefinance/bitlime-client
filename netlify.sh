@@ -1,0 +1,2 @@
+netlify link
+netlify dev

@@ -3,7 +3,6 @@
 	import { getAmountsOut, getNativeToken, methodsSwitcher, ROUTER_ADDRESS} from "$lib/core/sdk/router";
 	import { allowance, approve, balanceOf, decimals } from "$lib/core/sdk/erc20";
 	import { sleep } from "$lib/core/utils/utilities";
-	import { getBalance, noOfDecimalsToUnits } from "$lib/core/sdk/web3";
 	import { _WALLETS } from "$lib/globals";
 	import { accounts, connected, selectedNetwork, showConnenct } from "$lib/stores/application";
 	import { onMount } from "svelte";
@@ -12,7 +11,11 @@
 	import SwapInput from "./swapInput.svelte";
 	import { SyncLoader } from "svelte-loading-spinners";
 	import SwapSettings from "./swapSettings.svelte";
-
+	import { debug, debugBreakpointReset, debugError, debugWarn } from "$lib/core/utils/debug";
+	import { fromWei, noOfDecimalsToUnits, toWei } from "$lib/core/sdk/web3/utils/units/lib";
+	import { web3Provider } from "$lib/core/sdk/web3/provider/lib";
+	import { getAddressBalance } from "$lib/core/sdk/web3/utils/addresses/lib";
+	import { fromBigNumber, toBigNumber } from "$lib/core/sdk/web3/utils/bigNumber/lib";
 
     let mounted: boolean = false;
 
@@ -40,7 +43,7 @@
     let gettingQuote: boolean = false;
     let switching: boolean = false;
 
-    let swapRate: number = 0;
+    let swapRate: number | string = 0;
     let gettingSwapRate: boolean = false;
     let swapRatePath: any[] = [selectedTokenA, selectedTokenB];
     let swapRatePathDecimals: any[] = [selectedTokenADecimals, selectedTokenBDecimals];
@@ -55,7 +58,7 @@
                 callback(data);
             })
             .catch((err) => {
-                console.error(err);
+                debugError(err);
             })
         }
     }
@@ -63,12 +66,12 @@
     const getTokenBalance = async (address: string, callback: FunctionStringCallback) => {        
         if(!address && $accounts?.length <= 0) return;
         if(address === 'native' && $accounts[0]) {
-            getBalance($accounts[0])
+            getAddressBalance($accounts[0])
             .then((data) => {
                 callback(data);
             })
             .catch((err) => {
-                console.error(err);
+                debugError(err);
             })
         }else{
             balanceOf({
@@ -76,10 +79,10 @@
                 tokenAddress: address,
             })
             .then((data) => {
-                callback(data);
+                callback(data.toString());
             })
             .catch((err) => {
-                console.error(err);
+                debugError(err);
             }); 
         }
         refreshCounter = refreshTimer;
@@ -97,7 +100,7 @@
                     }
                     noBalance = false;
                 }catch(err) {
-                    console.error(err);
+                    debugError(err);
                 }finally{
                     gettingData = false;
                 }
@@ -109,7 +112,7 @@
                 try{
                     selectedTokenBBalance = parseFloat(data);
                 }catch(err) {
-                    console.error(err);
+                    debugError(err);
                 }finally{
                     gettingData = false;
                 }
@@ -130,7 +133,7 @@
             tokenAddress: selectedTokenA.address,
         })
         .then((res) => {
-            let balance = parseFloat(res);
+            let balance = res;
             selectedTokenABalance = balance;
             if(res == 0 || res < inputAValue) {
                 noBalance = true;
@@ -149,14 +152,14 @@
                 else tokenNeedsAllowance = true;
             })
             .catch((err) => {
-                console.error(err);
+                debugError(err);
             })
             .finally(() => {
                 gettingData = false;
             })
         })
         .catch((err) => {
-            console.error(err);
+            debugError(err);
         })
         .finally(() => {
             gettingData = false;
@@ -207,20 +210,23 @@
             if(_tokenA == 'native') _tokenA = nativeTokenAddress;
             if(_tokenB == 'native') _tokenB = nativeTokenAddress;
             
-
-            let amountToQuote = await window.web3.utils.toBN(await window?.web3.utils.toWei(value.toString(), noOfDecimalsToUnits(pathDecimals[0])));
+            let amountToQuote = toWei(value.toString(), noOfDecimalsToUnits(pathDecimals[0]));
             if(!amountToQuote) throw new Error('Something went wrong converting amount');
-            let quote = await getAmountsOut({
+            
+            let bnQuote = await getAmountsOut({
                 amountIn: amountToQuote,
                 tokenAddressA: _tokenA,
                 tokenAddressB: _tokenB
-            })
-            
-            let res = await window?.web3.utils.fromWei(quote[1].toString(), noOfDecimalsToUnits(pathDecimals[1]));
-            if(getSwapRate) swapRate = res;
+            });
+
+            if(!bnQuote) throw new Error('Something went wrong getting quote');
+
+            let quote: any[] = [fromBigNumber(bnQuote[0][0]), fromBigNumber(bnQuote[0][1])];
+            let res = fromWei(quote[1].toString(), noOfDecimalsToUnits(pathDecimals[1]));
+            if(getSwapRate) swapRate = res as string;
             else inputBValue = res;
         }catch(err) {
-            // console.error(err);
+            debugError(err);
         }finally{
             gettingData = false;
             gettingQuote = false;
@@ -235,16 +241,16 @@
             if(inputAValue && typeof inputAValue == 'number') inputAValue = parseFloat(inputAValue.toFixed(selectedTokenADecimals));
             if(inputBValue && typeof inputBValue == 'number') inputBValue = parseFloat(inputBValue.toFixed(selectedTokenBDecimals));
         } catch (error) {
-            console.warn(error);
+            debugWarn(error);
         }
         try{
             if(doCheckAllowance) await checkAllowance();
             else await checkBalance();
             await checkDecimals();
             await getQuote();
-            getQuote(true);
+            await getQuote(true);
         }catch(err) {
-            console.error(err);
+            debugError(err);
         }finally{
             gettingData = false;
         }
@@ -272,7 +278,7 @@
         try { 
             fetchTokenInfo();
         } catch (error) {
-            // console.error(error);
+            // debugError(error);
         } finally {
             setTimeout(() => {
                 canUpdateTrashold = true;
@@ -283,9 +289,11 @@
     const onSwap = async () => {
         if(!(selectedTokenA?.address && selectedTokenB?.address && !noBalance && selectedTokenA?.address!=selectedTokenB?.address)) return;
         try {
-            let amountToWei = '0';
+            debugBreakpointReset();
+            let amountToWei: string | null = '0';
             if(selectedTokenA.address == 'native' || selectedTokenB.address == 'native') {
-                amountToWei = await window.web3.utils.toWei(await inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals));
+                amountToWei = toWei(await inputAValue.toString() || '0', noOfDecimalsToUnits(selectedTokenADecimals));
+                
                 await methodsSwitcher({
                     to: $accounts[0],
                     tokenAddressA: selectedTokenA.address,
@@ -294,15 +302,17 @@
                 });
                 return;
             };
-            fetchTokenInfo(true);
+            
+            await fetchTokenInfo(true);
             await sleep(1000);
+            
             if(gettingData || !selectedTokenADecimals || !selectedTokenBDecimals) return;
             if ($connected && $connected != _WALLETS.DISCONNECTED) {
                 if(tokenNeedsAllowance){
                     await approve({
                         tokenAddress: selectedTokenA.address,
                         spenderAddress: ROUTER_ADDRESS,
-                        amount: await window.web3.utils.toWei(await selectedTokenABalance.toString(), noOfDecimalsToUnits(selectedTokenADecimals))+'000000000',
+                        amount: toWei(await selectedTokenABalance.toString(), noOfDecimalsToUnits(selectedTokenADecimals))+'000000000',
                         ownerAddress: $accounts[0]
                     });
                 }else {
@@ -315,7 +325,7 @@
                         window.alert('Please select tokens and enter amount');
                         return;
                     }
-                    amountToWei = await window.web3.utils.toWei(await inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals));
+                    amountToWei = toWei(await inputAValue.toString(), noOfDecimalsToUnits(selectedTokenADecimals));
                     await methodsSwitcher({
                         to: $accounts[0],
                         tokenAddressA: selectedTokenA.address,
@@ -327,7 +337,7 @@
                 showConnenct.set(true);
             }
         } catch (error) {
-            console.error(error);
+            debugError(error);
         } finally {
             gettingData = false;
         }
@@ -387,7 +397,7 @@
             id="swap-input-a"
             bind:value={inputAValue}
             />
-        <div class="z-10" bind:clientHeight={switchHeight} style="margin-top: -{switchWidthHalf}px; margin-bottom: -{switchWidthHalf}px;">
+        <div class="z-10" bind:clientHeight={switchHeight} style="margin-top: -{(switchWidthHalf)}px; margin-bottom: -{(switchWidthHalf)}px;">
             <div class="rounded-full border border-zinc-400 w-fit mx-auto dark:border-0">
                 <div
                     disabled={gettingData || switchTimeout}
@@ -404,7 +414,7 @@
                         setTimeout(()=>{switchTimeout=false}, 800);
                     }}
                     on:keyup
-                    class="bg-zinc-50 dark:bg-zinc-800 cursor-pointer p-1.5 mx-auto w-fit border-4 border-zinc-50 dark:border-zinc-900 rounded-full"
+                    class="untheme bg-zinc-50 dark:bg-zinc-800 cursor-pointer p-1.5 mx-auto w-fit border-4 border-zinc-50 dark:border-zinc-900 rounded-full"
                     >
                     <svg class="w-5 h-5 text-zinc-800 dark:text-zinc-500 dark:hover:text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.4" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />

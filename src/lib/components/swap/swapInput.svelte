@@ -28,7 +28,7 @@
 </script>
 
 
-<div id="{id}-container" class='{customClassList?customClassList:"bg-zinc-50/[0.3] border border-transparent dark:bg-zinc-800/[0.7] dark:border-0 rounded-xl p-3"}' style="{style}">
+<div id="{id}-container" class='{customClassList?customClassList:"bg-zinc-50/[0.3] border border-transparent dark:bg-zinc-800/[0.4] dark:border-0 rounded-xl p-3"}' style="{style}">
     <div class="flex justify-between">
         <TokenSelector bind:value={selectedToken} selectedTokens={selectedTokens} defaultToken={defaultToken} selectedTokenDisabled={selectedTokenDisabled} on:switch={()=>{dispatch('switch')}}/>
     </div>

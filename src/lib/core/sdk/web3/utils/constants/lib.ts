@@ -1,0 +1,2 @@
+
+export const ADDRESS_0: Readonly<string> = "0x0000000000000000000000000000000000000000";
