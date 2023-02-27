@@ -244,7 +244,7 @@
                 label="Copy"
                 on:click={() => {
                     navigator.clipboard.writeText(mnemonic);
-                    toastActions.show("Copied to clipboard", {timeout: 1000});
+                    toastActions.show("Copied to clipboard", {timeout: 2000});
                 }}
                 >
                 <Icon icon="document-duplicate" outline classList="w-4 h-4 my-auto"/>

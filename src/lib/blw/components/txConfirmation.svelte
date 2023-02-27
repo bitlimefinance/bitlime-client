@@ -5,7 +5,10 @@
 	import FullScreenContainer from "$lib/components/general/fullScreenContainer.svelte";
 	import Icon from "$lib/components/general/icon.svelte";
 	import Input from "$lib/components/general/input.svelte";
+	import Toast from "$lib/components/general/toast.svelte";
 	import Toggle from "$lib/components/general/toggle.svelte";
+	import type { ToastActions } from "$lib/core/descriptors/interfaces";
+	import addTx from "$lib/core/sdk/internal-api/calls/addTx";
 	import { getAddressPreview } from "$lib/core/sdk/web3/utils/addresses/lib";
 	import { fromBigNumber } from "$lib/core/sdk/web3/utils/bigNumber/lib";
 	import { ADDRESS_0 } from "$lib/core/sdk/web3/utils/constants/lib";
@@ -18,6 +21,7 @@
 	import { showLoading, theme } from "$lib/stores/ui-theming";
 	import type { BigNumber, Contract } from "ethers";
 	import { onMount } from "svelte";
+	import { bind } from "svelte/internal";
 	import { txConfirmation, txInfo } from "../lib/stores";
 	import { Action } from "../lib/worker/types";
 	import { workerResolveMessage } from "../lib/worker/workerApi";
@@ -33,6 +37,7 @@
 
     // $: show, txConfirmation.set(show);
 
+    let toastActions: ToastActions;
 
     onMount(() => origin = window?.location?.origin);
 
@@ -166,13 +171,15 @@
                             workerResolveMessage(wrkrMessage)
                             .then((res) => {
                                 if(!(res?.error) && res?.payload?.txHash) {
-                                    const notification = showNotification("Transaction sent", {body: "Click here to see transactions history"});
+                                    const notification = showNotification("Transaction completed", {body: "Click here to see transactions history"});
                                     notification?.addEventListener('click', (event) => {
-                                        navigate("/wallet");
+                                        navigate("/wallet?section=history");
                                     });
+                                    addTx($accounts[0], res.payload.txHash);
                                 }
-                                else if(res?.error || !(res?.payload?.txHash)) showNotification("Error sending transaction", {body: "Sorry, there was an error sending your transaction", tag: Action.TX_SEND});
+                                else if(res?.error || !(res?.payload?.txHash)) showNotification("Error sending transaction", {body: "Sorry, there was an error completing your transaction"});
                             });
+                            toastActions.show("Transaction sent, you'll be notified when completed", {timeout: 10000});
                             showLoading.set(false);
                         } catch (error) {
                             debugError(error);
@@ -186,3 +193,4 @@
         </section>
     </div>
 </FullScreenContainer>
+<Toast bind:actions={toastActions}/>

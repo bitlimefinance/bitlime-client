@@ -2,9 +2,9 @@
 <script lang="ts">
     import SelectNetwork from "$lib/components/connect/selectNetwork.svelte";
 	import Button from "$lib/components/general/button.svelte";
-    import { _themes } from "$lib/globals";
+    import { _themes, _WALLETS } from "$lib/globals";
     import { theme } from "$lib/stores/ui-theming";
-    import { accounts, selectedNetwork, selectNetwork } from "$lib/stores/application";
+    import { accounts, connected, selectedNetwork, selectNetwork } from "$lib/stores/application";
 	import { getAddressBalance, getAddressPreview } from "$lib/core/sdk/web3/utils/addresses/lib";
 	import Icon from "$lib/components/general/icon.svelte";
 	import { onMount } from "svelte";
@@ -17,14 +17,23 @@
 	import { loadWorker } from "./lib/worker/workerApi";
 	import { workerLoaded } from "./lib/stores";
 	import TxConfirmation from "./components/txConfirmation.svelte";
+	import History from "./components/walletSections/history.svelte";
+	import { debug } from "$lib/core/utils/debug";
+	import getTxHistory from "$lib/core/sdk/internal-api/calls/getTxHistory";
+	import type { ToastActions } from "$lib/core/descriptors/interfaces";
+	import Toast from "$lib/components/general/toast.svelte";
 
     let balance: string = '0';
     let loading: boolean = true;
+    let history: any;
 
     enum Tab {
         Send,
+        History,
         Buy
     }
+
+    let toastActions: ToastActions;
 
     let tabSelected: Tab = Tab.Send;
 
@@ -32,6 +41,8 @@
         if (value && value.length > 0) {
             balance = fromWei(await getAddressBalance(value[0]), 'ether') || '0';
         }
+        if($connected == _WALLETS.BITLIME && value.length>0) history = await getTxHistory($accounts[0], 10);
+        debug("History", history)
         loading = false;
     });
 
@@ -76,6 +87,7 @@
                 </div>
                 <Icon icon="clipboard" size={4} outline classList="cursor-pointer hover:opacity-80" on:click={()=>{
                     navigator.clipboard.writeText($accounts[0]);
+                    toastActions.show("Copied to clipboard", {timeout: 2000});
                 }}/>
             </div>
         </div>
@@ -105,6 +117,9 @@
             <li id="send-tab" on:click={()=>{tabSelected=Tab.Send}} on:keyup class="{tabSelected==Tab.Send?"bg-zinc-50 dark:bg-zinc-800/[0.5]":""} border-r w-full flex justify-center items-center py-3 px-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/[0.5]">
                 Send
             </li>
+            <li id="buy-tab" on:click={()=>{tabSelected=Tab.History}} on:keyup class="{tabSelected==Tab.History?"bg-zinc-50 dark:bg-zinc-800/[0.5]":""} w-full flex border-r justify-center items-center py-3 px-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/[0.5]">
+                History
+            </li>
             <li id="buy-tab" on:click={()=>{tabSelected=Tab.Buy}} on:keyup class="{tabSelected==Tab.Buy?"bg-zinc-50 dark:bg-zinc-800/[0.5]":""} w-full flex justify-center items-center py-3 px-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/[0.5]">
                 Buy<span class="text-xs mx-1">/</span>Sell
             </li>
@@ -113,6 +128,8 @@
     <section id="blw-tabs-content" class="w-full">
         {#if tabSelected==Tab.Send}
             <Send />
+        {:else if tabSelected==Tab.History}
+            <History history/>
         {:else if tabSelected==Tab.Buy}
             <Buy />
         {/if}
@@ -123,3 +140,5 @@
         </div>
     {/if}
 </div>
+
+<Toast bind:actions={toastActions}/>
