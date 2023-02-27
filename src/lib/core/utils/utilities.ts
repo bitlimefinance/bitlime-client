@@ -43,7 +43,7 @@ export function removeAllChildNodes(parent) {
 }
 
 export const arrayIsSubset = (arraySubset, array) => {
-	let checker = (arr, target) => target.every(v => arr.includes(v));
+	const checker = (arr, target) => target.every(v => arr.includes(v));
 	let result = false;
 	try {
 		result = checker(array, arraySubset);
@@ -68,7 +68,7 @@ export function areArraysEqualSets(array1, array2) {
 		superSet[e] = 2;
 	}
 
-	for (let e in superSet) {
+	for (const e in superSet) {
 		if (superSet[e] === 1) {
 			return false;
 		}
@@ -79,16 +79,16 @@ export function areArraysEqualSets(array1, array2) {
 
 export const arraysInteresctionCheck = (array1, array2, allowEmpty=false) => {
 	if (!allowEmpty && (array1.length <= 0 || array2.length <= 0)) return false;
-	let intersection = array1.filter(value => array2.includes(value));
-	let result = intersection.length && intersection.length > 0;
+	const intersection = array1.filter(value => array2.includes(value));
+	const result = intersection.length && intersection.length > 0;
 	return result;
 }
 
 
 export function bytesToSize(bytes) {
-	let sizes = ['Bytes', 'kB', 'MB', 'GB', 'TB'];
+	const sizes = ['Bytes', 'kB', 'MB', 'GB', 'TB'];
 	if (bytes === 0) return '0 Byte';
-	let i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+	const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
 	return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
 }
 
@@ -115,8 +115,8 @@ export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export function titleCase(str) {
 	if (str) {
-		var splitStr = str.toLowerCase().split(' ');
-		for (var i = 0; i < splitStr.length; i++) {
+		const splitStr = str.toLowerCase().split(' ');
+		for (let i = 0; i < splitStr.length; i++) {
 			// You do not need to check if i is larger than splitStr length, as your for does that for you
 			// Assign it back to the array
 			splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
@@ -142,7 +142,7 @@ export const removeElementFromArray = (array, element) => {
 };
 
 export const donwloadFile = (url, filename) => {
-	var element = document.createElement('a');
+	const element = document.createElement('a');
 	element.setAttribute('href', url);
 	element.setAttribute('download', filename);
 	element.style.display = 'none';
@@ -164,12 +164,12 @@ export function isHidden(el) {
 
 export const randomString = (length, numbersOnly=false) => {
 	let text = '';
-	let possibleAlphanumeric = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	let possibleOnlyNumeric = '0123456789';
+	const possibleAlphanumeric = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	const possibleOnlyNumeric = '0123456789';
 	
-	let possible = numbersOnly ? possibleOnlyNumeric : possibleAlphanumeric;
+	const possible = numbersOnly ? possibleOnlyNumeric : possibleAlphanumeric;
 
-	for (var i = 0; i < length; i++) {
+	for (let i = 0; i < length; i++) {
 		text += possible.charAt(Math.floor(Math.random() * possible.length));
 	}
 
@@ -223,7 +223,7 @@ export const toggleElement = (elementId, displayStyle = 'block') => {
 export function formatNumber(number: number | string, style: "currency" | "percent" | "number" = "number", minDec = 0, maxDec = 0, currency = 'USD') {
 	let formatter;
 	let n: number;
-	let minDecimals: number = minDec;
+	const minDecimals: number = minDec;
 	let maxDecimals: number = maxDec;
 	
 	if (typeof number === 'string') n = parseFloat(number);
@@ -275,8 +275,8 @@ export function loadFileFromUrl(url, inputQuerySelector, then = () => {}) {
 	getFileFromURL(url, (fileBlob) => {
 		// Load img blob to input
 		// WIP: UTF8 character error
-		let fileName = 'sample-data.quickai.csv';
-		let file = new File(
+		const fileName = 'sample-data.quickai.csv';
+		const file = new File(
 			[fileBlob],
 			fileName, {
 				type: 'text/csv',
@@ -284,7 +284,7 @@ export function loadFileFromUrl(url, inputQuerySelector, then = () => {}) {
 			},
 			'utf-8'
 		);
-		let container = new DataTransfer();
+		const container = new DataTransfer();
 		container.items.add(file);
 		document.querySelector(inputQuerySelector).files = container.files;
 		then();
@@ -292,7 +292,7 @@ export function loadFileFromUrl(url, inputQuerySelector, then = () => {}) {
 }
 // xmlHTTP return blob respond
 function getFileFromURL(url, callback) {
-	var xhr = new XMLHttpRequest();
+	const xhr = new XMLHttpRequest();
 	xhr.onload = function () {
 		callback(xhr.response);
 	};
@@ -303,7 +303,7 @@ function getFileFromURL(url, callback) {
 
 
 export const changeRoute = (routeId='') => {
-	let anchorElement = document.createElement('a');
+	const anchorElement = document.createElement('a');
 	anchorElement.href = '/'+routeId;
 	anchorElement.style.display = 'none';
 	document.body.appendChild(anchorElement);
@@ -377,7 +377,7 @@ export function isLocalhost() {
 
 export const getFileType = (file) => {
 	try{
-		let filename = file.name;
+		const filename = file.name;
 		return filename.substring(filename.lastIndexOf('.') + 1, filename.length) || filename;
 	}catch(error){
 		console.error(error);
@@ -394,9 +394,9 @@ export const getPageHeight = () => {
 	let pageHeight = 0;
 
     function findHighestNode(nodesList) {
-        for (var i = nodesList.length - 1; i >= 0; i--) {
+        for (let i = nodesList.length - 1; i >= 0; i--) {
             if (nodesList[i].scrollHeight && nodesList[i].clientHeight) {
-                var elHeight = Math.max(nodesList[i].scrollHeight, nodesList[i].clientHeight);
+                const elHeight = Math.max(nodesList[i].scrollHeight, nodesList[i].clientHeight);
                 pageHeight = Math.max(elHeight, pageHeight);
             }
             if (nodesList[i].childNodes.length) findHighestNode(nodesList[i].childNodes);
@@ -421,8 +421,8 @@ export const blinkElement = async (element, times = 2, interval = 50) => {
 
 export function disableScroll() {
     // Get the current page scroll position
-    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    let scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
   
 	// if any scroll is attempted, set this to the previous value
 	window.onscroll = function() {

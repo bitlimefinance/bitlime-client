@@ -6,7 +6,7 @@ import { get } from "svelte/store";
 
 const createLog = async (record: Object, schema?: string) => {
 	let response: any;
-	let session_id = readSessionStorage('session_id') || '';
+	const session_id = readSessionStorage('session_id') || '';
 	if(get(ENV)!==Env.LOCAL){
 		response = await fetch('/api/record', {
 			method: 'POST',

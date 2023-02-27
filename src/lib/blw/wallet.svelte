@@ -86,7 +86,7 @@
                     {getAddressPreview($accounts[0])}
                 </div>
                 <Icon icon="clipboard" size={4} outline classList="cursor-pointer hover:opacity-80" on:click={()=>{
-                    navigator.clipboard.writeText($accounts[0]);
+                    navigator?.clipboard?.writeText($accounts[0]);
                     toastActions.show("Copied to clipboard", {timeout: 2000});
                 }}/>
             </div>

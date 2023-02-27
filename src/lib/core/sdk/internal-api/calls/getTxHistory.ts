@@ -15,7 +15,7 @@ const getTxHistory = async (wallet: string, until: number) => {
 	else {
 		debugError(res)
 		return;
-	};
+	}
 }
 
 export default getTxHistory;

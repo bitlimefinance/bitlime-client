@@ -243,7 +243,7 @@
                 theme="tertiary"
                 label="Copy"
                 on:click={() => {
-                    navigator.clipboard.writeText(mnemonic);
+                    navigator?.clipboard?.writeText(mnemonic);
                     toastActions.show("Copied to clipboard", {timeout: 2000});
                 }}
                 >
