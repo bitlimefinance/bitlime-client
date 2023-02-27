@@ -1,4 +1,5 @@
 import { _messages } from "../../globals";
+import { debugError } from "./debug";
 // import { recordData } from "./analytics";
 
 export function sluggify(text, lowercase=true) {
@@ -25,8 +26,10 @@ export function camelCase(text='') {
 	}
 }
 
-export const navigate = (destination) => {
-	window.location = destination;
+export const navigate = (destination, blank = false) => {
+	if(!blank) window.location = destination;
+	else window.open(destination, '_blank');
+	
 };
 
 export function removeAllChildNodes(parent) {
@@ -173,6 +176,11 @@ export const randomString = (length, numbersOnly=false) => {
 	return text;
 };
 
+export const randomInt = (min: number, max: number) => {
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+
 export const hideElement = (elementId) => {
 	try {
 		const element = document.getElementById(elementId);
@@ -212,8 +220,18 @@ export const toggleElement = (elementId, displayStyle = 'block') => {
 	}
 };
 
-export function formatNumber(number, style, minDecimals = 0, maxDecimals = 0, currency = 'USD') {
+export function formatNumber(number: number | string, style: "currency" | "percent" | "number" = "number", minDec = 0, maxDec = 0, currency = 'USD') {
 	let formatter;
+	let n: number;
+	let minDecimals: number = minDec;
+	let maxDecimals: number = maxDec;
+	
+	if (typeof number === 'string') n = parseFloat(number);
+	else n = number;
+
+	if (style === 'percent') n = n / 100;
+	if (minDecimals > 0 && minDecimals > maxDecimals) maxDecimals = minDecimals;
+
 	switch (style) {
 		case 'currency':
 			formatter = new Intl.NumberFormat('en-US', {
@@ -242,8 +260,16 @@ export function formatNumber(number, style, minDecimals = 0, maxDecimals = 0, cu
 		default:
 			break;
 	}
-	return formatter ? formatter.format(number) : number;
+	return formatter ? formatter.format(n).toString() : n.toString();
 }
+
+export const bigNumberToShort = (number) => {
+	if (number < 1000) return number;
+	if (number < 1000000) return formatNumber((number / 1000)) + ' K';
+	if (number < 1000000000) return formatNumber((number / 1000000)) + ' M';
+	if (number < 1000000000000) return formatNumber((number / 1000000000)) + ' B';
+	if (number > 1000000000000) return formatNumber((number / 1000000000)) + ' B';
+};
 
 export function loadFileFromUrl(url, inputQuerySelector, then = () => {}) {
 	getFileFromURL(url, (fileBlob) => {
@@ -290,11 +316,12 @@ export const getTimestamp = (returnSeconds=false) => {
 	return timestamp;
 }
 
-export const toggleModal = (modalId, action) => { // actions: toggle, open, closes
+export const toggleModal = (modalId: string, action?: 'toggle' | 'open' | 'close') => {
 	try{
-		let modal = document.getElementById(modalId);
+		const modal = document.getElementById(modalId);
+		const defaultedAction = action || 'toggle';
 		if (!modal) return;
-		switch (action) {
+		switch (defaultedAction) {
 			case 'toggle':
 				modal.classList.toggle('hidden');
 				modal.style.display = modal.style.display == 'block' ? 'none' : 'block';
@@ -338,43 +365,6 @@ export const toggleModal = (modalId, action) => { // actions: toggle, open, clos
 // }
 
 
-
-export const workerValidator = () => {
-	try {
-		if (!window.wrkr) {
-			throw 'Worker not found';
-		}
-	} catch (error) {
-		handleError(error);
-	}
-}
-
-export const workerPostMessage = (message) => {
-	workerValidator();
-	if (!message) {
-		console.warn('No message to send');
-		return;
-	}
-	try {
-		window.wrkr.postMessage(message);
-	} catch (error) {
-		console.error(error);
-		handleError(error);
-	}
-}
-
-export const workerListener = (callback) => {
-	workerValidator();
-	try {
-		window.wrkr.addEventListener('message', async ({data}) => {
-			await callback(data);
-		});
-	} catch (error) {
-		handleError(error);
-	}
-}
-
-
 export function isLocalhost() {
 	try {
 		if (!window) return false;
@@ -396,11 +386,27 @@ export const getFileType = (file) => {
 }
 
 export const getPageHeight = () => {
-	let body = document.body,
-    html = document.documentElement;
+	// let body = document.body,
+    // html = document.documentElement;
 
-	let height = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
-	return height;
+	// let height = Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight );
+	// return height;
+	let pageHeight = 0;
+
+    function findHighestNode(nodesList) {
+        for (var i = nodesList.length - 1; i >= 0; i--) {
+            if (nodesList[i].scrollHeight && nodesList[i].clientHeight) {
+                var elHeight = Math.max(nodesList[i].scrollHeight, nodesList[i].clientHeight);
+                pageHeight = Math.max(elHeight, pageHeight);
+            }
+            if (nodesList[i].childNodes.length) findHighestNode(nodesList[i].childNodes);
+        }
+    }
+
+    findHighestNode(document.documentElement.childNodes);
+
+    // The entire page height is found
+    return pageHeight;
 }
 
 export const blinkElement = async (element, times = 2, interval = 50) => {
@@ -412,3 +418,71 @@ export const blinkElement = async (element, times = 2, interval = 50) => {
 		await sleep(interval);
 	}
 }
+
+export function disableScroll() {
+    // Get the current page scroll position
+    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    let scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+  
+	// if any scroll is attempted, set this to the previous value
+	window.onscroll = function() {
+		window.scrollTo(scrollLeft, scrollTop);
+	};
+}
+  
+export function enableScroll() {
+    window.onscroll = function() {};
+}
+
+export const shuffleArray = (array: any[]) => {
+	let currentIndex = array.length,  randomIndex;
+  
+	// While there remain elements to shuffle...
+	while (currentIndex != 0) {
+  
+	  // Pick a remaining element...
+	  randomIndex = Math.floor(Math.random() * currentIndex);
+	  currentIndex--;
+  
+	  // And swap it with the current element.
+	  [array[currentIndex], array[randomIndex]] = [
+		array[randomIndex], array[currentIndex]];
+	}
+  
+	return array;
+}
+
+export const numberToOrderShort = (n: number) => {
+	try {
+		const s = ["th","st","nd","rd"];
+		const v = n%100;
+		return n+(s[(v-20)%10]||s[v]||s[0]);
+	} catch (error) {
+		debugError(error);
+		return n+'th';
+	}
+}
+
+export const snakeToTitleCase = (str: string): string => {
+	try {
+		const words = str.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1));
+		words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1);
+		return words.join(" ");
+	} catch (error) {
+		debugError(error);
+		return str;
+	}
+  };
+  
+export const camelToTitleCase = (str: string): string => {
+	try {
+		const words = str.replace(/([a-z])([A-Z])/g, "$1 $2").split(" ");
+		words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1);
+		return words.join(" ");
+	} catch (error) {
+		debugError(error);
+		return str;
+	}
+  };
+  
+

@@ -3,7 +3,7 @@ import { browser as isBrowser } from '$app/environment';
 import { readLocalStorage, readSessionStorage } from './localStorage';
 import { debug } from './debug';
 import { Env, getEnv } from './env';
-import createLog from '../sdk/internal-api/createLog';
+import createLog from '../sdk/internal-api/calls/createLog';
 import { get } from 'svelte/store';
 import { ipStore } from '$lib/stores/analytics';
 
@@ -50,7 +50,7 @@ const getBrowserDataRecorder = () => {
 
 	return async (event: string, data: Object) => {
 		const record = {
-			env: getEnv(),
+			context: getEnv(),
 			event: event,
 			session_id: 'sid-' + sessionId,
 			user_uuid: uuid,
@@ -64,7 +64,7 @@ const getBrowserDataRecorder = () => {
 			url: window.location.href,
 			timestamp: new Date(),
 			...data
-		};
+		};		
 
 		createLog(record);
 	};

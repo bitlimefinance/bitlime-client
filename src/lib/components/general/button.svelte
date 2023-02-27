@@ -9,16 +9,18 @@
 	export let asyncLabel: string = '';
 	export let theme: string = 'primary';
 	export let classList: string =
-		'text-zinc-900 dark:text-zinc-900 bg-emerald-400 hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-600 font-medium rounded-lg text-sm px-4 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
+		'text-zinc-100 bg-green-400 '+ (disabled?'':'hover:bg-green-500 dark:hover:bg-green-600') +' disabled:opacity-60 dark:bg-green-500 font-medium rounded-lg text-sm px-4 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
 	export let classListSecondary: string =
-		'text-emerald-900 dark:text-emerald-900 bg-emerald-300 hover:bg-emerald-400 font-medium rounded-full px-4 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
+		'bg-white dark:bg-zinc-400/[0.1] '+ (disabled?'':' dark:hover:bg-zinc-500/[0.2]') +' text-zinc-900 dark:text-white hover:shadow-md font-medium rounded-lg text-sm px-3 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
 	export let classListTertiary: string =
-		'text-zinc-900 dark:text-white bg-white hover:shadow-md dark:bg-opacity-10 hover:dark:bg-opacity-20 font-medium rounded-lg text-sm px-3 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
+		'text-zinc-900 dark:text-white bg-white hover:shadow-md dark:bg-opacity-10 '+ (disabled?'':'hover:dark:bg-opacity-20') +' font-medium rounded-lg text-sm px-3 py-2 text-center disabled:opacity-80 disabled:btn-ghost disabled:cursor-default';
 	export let additionalClassList: string = '';
 	export let asyncAction: (() => Promise<void>) | null = null;
 	export let image: string = '';
 	export let imageRounded: boolean = false;
 	export let id: string='';
+	export let style: string = '';
+	export let labelClassList: string = '';
 	// TODO: implement
 	// export let link: string = '';
 
@@ -92,9 +94,10 @@
 	<button
 		disabled={showLoading || disabled}
 		type={type}
-		class={`${classes} flex flex-row gap-2 items-center ${showLoading ? '' : 'w-full sm:w-auto'} ${additionalClassList}`}
+		class={`${classes} flex justify-center gap-2 text-center ${showLoading ? '' : 'w-full sm:w-auto'} ${additionalClassList}`}
 		on:click={onClick}
 		id={id&&id!=''? id : randomString(5)}
+		style={style}
 		>
 		{#if image && !showLoading}
 			<img src={image} alt="" class="h-5 w-5 {imageRounded?'rounded-md':''}"/>
@@ -106,7 +109,7 @@
 				viewBox="0 0 100 101"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
-			>
+				>
 				<path
 					d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
 					fill="#E5E7EB"
@@ -119,7 +122,7 @@
 			{asyncLabel}
 		{:else}
 			<div class="flex flex-col text-left">
-				<span>{label}</span>
+				<span class={labelClassList}>{label}</span>
 			</div>
 		{/if}
 		{#if !showLoading}
@@ -129,7 +132,7 @@
 	{#if badge && badge != ''}
 		<span
 			bind:clientWidth={badgeWidth}
-			class="text-xs font-normal text-white -mt-2 z-20 {badgeClasses&&badgeClasses!=''?badgeClasses:'bg-emerald-600 rounded-md w-fit h-fit px-1.5 py-0.5'}"
+			class="text-xs font-normal text-white -mt-2 z-20 {badgeClasses&&badgeClasses!=''?badgeClasses:'bg-green-600 rounded-md w-fit h-fit px-1.5 py-0.5'}"
 			style="font-size: 10px; margin-left: -{badgeWidth-5}px;"
 			>
 			{badge}
