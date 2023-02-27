@@ -10,3 +10,4 @@ export const toggleTheme = () => {
 };
 
 export const showLoading = writable(false);
+export const mainHeight_ = writable(0);

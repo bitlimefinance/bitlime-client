@@ -1,4 +1,3 @@
-
 # [[plugins]]
   # Installs the Lighthouse Build Plugin for all deploy contexts
   # package = "@netlify/plugin-lighthouse"
@@ -8,12 +7,15 @@
 # these settings. You can define environment variables
 # here but we recommend using the Netlify UI for sensitive
 # values to keep them out of your source repository.
+[dev]
+    command = "yarn dev"
+    framework = "vite"
+    targetPort = 5173
+
 [context.production]
-    environment  = { ENV = "prod" }
 # Deploy generated from the production branch set in the UI under Site settings > Build & deploy > Continuous Deployment > Branches
 
 [context.nightly]
-    environment = { ENV = "nightly" }
     [[headers]]
     for = "/*"
     [headers.values]
@@ -21,7 +23,6 @@
 # nightly branch
 
 [context.development]
-    environment = { ENV = "dev" }
     [[headers]]
     for = "/*"
     [headers.values]
@@ -29,5 +30,4 @@
 # development branch
 
 [context.dev]
-    environment = { ENV = "local" }
 # Local development environments run using Netlify Dev

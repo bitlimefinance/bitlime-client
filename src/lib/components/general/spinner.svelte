@@ -11,7 +11,7 @@
 <div role="status" class="w-fit">
     <svg 
         aria-hidden="true"
-        class={`mr-2 text-gray-100 dark:text-gray-800 animate-spin ${additionalClassList}`}
+        class={`mr-2 bg-transparent text-gray-100 dark:text-gray-800 animate-spin ${additionalClassList}`}
         viewBox="0 0 100 101"
         fill={color}
         xmlns="http://www.w3.org/2000/svg"

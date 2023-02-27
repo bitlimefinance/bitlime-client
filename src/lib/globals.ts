@@ -1,3 +1,4 @@
+import { writable } from "svelte/store";
 import type { WalletInfo } from "./core/descriptors/interfaces";
 import { connectMetamask } from "./core/sdk/wallets/metamask";
 
@@ -26,6 +27,8 @@ export enum _WALLETS {
     BITLIME = 'bitlime',
 }
 
+export const showBlw = writable(false);
+
 export const _WALLETS_INFO: ReadonlyArray<WalletInfo> = [
     {
         wallet: _WALLETS.BITLIME,
@@ -33,7 +36,7 @@ export const _WALLETS_INFO: ReadonlyArray<WalletInfo> = [
         logo: 'assets/wallets-logos/bitlime.png',
         popularBadge: false,
         supported: true,
-        function: null
+        function: ()=>{showBlw.set(true)}
     },
     {
         wallet: _WALLETS.METAMASK,

@@ -1,21 +1,15 @@
+import type { Heroicon } from "$lib/icons/icons";
 import type { _WALLETS } from "../../globals";
-
-export interface GetTransactionObject {
-    abi: Array<any>,
-    address: string,
-    methodName: string,
-    methodParams: Array<any>
-}
 
 export interface TransactionParameters {
     to: string, // Required except during contract publications.
     from: any, // must match user's active address.
     value: any, // Only required to send ether to the recipient from the initiating external account.
-    gasPrice: any, // customizable by user during MetaMask confirmation.
-    gas: any, // customizable by user during MetaMask confirmation.
+    gasPrice?: any, // customizable by user during MetaMask confirmation.
+    gas?: any, // customizable by user during MetaMask confirmation.
     data: any, // Optional, but used for defining smart contract creation and interaction.
-    chainId: any, // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
-    nonce: any, // ignored by MetaMask
+    chainId?: any, // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
+    nonce?: any, // ignored by MetaMask
 }
 
 export interface WalletInfo {
@@ -39,4 +33,26 @@ export interface Token {
     "symbol": string;
     "chain_id": string;
     "_id": string;
+}
+
+/*
+actions = {
+        open: open,
+        dismiss: dismiss,
+        stopTimeout: stopTimeout,
+        startTimeout: startTimeout
+    }
+*/
+export interface ToastActions {
+    show: (message: string, options:{
+        type?: 'info' | 'success' | 'warning' | 'error';
+        icon?: Heroicon;
+        iconOutline?: boolean;
+        timeout?: number;
+        positionY?: 'top' | 'bottom';
+        positionX?: 'left' | 'right';
+    }) => void;
+    dismiss: () => void;
+    stopTimeout: () => void;
+    startTimeout: () => void;
 }

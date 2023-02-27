@@ -49,11 +49,14 @@ export const sendTransaction = async (params: TransactionParameters) => {
             method: 'eth_sendTransaction',
             params: [transactionParameters],
         });
-        console.log(txHash);
+        return txHash;
     } catch (error) {
-        console.error(error);      
+        console.error(error);
+        return null;
     }
 };
+
+
 
 export async function switchEthereumChain(chainId: string) {
     if(!ethereumSupported()) return;
@@ -156,22 +159,22 @@ export async function signTypedDataV4(message: Object) {
 
 // EVENTS
 
-export const subscribeToEvent = async (event: ProviderEvent) => {
+export const subscribeToEvent = async (event: ProviderEvent, callBack: Function) => {
     try {
         if(!ethereumSupported()) return;
         window.ethereum.on(event, (connectInfo: any) => {
-            console.log(connectInfo);
+            callBack();
         });
     } catch (error) {
         console.warn(error);
     }
 }
 
-export const unsubscribeFromEvent = async (event: ProviderEvent) => {
+export const unsubscribeFromEvent = async (event: ProviderEvent, callBack: Function) => {
     try {
         if(!ethereumSupported()) return;
         window.ethereum.off(event, (connectInfo: any) => {
-            console.log(connectInfo);
+            callBack();
         });
     } catch (error) {
         console.warn(error);
