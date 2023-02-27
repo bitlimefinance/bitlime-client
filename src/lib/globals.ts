@@ -17,7 +17,7 @@ export const _messages: Readonly<{generalError: string}> = Object.freeze({
 
 export const _analyticsDomainsWhitelist: Array<string> = [''];
 
-export const _localStoragePrefix: string = 'bl-localstorage';
+export const _localStoragePrefix = 'bl-localstorage';
 
 export enum _WALLETS {
     DISCONNECTED = 'disconnected',

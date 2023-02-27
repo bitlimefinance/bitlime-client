@@ -1,11 +1,10 @@
-import { debug, debugBreakpoint, debugError, debugTime, debugTimeEnd } from "$lib/core/utils/debug";
+import { debug, debugError, debugTime, debugTimeEnd } from "$lib/core/utils/debug";
 import unlockWallet from "../unlockWallet";
 import { Action, type ToWorkerMessage, type FromWorkerMessage, type TxInfo } from "./types";
 import { decryptCipherText, encryptMessage } from "$lib/core/utils/cipher/passworder";
 import { fromMnemonic } from "$lib/core/sdk/web3/wallet/lib";
-import { Signer, Wallet, ethers } from "ethers";
+import { Wallet, ethers } from "ethers";
 import { web3Provider, setProvider } from "$lib/core/sdk/web3/provider/lib";
-import { txConfirmation, txInfo } from "../stores";
 import { fromBigNumber } from "$lib/core/sdk/web3/utils/bigNumber/lib";
 import { getGasPrice } from "$lib/core/sdk/web3/utils/feeData/lib";
 
@@ -13,7 +12,7 @@ let wallet: any;
 let suid: string;
 let response: FromWorkerMessage | null;
 
-onmessage = async function (e) {
+onmessage = async (e): Promise<void> => {
         try {  
                 debug('Worker onmessage', e);
                 if(!e.data) return;
@@ -83,25 +82,25 @@ onmessage = async function (e) {
                                 debugTimeEnd('Get address');
                                 break;
                         }
-                        case Action.TX_PREVIEW:{
-                                debugTime('Transaction preview');
-                                const { address, value, methodName, abi, methodParams } = payload as {[key: string]: any};
-                                // const contract = new ethers.Contract(address, abi, wallet);
-                                // const blwGasEstimate = await contract.estimateGas[methodName](...methodParams);
-                                response = {
-                                        action: Action.TX_PREVIEW,
-                                        error: false,
-                                        payload: {
-                                                to: address,
-                                                methodName,
-                                                value,
-                                                estimatedGas: '0',
-                                                chainId: (net?.id || '1').toString(),
-                                        }
-                                };
-                                debugTimeEnd('Transaction preview');
-                                break;
-                        }
+                        // case Action.TX_PREVIEW:{
+                        //         debugTime('Transaction preview');
+                        //         const { address, value, methodName, abi, methodParams } = payload as {[key: string]: any};
+                        //         // const contract = new ethers.Contract(address, abi, wallet);
+                        //         // const blwGasEstimate = await contract.estimateGas[methodName](...methodParams);
+                        //         response = {
+                        //                 action: Action.TX_PREVIEW,
+                        //                 error: false,
+                        //                 payload: {
+                        //                         to: address,
+                        //                         methodName,
+                        //                         value,
+                        //                         estimatedGas: '0',
+                        //                         chainId: (net?.id || '1').toString(),
+                        //                 }
+                        //         };
+                        //         debugTimeEnd('Transaction preview');
+                        //         break;
+                        // }
                         case Action.ESTIMATE_GAS:{
                                 debugTime('Estimate gas');
                                 const { address, value, methodName, abi, methodParams } = payload as {[key: string]: any};
@@ -123,21 +122,17 @@ onmessage = async function (e) {
                                 debugTimeEnd('Estimate gas');
                                 break;
                         }
-                        case Action.GET_SIGNER:{
-                                if(!Signer.isSigner(wallet)) throw new Error('Could not get signer');
-                                response = {
-                                        action: Action.GET_SIGNER,
-                                        error: false,
-                                        payload: {
-                                                signer: JSON.stringify(wallet)
-                                        }
-                                };
-                                break;
-                        }
-                        default:{
-                                // do nothing
-                                break;
-                        }
+                        // case Action.GET_SIGNER:{
+                        //         if(!Signer.isSigner(wallet)) throw new Error('Could not get signer');
+                        //         response = {
+                        //                 action: Action.GET_SIGNER,
+                        //                 error: false,
+                        //                 payload: {
+                        //                         signer: JSON.stringify(wallet)
+                        //                 }
+                        //         };
+                        //         break;
+                        // }
                         case Action.TX_SEND:{
                                 debugTime('Send transaction');
                                 const txInfo = payload as TxInfo;
@@ -162,6 +157,10 @@ onmessage = async function (e) {
                                         }
                                 }
                                 debugTimeEnd('Send transaction');
+                                break;
+                        }
+                        default:{
+                                // do nothing
                                 break;
                         }
                 }

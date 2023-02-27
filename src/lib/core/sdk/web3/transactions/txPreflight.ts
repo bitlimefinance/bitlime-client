@@ -16,5 +16,5 @@ export const txPreflight = async (requireSigner?: boolean, addressesToCheck?: st
     }
     if (addressesToCheck) {
         if (!await validateAddresses(addressesToCheck)) throw new Error('Invalid address');
-    };
+    }
 };

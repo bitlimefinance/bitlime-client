@@ -4,7 +4,7 @@
 	import { _WALLETS } from "$lib/globals";
 	import { accounts, connected } from "$lib/stores/application";
 
-    export let history: any;
+    export const history: any[] = [];
     
 </script>
 

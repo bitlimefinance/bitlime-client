@@ -6,7 +6,7 @@ const enum PasswordStrengthLevels {
     Good = "Good",
     Strong = "Strong",
     VeryStrong = "Very strong"
-};
+}
 
 type PasswordStrength = PasswordStrengthLevels;
 

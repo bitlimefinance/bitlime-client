@@ -1,4 +1,4 @@
-import { debugBreakpoint, debugError } from "$lib/core/utils/debug";
+import { debugError } from "$lib/core/utils/debug";
 import { Env } from "$lib/core/utils/env";
 import { ENV } from "$lib/stores/envVars";
 import { writable, get } from "svelte/store";
@@ -9,7 +9,7 @@ export const blwWorker = writable();
 
 export const loadWorker = async () => {
 	try {
-		const SyncWorker = await import('./blw.worker?worker');
+		const SyncWorker = await import('./blw.worker');
 		const syncWorker = new SyncWorker.default();
 		blwWorker.set(syncWorker);
         workerLoaded.set(true);
