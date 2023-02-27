@@ -3,8 +3,10 @@ import { accounts, latestBlock } from "$lib/stores/application";
 import { get } from "svelte/store";
 import abi from "./abis/router.json" assert {type: 'json'};
 import { debug, debugError } from "../utils/debug";
-import { constants } from "ethers";
+import { constants, ethers } from "ethers";
 import { interactWithContract, readSmartContract } from "./web3/contracts/lib";
+import { web3Provider } from "./web3/provider/lib";
+import { FACTORY_ADDRESS } from "./factory";
 
 export const ROUTER_ADDRESS: Readonly<string> = '0xAcfA21F4f4148A0EAf0420D972E1a75c17ef9B4b';
 export const ROUTER_ABI: any[] = abi;
@@ -52,6 +54,7 @@ export const getAmountsIn = async (args: {
         methodParams: [amountOut, [tokenAddressA,tokenAddressB], affiliateAddress || constants.AddressZero]
     })
 }
+
 
 export const swapExactTokensForTokens = async (args: {
     to: any,

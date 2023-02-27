@@ -486,3 +486,8 @@ export const camelToTitleCase = (str: string): string => {
   };
   
 
+  export async function createLocalFileUrl(path: string): Promise<string> {
+    const file = await fetch(path);
+    const blob = await file.blob();
+    return URL.createObjectURL(blob);
+  }
