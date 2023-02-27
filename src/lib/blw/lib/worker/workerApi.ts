@@ -9,9 +9,9 @@ export const blwWorker = writable();
 
 export const loadWorker = async () => {
 	try {
-		const SyncWorker = await import('./blw.worker');
-		const syncWorker = new SyncWorker.default();
-		blwWorker.set(syncWorker);
+		const workerUrl = new URL('./blwWorker.ts', import.meta.url).toString();
+		const worker = new Worker(workerUrl, {type: "module"});
+		blwWorker.set(worker);
         workerLoaded.set(true);
 	} catch (error) {
 		debugError(error);

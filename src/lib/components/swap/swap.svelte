@@ -16,10 +16,14 @@
 	import { web3Provider } from "$lib/core/sdk/web3/provider/lib";
 	import { getAddressBalance } from "$lib/core/sdk/web3/utils/addresses/lib";
 	import { fromBigNumber, toBigNumber } from "$lib/core/sdk/web3/utils/bigNumber/lib";
+	import { checkIfPathExists } from "$lib/core/sdk/factory";
+	import { ADDRESS_0 } from "$lib/core/sdk/web3/utils/constants/lib";
 
     let mounted: boolean = false;
 
     let nativeTokenAddress: string;
+
+    let pathExists: boolean = false;
 
     let inputAValue: any;
     let inputBValue: any;
@@ -226,6 +230,7 @@
             if(getSwapRate) swapRate = res as string;
             else inputBValue = res;
         }catch(err) {
+            pathExists = false;
             debugError(err);
         }finally{
             gettingData = false;
@@ -247,6 +252,8 @@
             if(doCheckAllowance) await checkAllowance();
             else await checkBalance();
             await checkDecimals();
+            pathExists = await checkIfPathExists((selectedTokenA?.address || ADDRESS_0), (selectedTokenB?.address || ADDRESS_0));
+            if(!pathExists) return;
             await getQuote();
             await getQuote(true);
         }catch(err) {
@@ -462,11 +469,11 @@
             {/if}
         </div>
     {/if}
-    {#if noBalance || !selectedTokenA?.address || !selectedTokenB?.address}
+    {#if noBalance || !selectedTokenA?.address || !selectedTokenB?.address || !pathExists}
         <Button
             showLoading={gettingData}
             disabled
-            label="{noBalance?"You don't have enough balance":"Select tokens"}"
+            label="{noBalance?"You don't have enough balance":((pathExists && selectedTokenA?.address && selectedTokenB?.address)?"Select tokens":"This pair is not available")}"
             additionalClassList="min-w-full justify-center items-center font-normal text-base rounded-xl px-4 py-5 mt-4 bg-gray-300 hover:bg-gray-300 dark:bg-zinc-800 hover:dark:bg-zinc-800"
             style='min-height: 64px;'
             />
